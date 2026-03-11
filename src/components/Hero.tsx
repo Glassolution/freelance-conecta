@@ -10,6 +10,8 @@ const fadeUp = (delay: number) => ({
 });
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background image */}

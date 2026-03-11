@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const platforms = ['Workana', 'GetNinjas', '99Freelas', 'Upwork'];
 
@@ -9,6 +10,8 @@ const fadeUp = (delay: number) => ({
 });
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background image */}
@@ -76,7 +79,10 @@ const Hero = () => {
 
           {/* Buttons */}
           <motion.div className="flex flex-wrap items-center gap-4 mt-8" {...fadeUp(0.25)}>
-            <button className="bg-primary text-primary-foreground font-heading font-bold text-base px-8 py-3.5 rounded-full hover:bg-primary/90 transition-colors">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="bg-primary text-primary-foreground font-heading font-bold text-base px-8 py-3.5 rounded-full hover:bg-primary/90 transition-colors"
+            >
               Buscar Agora
             </button>
             <a

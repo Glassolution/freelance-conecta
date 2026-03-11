@@ -72,7 +72,7 @@ const Auth = () => {
                   onChange={(e) => setName(e.target.value)}
                   required={!isLogin}
                   className="w-full px-4 py-3 rounded-xl text-sm font-body text-white outline-none focus:ring-2 transition-all"
-                  style={{ background: '#111B2E', border: '1px solid rgba(255,255,255,0.06)', focusRingColor: 'hsl(var(--primary))' }}
+                  style={{ background: '#111B2E', border: '1px solid rgba(255,255,255,0.06)' }}
                   placeholder="Seu nome"
                 />
               </div>

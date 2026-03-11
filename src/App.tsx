@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Ferramentas from "./pages/Ferramentas.tsx";
 import Explorar from "./pages/Explorar.tsx";
+import Marketplace from "./pages/Marketplace.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();

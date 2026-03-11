@@ -162,7 +162,7 @@ const Auth = () => {
               type="submit"
               disabled={loading}
               className="w-full py-3.5 rounded-xl font-body font-semibold text-sm text-white transition-colors disabled:opacity-50"
-              style={{ background: '#060912' }}
+              style={{ background: 'hsl(var(--primary))' }}
             >
               {loading ? 'Aguarde...' : isLogin ? 'Sign in' : 'Sign up'}
             </button>

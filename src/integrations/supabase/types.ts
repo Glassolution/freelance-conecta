@@ -14,7 +14,111 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      propostas: {
+        Row: {
+          client_date: string | null
+          client_name: string
+          created_at: string
+          description: string
+          id: string
+          status: string
+          tag: string
+          tag_color: string
+          user_id: string
+        }
+        Insert: {
+          client_date?: string | null
+          client_name: string
+          created_at?: string
+          description: string
+          id?: string
+          status?: string
+          tag: string
+          tag_color?: string
+          user_id: string
+        }
+        Update: {
+          client_date?: string | null
+          client_name?: string
+          created_at?: string
+          description?: string
+          id?: string
+          status?: string
+          tag?: string
+          tag_color?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          created_at: string
+          id: string
+          period_label: string
+          period_value: number
+          propostas_sent: number
+          user_id: string
+          vagas_viewed: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          period_label: string
+          period_value?: number
+          propostas_sent?: number
+          user_id: string
+          vagas_viewed?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          period_label?: string
+          period_value?: number
+          propostas_sent?: number
+          user_id?: string
+          vagas_viewed?: number
+        }
+        Relationships: []
+      }
+      vagas: {
+        Row: {
+          author_name: string
+          author_role: string
+          created_at: string
+          id: string
+          image_url: string | null
+          platform: string
+          price: number
+          tag: string
+          tag_color: string
+          title: string
+        }
+        Insert: {
+          author_name: string
+          author_role?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          platform: string
+          price?: number
+          tag: string
+          tag_color?: string
+          title: string
+        }
+        Update: {
+          author_name?: string
+          author_role?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          platform?: string
+          price?: number
+          tag?: string
+          tag_color?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

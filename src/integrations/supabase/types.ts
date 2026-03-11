@@ -92,6 +92,7 @@ export type Database = {
           tag: string
           tag_color: string
           title: string
+          url: string | null
         }
         Insert: {
           author_name: string
@@ -104,6 +105,7 @@ export type Database = {
           tag: string
           tag_color?: string
           title: string
+          url?: string | null
         }
         Update: {
           author_name?: string
@@ -116,6 +118,7 @@ export type Database = {
           tag?: string
           tag_color?: string
           title?: string
+          url?: string | null
         }
         Relationships: []
       }

@@ -102,7 +102,7 @@ const Index = () => {
           <ul className="nav-links">
             <li><a href="#" className="active">In&#237;cio</a></li>
             <li><a href="#">Como Funciona</a></li>
-            <li><a href="#">Pre&#231;os</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); navigate('/pricing'); }}>Pre&#231;os</a></li>
             <li><a href="#">Para Profissionais</a></li>
           </ul>
           <div className="nav-right">

@@ -83,6 +83,8 @@ const Hero = () => {
               onClick={() => navigate('/dashboard')}
               className="bg-primary text-primary-foreground font-heading font-bold text-base px-8 py-3.5 rounded-full hover:bg-primary/90 transition-colors"
             >
+              Buscar Agora
+            </button>
             <a
               href="#como-funciona"
               className="font-body font-medium text-foreground text-sm hover:underline transition-colors"

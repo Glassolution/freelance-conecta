@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable/index';
 import { Eye, EyeOff, Mail, Lock, Search } from 'lucide-react';
 
 const Auth = () => {

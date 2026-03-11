@@ -16,15 +16,14 @@ const plataformas = [
 ];
 
 const sidebarLinks = [
-  { icon: Home, label: 'Início', active: false },
-  { icon: User, label: 'Perfil', active: false },
-  { icon: SlidersHorizontal, label: 'Filtros', active: true },
-  { icon: Globe, label: 'Criador.ia', active: false },
-  { icon: Briefcase, label: 'Serviços', active: false },
-  { icon: CheckCircle, label: 'Serviços Aprovados', active: false },
-  { icon: Send, label: 'Serviços Enviados', active: false },
-  { icon: PackageCheck, label: 'Serviços Entregues', active: false },
-  { icon: Wrench, label: 'Ferramentas', active: false },
+  { icon: Home, label: 'Início', active: true, path: '/dashboard' },
+  { icon: SlidersHorizontal, label: 'Filtros', active: false, path: null },
+  { icon: Globe, label: 'Criador.ia', active: false, path: null },
+  { icon: Briefcase, label: 'Serviços', active: false, path: null },
+  { icon: CheckCircle, label: 'Serviços Aprovados', active: false, path: null },
+  { icon: Send, label: 'Serviços Enviados', active: false, path: null },
+  { icon: PackageCheck, label: 'Serviços Entregues', active: false, path: null },
+  { icon: Wrench, label: 'Ferramentas', active: false, path: '/ferramentas' },
 ];
 
 function getGreeting() {
@@ -133,15 +132,15 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen" style={{ background: '#F8F9FC' }}>
       {/* LEFT SIDEBAR */}
-      <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden" style={{ background: '#0A1628' }}>
+      <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: 'hsl(var(--primary))' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#e85d26' }}>
               {initials}
             </div>
             <div>
-              <p className="text-sm font-heading font-bold text-white leading-tight">{displayName}</p>
-              <p className="text-[11px] font-body text-white/40">Plataforma de Serviços</p>
+              <p className="text-sm font-heading font-bold text-[#111111] leading-tight">{displayName}</p>
+              <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
             </div>
           </div>
 
@@ -149,10 +148,11 @@ const Dashboard = () => {
             {sidebarLinks.map((link) => (
               <button
                 key={link.label}
+                onClick={() => link.path && navigate(link.path)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#C8FF00]' : 'text-white/60 hover:text-white hover:bg-white/5'
+                  link.active ? 'text-[#e85d26]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
                 }`}
-                style={link.active ? { background: 'rgba(200,255,0,0.1)', border: '1px solid rgba(200,255,0,0.2)' } : undefined}
+                style={link.active ? { background: 'rgba(232,93,38,0.08)', border: '1px solid rgba(232,93,38,0.2)' } : undefined}
               >
                 <link.icon size={18} />
                 {link.label}
@@ -162,7 +162,7 @@ const Dashboard = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
             <Settings size={18} /> Configurações
           </button>
           <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-red-400 hover:bg-red-500/10 transition-colors">

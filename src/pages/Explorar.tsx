@@ -43,6 +43,7 @@ interface Vaga {
   author_name: string;
   author_role: string;
   image_url: string | null;
+  url: string | null;
 }
 
 const Explorar = () => {
@@ -458,12 +459,22 @@ const Explorar = () => {
                             </div>
 
                             {/* CTA Button */}
-                            <button className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
-                              style={{ background: '#e85d26' }}
-                            >
-                              <ShoppingCart size={15} />
-                              Contratar Serviço
-                            </button>
+                            {vaga.url ? (
+                              <a href={vaga.url} target="_blank" rel="noopener noreferrer" className="block">
+                                <button className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                                  style={{ background: '#e85d26' }}
+                                >
+                                  <ShoppingCart size={15} />
+                                  Contratar Serviço
+                                </button>
+                              </a>
+                            ) : (
+                              <button disabled className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white/60 flex items-center justify-center gap-2 cursor-not-allowed"
+                                style={{ background: '#9CA3B4' }}
+                              >
+                                Indisponível
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -663,12 +674,22 @@ const Explorar = () => {
                               </div>
 
                               {/* CTA Button */}
-                              <button className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
-                                style={{ background: '#e85d26' }}
-                              >
-                                <ShoppingCart size={15} />
-                                Contratar Serviço
-                              </button>
+                              {vaga.url ? (
+                                <a href={vaga.url} target="_blank" rel="noopener noreferrer" className="block">
+                                  <button className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                                    style={{ background: '#e85d26' }}
+                                  >
+                                    <ShoppingCart size={15} />
+                                    Contratar Serviço
+                                  </button>
+                                </a>
+                              ) : (
+                                <button disabled className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white/60 flex items-center justify-center gap-2 cursor-not-allowed"
+                                  style={{ background: '#9CA3B4' }}
+                                >
+                                  Indisponível
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>

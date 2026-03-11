@@ -1,155 +1,157 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const tags = [
-  { emoji: '🎨', label: 'Design' },
-  { emoji: '💻', label: 'Dev Web' },
-  { emoji: '📣', label: 'Marketing' },
-  { emoji: '🎬', label: 'Vídeo' },
-  { emoji: '📱', label: 'Apps' },
+const platforms = [
+  { name: 'Workana' },
+  { name: 'GetNinjas' },
+  { name: '99Freelas' },
+  { name: 'Upwork' },
 ];
 
-const particles = Array.from({ length: 7 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  delay: Math.random() * 5,
-  duration: 6 + Math.random() * 4,
-}));
+const floatingCards = [
+  { text: '52.300+', label: 'Projetos', delay: 0, top: '15%', right: '5%' },
+  { text: '4.8 ★', label: 'Avaliação', delay: 0.8, top: '50%', right: '0%' },
+  { text: '● Atualizado agora', label: '', delay: 1.6, top: '75%', right: '15%' },
+];
+
+const headlineWords = ['A', 'FORMA', 'MAIS', 'INTELIGENTE', 'DE', 'ENCONTRAR', 'FREELANCERS'];
 
 const Hero = () => {
-  const [query, setQuery] = useState('');
-
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Grid background */}
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `linear-gradient(hsl(220 50% 22% / 0.4) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(220 50% 22% / 0.4) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
-        }}
-      />
-
-      {/* Radial glows */}
-      <div className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full bg-accent/[0.07] blur-[150px]" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/[0.06] blur-[150px]" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-background/50 blur-[200px]" />
-
-      {/* Floating particles */}
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute w-1 h-1 rounded-full bg-accent/40"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            animation: `float-particle ${p.duration}s ease-in-out ${p.delay}s infinite`,
-          }}
-        />
-      ))}
+      <div className="absolute inset-0 hero-grid opacity-30" />
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center pt-20">
-        <motion.h1
-          className="font-heading font-bold text-4xl md:text-6xl lg:text-[64px] leading-tight text-foreground mb-6"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <motion.span
-            className="block"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-          >
-            Encontre o Freelancer
-          </motion.span>
-          <motion.span
-            className="block"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <span className="relative inline-block">
-              Ideal
-              <span className="absolute -bottom-1 left-0 h-3 bg-primary/30 rounded-sm brush-stroke" style={{ width: 0 }} />
-            </span>{' '}
-            para o Seu Projeto
-          </motion.span>
-        </motion.h1>
-
-        <motion.p
-          className="font-body text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.5 }}
-        >
-          Buscamos em Workana, GetNinjas, 99Freelas e Upwork
-          <br className="hidden md:block" /> ao mesmo tempo. Você compara e contrata.
-        </motion.p>
-
-        {/* Search bar */}
-        <motion.div
-          className="max-w-[680px] mx-auto mb-5"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-        >
-          <div className="flex items-center bg-input border border-border rounded-xl p-1.5 gap-1.5">
-            <div className="flex items-center flex-1 gap-2 pl-3">
-              <Search size={18} className="text-muted-foreground shrink-0" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Ex: designer de logo, desenvolvedor React..."
-                className="bg-transparent flex-1 text-sm font-body text-foreground placeholder:text-muted-foreground outline-none py-2"
-              />
-            </div>
-            <button className="hidden sm:flex items-center gap-1.5 text-sm font-body text-muted-foreground px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors shrink-0">
-              Todas as categorias
-              <ChevronDown size={14} />
-            </button>
-            <Button className="bg-primary text-primary-foreground font-body font-semibold text-sm px-6 rounded-lg hover:bg-primary/90">
-              Buscar
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Tag chips */}
-        <motion.div
-          className="flex flex-wrap justify-center gap-2 mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.65, duration: 0.5 }}
-        >
-          {tags.map((tag) => (
-            <button
-              key={tag.label}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-border text-sm font-body text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-250"
+      <div className="relative z-10 container mx-auto px-4 pt-20 pb-16">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+          {/* LEFT — 55% */}
+          <div className="w-full lg:w-[55%]">
+            {/* Pill badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full holo-border bg-card/60 mb-8"
             >
-              <span>{tag.emoji}</span>
-              {tag.label}
-            </button>
-          ))}
-        </motion.div>
+              <span className="text-sm font-body text-muted-foreground">✦ Meta-search de Freelancers</span>
+            </motion.div>
 
-        {/* Secondary CTA */}
+            {/* Headline */}
+            <h1 className="font-heading font-extrabold text-4xl md:text-6xl lg:text-[72px] uppercase leading-[1.0] text-foreground mb-6">
+              {headlineWords.map((word, i) => (
+                <motion.span
+                  key={i}
+                  className={`inline-block mr-[0.3em] ${word === 'FREELANCERS' ? 'holo-text' : ''}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + i * 0.06, duration: 0.5 }}
+                >
+                  {word}
+                </motion.span>
+              ))}
+            </h1>
+
+            {/* Subtext */}
+            <motion.p
+              className="font-body text-muted-foreground text-base md:text-lg max-w-lg mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.5 }}
+            >
+              Buscamos simultaneamente em Workana, GetNinjas,
+              99Freelas e Upwork. Compare tudo em um só lugar.
+            </motion.p>
+
+            {/* Buttons */}
+            <motion.div
+              className="flex flex-wrap items-center gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85, duration: 0.5 }}
+            >
+              <Button className="bg-primary text-primary-foreground font-body font-medium text-base px-8 py-3 h-auto rounded-full hover:bg-primary/90">
+                Buscar Agora
+              </Button>
+              <a
+                href="#como-funciona"
+                className="inline-flex items-center gap-1.5 text-foreground font-body font-medium text-sm hover:text-muted-foreground transition-colors"
+              >
+                Ver Como Funciona <ArrowRight size={16} />
+              </a>
+            </motion.div>
+          </div>
+
+          {/* RIGHT — 45% */}
+          <div className="w-full lg:w-[45%] relative flex items-center justify-center min-h-[350px] md:min-h-[450px]">
+            {/* Morphing blob */}
+            <div
+              className="w-[280px] h-[280px] md:w-[380px] md:h-[380px] opacity-70"
+              style={{
+                background: 'linear-gradient(135deg, #a78bfa, #38bdf8, #34d399, #f472b6)',
+                animation: 'blob-morph 8s ease-in-out infinite, blob-rotate 20s linear infinite',
+                borderRadius: '60% 40% 70% 30% / 50% 60% 40% 50%',
+                filter: 'blur(2px)',
+              }}
+            />
+
+            {/* Floating glass cards */}
+            {floatingCards.map((card, i) => (
+              <motion.div
+                key={i}
+                className="absolute glass-card rounded-xl px-4 py-3"
+                style={{
+                  top: card.top,
+                  right: card.right,
+                  animation: `float-bob ${3 + i * 0.5}s ease-in-out ${card.delay}s infinite`,
+                }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 + card.delay * 0.3, duration: 0.5 }}
+              >
+                {card.text.includes('●') ? (
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full pulse-dot" style={{ background: '#4ade80' }} />
+                    <span className="font-body text-sm text-muted-foreground">Atualizado agora</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className={`font-heading font-bold text-lg ${card.text.includes('★') ? 'text-primary' : 'holo-text'}`}>
+                      {card.text}
+                    </div>
+                    <div className="font-body text-xs text-muted-foreground">{card.label}</div>
+                  </>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Platform badges */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
+          className="mt-16 md:mt-20"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
         >
-          <Button
-            variant="outline"
-            className="border-foreground/20 text-foreground font-body text-sm hover:bg-foreground/5"
-          >
-            Sou Freelancer <ArrowRight size={16} />
-          </Button>
+          <p className="font-body text-sm text-muted-foreground text-center mb-5">
+            Agregamos resultados de:
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            {platforms.map((p) => (
+              <div
+                key={p.name}
+                className="glass-card rounded-xl px-5 py-3 flex items-center gap-3"
+              >
+                <span className="font-heading font-bold text-sm text-foreground/80">{p.name}</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: '#4ade80' }} />
+                  <span className="font-body text-[10px]" style={{ color: '#4ade80' }}>ao vivo</span>
+                </span>
+              </div>
+            ))}
+          </div>
         </motion.div>
       </div>
     </section>

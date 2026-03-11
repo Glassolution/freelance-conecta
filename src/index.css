@@ -4,43 +4,45 @@
 
 @layer base {
   :root {
-    --background: 216 60% 10%;
+    --background: 222 78% 4%;
     --foreground: 0 0% 100%;
 
-    --card: 222 55% 21%;
+    --card: 222 50% 9%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 222 55% 21%;
+    --popover: 222 50% 9%;
     --popover-foreground: 0 0% 100%;
 
     --primary: 46 91% 52%;
-    --primary-foreground: 216 60% 10%;
+    --primary-foreground: 222 78% 4%;
 
-    --secondary: 216 50% 16%;
+    --secondary: 220 45% 12%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 216 50% 16%;
-    --muted-foreground: 214 30% 73%;
+    --muted: 220 45% 12%;
+    --muted-foreground: 214 25% 58%;
 
-    --accent: 187 82% 54%;
-    --accent-foreground: 216 60% 10%;
+    --accent: 217 90% 61%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 100% / 0.07;
-    --input: 220 50% 18%;
+    --border: 0 0% 100% / 0.06;
+    --input: 222 45% 13%;
     --ring: 46 91% 52%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 216 60% 10%;
-    --sidebar-foreground: 214 30% 73%;
+    --surface: 220 45% 12%;
+
+    --sidebar-background: 222 78% 4%;
+    --sidebar-foreground: 214 25% 58%;
     --sidebar-primary: 46 91% 52%;
-    --sidebar-primary-foreground: 216 60% 10%;
-    --sidebar-accent: 222 55% 21%;
+    --sidebar-primary-foreground: 222 78% 4%;
+    --sidebar-accent: 222 50% 9%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.07;
+    --sidebar-border: 0 0% 100% / 0.06;
     --sidebar-ring: 46 91% 52%;
   }
 }
@@ -55,7 +57,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Bai Jamjuree', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
   }
 }
 
@@ -66,10 +68,57 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px 256px;
+}
+
+/* Holographic gradient text */
+.holo-text {
+  background: linear-gradient(135deg, #a78bfa, #38bdf8, #34d399, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Holographic border */
+.holo-border {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+.holo-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #a78bfa, #38bdf8, #34d399, #f472b6);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Blob morph */
+@keyframes blob-morph {
+  0%, 100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; }
+  25% { border-radius: 40% 60% 30% 70% / 60% 40% 50% 50%; }
+  50% { border-radius: 50% 50% 60% 40% / 40% 70% 30% 60%; }
+  75% { border-radius: 70% 30% 50% 50% / 50% 40% 60% 40%; }
+}
+
+@keyframes blob-rotate {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Float bob */
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
 }
 
 /* Pulsing green dot */
@@ -81,19 +130,18 @@
   animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Floating particles */
-@keyframes float-particle {
-  0%, 100% { transform: translate(0, 0); opacity: 0.3; }
-  25% { transform: translate(15px, -20px); opacity: 0.6; }
-  50% { transform: translate(-10px, -40px); opacity: 0.4; }
-  75% { transform: translate(20px, -15px); opacity: 0.5; }
+/* Glass card */
+.glass-card {
+  background: rgba(13, 21, 37, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Brush stroke animation */
-@keyframes brush-reveal {
-  0% { width: 0; }
-  100% { width: 110%; }
-}
-.brush-stroke {
-  animation: brush-reveal 0.8s ease-out 0.6s forwards;
+/* Faint grid */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(13, 21, 37, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 21, 37, 0.8) 1px, transparent 1px);
+  background-size: 40px 40px;
 }

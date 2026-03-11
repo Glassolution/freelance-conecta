@@ -18,14 +18,22 @@ const Navbar = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'backdrop-blur-xl bg-background/80 border-b border-foreground/[0.06]'
+          ? 'border-b border-border'
           : 'bg-transparent'
       }`}
+      style={scrolled ? { background: 'rgba(6,9,18,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' } : undefined}
     >
       <nav className="container mx-auto flex items-center justify-between h-16 px-4 lg:px-8">
         {/* Logo */}
-        <a href="/" className="font-heading font-bold text-xl text-foreground tracking-tight">
-          Tramp<span className="relative">o<span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-primary" /></span>s
+        <a href="/" className="font-heading font-extrabold text-xl text-foreground tracking-tight relative">
+          <span className="relative">
+            i
+            <span
+              className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
+              style={{ background: 'linear-gradient(135deg, #a78bfa, #38bdf8, #34d399, #f472b6)' }}
+            />
+          </span>
+          kas
         </a>
 
         {/* Desktop links */}
@@ -34,7 +42,7 @@ const Navbar = () => {
             <a
               key={link}
               href="#"
-              className="text-sm font-body font-medium text-muted-foreground hover:text-foreground transition-colors duration-250"
+              className="text-sm font-body font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {link}
             </a>
@@ -46,8 +54,8 @@ const Navbar = () => {
           <Button variant="ghost" className="text-foreground font-body text-sm">
             Entrar
           </Button>
-          <Button className="bg-primary text-primary-foreground font-body font-semibold text-sm hover:bg-primary/90">
-            Cadastrar
+          <Button className="bg-primary text-primary-foreground font-body font-medium text-sm hover:bg-primary/90 rounded-full px-5">
+            Criar Conta
           </Button>
         </div>
 
@@ -62,7 +70,10 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-foreground/[0.06] px-4 pb-6 pt-2">
+        <div
+          className="md:hidden border-b border-border px-4 pb-6 pt-2"
+          style={{ background: 'rgba(6,9,18,0.95)', backdropFilter: 'blur(20px)' }}
+        >
           {links.map((link) => (
             <a
               key={link}
@@ -76,8 +87,8 @@ const Navbar = () => {
             <Button variant="ghost" className="text-foreground font-body text-sm flex-1">
               Entrar
             </Button>
-            <Button className="bg-primary text-primary-foreground font-body font-semibold text-sm flex-1">
-              Cadastrar
+            <Button className="bg-primary text-primary-foreground font-body font-medium text-sm flex-1 rounded-full">
+              Criar Conta
             </Button>
           </div>
         </div>

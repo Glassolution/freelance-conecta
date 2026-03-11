@@ -36,10 +36,10 @@ const StatItem = ({ value, suffix, label, decimals = 0, inView }: {
 
   return (
     <div className="text-center px-8 py-6">
-      <div className="font-heading font-bold text-3xl md:text-4xl text-accent">
+      <div className="font-heading font-bold text-3xl md:text-5xl holo-text">
         {formatted}{suffix}
       </div>
-      <div className="font-body text-sm text-muted-foreground mt-1">{label}</div>
+      <div className="font-body text-sm text-muted-foreground mt-2">{label}</div>
     </div>
   );
 };
@@ -57,8 +57,8 @@ const StatsBar = () => {
   }, []);
 
   return (
-    <section ref={ref} className="bg-secondary border-y border-border">
-      <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-center md:divide-x divide-border">
+    <section ref={ref} className="bg-surface border-y border-border">
+      <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-center md:divide-x divide-border py-4">
         {stats.map((s) => (
           <StatItem key={s.label} {...s} inView={inView} />
         ))}

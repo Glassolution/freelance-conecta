@@ -14,6 +14,7 @@ const ChevronSvg = () => (
 );
 
 const Index = () => {
+  const navigate = useNavigate();
   const [activePain, setActivePain] = useState(0);
   const statRefs = useRef<(HTMLDivElement | null)[]>([]);
   const featRefs = useRef<(HTMLDivElement | null)[]>([]);

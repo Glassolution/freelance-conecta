@@ -58,7 +58,7 @@ const Auth = () => {
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: '#060912' }}
+              style={{ background: 'hsl(var(--primary))' }}
             >
               <Search size={18} className="text-white" />
             </div>

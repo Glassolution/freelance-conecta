@@ -146,8 +146,8 @@ const Hero = () => {
               >
                 <span className="font-heading font-bold text-sm text-foreground/80">{p.name}</span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 pulse-dot" />
-                  <span className="font-body text-[10px] text-green-400">ao vivo</span>
+                  <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: '#4ade80' }} />
+                  <span className="font-body text-[10px]" style={{ color: '#4ade80' }}>ao vivo</span>
                 </span>
               </div>
             ))}

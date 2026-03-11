@@ -306,7 +306,7 @@ const Index = () => {
         <h2 className="cta-title">Pronto para Aumentar<br />sua Renda Extra?</h2>
         <p className="cta-sub">Mais de 12.000 vagas dispon&#237;veis agora mesmo. Gratuito para come&#231;ar.</p>
         <div className="cta-btns">
-          <button className="btn-orange">Encontrar Vagas Agora</button>
+          <button className="btn-orange" onClick={() => navigate('/dashboard')}>Encontrar Vagas Agora</button>
           <button className="btn-ghost-dark">Ver Como Funciona</button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Home, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
@@ -31,6 +31,26 @@ function getUserDisplayName(user: any): string {
   return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
 }
 
+// --- Unified job type ---
+
+interface UnifiedJob {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  budgetDisplay: string;
+  budgetOriginal: string;
+  budgetSortValue: number;
+  bidsCount: number;
+  skills: { name: string; id?: number }[];
+  platform: 'Freelancer' | 'Workana';
+  platformColor: string;
+  timeLabel: string;
+  timestamp: number;
+}
+
+// --- Freelancer types ---
+
 interface FreelancerJob {
   id: number;
   title: string;
@@ -55,17 +75,48 @@ interface FreelancerJob {
   type: string;
 }
 
+// --- Workana types ---
+
+interface WorkanaJob {
+  title: string;
+  description: string;
+  skills: string[];
+  budget: string;
+  bids: number;
+  pubDate: string;
+  platform: 'Workana';
+  platformColor: string;
+  url: string;
+}
+
+// --- Filter config ---
+
 type FilterTab = 'all' | 'dev' | 'mobile' | 'marketing' | 'video' | 'design';
 type SortOption = 'newest' | 'budget_desc' | 'bids_asc';
 
+const WORKANA_SKILL_KEYWORDS: Record<FilterTab, string[]> = {
+  all: [],
+  dev: ['php', 'javascript', 'react', 'node', 'html', 'css', 'python', 'java', 'typescript', 'angular', 'vue', 'laravel', 'wordpress', 'woocommerce', 'mysql', 'mongodb', 'api', 'backend', 'frontend', 'fullstack', 'full-stack', 'full stack', 'web', 'programação', 'programming', 'developer', 'hubspot', '.net', 'ruby', 'django', 'flask'],
+  mobile: ['android', 'ios', 'react native', 'flutter', 'swift', 'kotlin', 'mobile', 'app'],
+  marketing: ['marketing', 'seo', 'social media', 'facebook', 'instagram', 'google ads', 'advertising', 'mídia', 'tráfego', 'traffic', 'performance', 'branding', 'copywriting'],
+  video: ['video', 'after effects', 'premiere', 'capcut', 'animação', 'animation', 'motion', 'edição', 'editing', 'davinci'],
+  design: ['design', 'figma', 'ui', 'ux', 'logo', 'graphic', 'illustrator', 'photoshop', 'branding', 'identidade visual', 'visual identity'],
+};
+
 const filterTabs: { key: FilterTab; label: string; jobIds: number[] }[] = [
   { key: 'all', label: 'Todos', jobIds: [] },
-  { key: 'dev', label: 'Dev & Programação', jobIds: [3, 2, 17, 59, 119, 7] },
-  { key: 'mobile', label: 'Apps Mobile', jobIds: [9, 671] },
-  { key: 'marketing', label: 'Marketing', jobIds: [162, 104, 153] },
-  { key: 'video', label: 'Edição de Vídeo', jobIds: [582] },
-  { key: 'design', label: 'Design', jobIds: [13, 14, 15, 20] },
+  { key: 'dev', label: 'Dev & Programação', jobIds: [3, 2, 17, 59, 119, 7, 12, 106, 29, 116, 125, 51, 146, 132] },
+  { key: 'mobile', label: 'Apps Mobile', jobIds: [9, 671, 267, 255, 741, 1107, 1330] },
+  { key: 'marketing', label: 'Marketing', jobIds: [162, 104, 153, 52, 55, 75, 329, 512, 358, 540] },
+  { key: 'video', label: 'Edição de Vídeo', jobIds: [582, 620, 584, 666, 1006] },
+  { key: 'design', label: 'Design', jobIds: [13, 14, 15, 20, 30, 40, 16, 99, 21, 242, 377, 1168] },
 ];
+
+const ALLOWED_SKILL_IDS = new Set(
+  filterTabs.filter(t => t.key !== 'all').flatMap(t => t.jobIds)
+);
+
+// --- Time helpers ---
 
 function timeAgo(timestamp: number): string {
   const now = Math.floor(Date.now() / 1000);
@@ -76,13 +127,302 @@ function timeAgo(timestamp: number): string {
   return `${Math.floor(diff / 86400)}d atrás`;
 }
 
-function formatBudget(budget: FreelancerJob['budget'], currency?: FreelancerJob['currency']): string {
-  const sign = currency?.sign || '$';
-  if (budget.minimum === budget.maximum) {
-    return `${sign}${budget.minimum.toLocaleString()}`;
-  }
-  return `${sign}${budget.minimum.toLocaleString()} - ${sign}${budget.maximum.toLocaleString()}`;
+function parseWorkanaTimeToTimestamp(pubDate: string): number {
+  const now = Math.floor(Date.now() / 1000);
+  if (!pubDate || pubDate === 'Agora') return now;
+  const minuteMatch = pubDate.match(/(\d+)\s*min/);
+  if (minuteMatch) return now - parseInt(minuteMatch[1]) * 60;
+  const hourMatch = pubDate.match(/(\d+)\s*hora/);
+  if (hourMatch) return now - parseInt(hourMatch[1]) * 3600;
+  const dayMatch = pubDate.match(/(\d+)\s*dia/);
+  if (dayMatch) return now - parseInt(dayMatch[1]) * 86400;
+  return now - 300; // default: 5 min ago
 }
+
+// --- Budget helpers ---
+
+const EXCHANGE_RATES: Record<string, number> = {
+  USD: 5.70, INR: 0.068, EUR: 6.20,
+  GBP: 7.20, AUD: 3.60, CAD: 4.10, BRL: 1.0,
+};
+
+function convertToBRL(amount: number, currencyCode: string): number {
+  const rate = EXCHANGE_RATES[currencyCode] || 5.70;
+  return Math.round(amount * rate);
+}
+
+function formatFreelancerBudget(budget: FreelancerJob['budget'], currency?: FreelancerJob['currency']): { brl: string; original: string; sortValue: number } {
+  const code = currency?.code || 'USD';
+  const sign = currency?.sign || '$';
+
+  const minBRL = convertToBRL(budget.minimum, code);
+  const maxBRL = convertToBRL(budget.maximum, code);
+
+  let brl: string;
+  if (budget.minimum === budget.maximum) {
+    brl = `R$ ${minBRL.toLocaleString('pt-BR')}`;
+  } else {
+    brl = `R$ ${minBRL.toLocaleString('pt-BR')} - R$ ${maxBRL.toLocaleString('pt-BR')}`;
+  }
+
+  let original = '';
+  if (code !== 'BRL') {
+    if (budget.minimum === budget.maximum) {
+      original = `(${code} ${sign}${budget.minimum.toLocaleString()})`;
+    } else {
+      original = `(${code} ${sign}${budget.minimum.toLocaleString()} - ${sign}${budget.maximum.toLocaleString()})`;
+    }
+  }
+
+  return { brl, original, sortValue: maxBRL };
+}
+
+function parseWorkanaBudgetSortValue(budgetText: string): number {
+  const nums = budgetText.match(/[\d.]+/g);
+  if (!nums || nums.length === 0) return 0;
+  return parseFloat(nums[nums.length - 1].replace(/\./g, ''));
+}
+
+// --- Workana scraping + fallback ---
+
+const WORKANA_URLS = [
+  'https://www.workana.com/jobs?category=it-programming&language=pt',
+  'https://www.workana.com/jobs?category=design-multimedia&language=pt',
+  'https://www.workana.com/jobs?category=sales-marketing&language=pt',
+];
+
+function parseWorkananBudget(budgetText: string): string {
+  if (!budgetText) return 'A combinar';
+  const rate = 5.70;
+
+  if (budgetText.includes('Less than') || budgetText.includes('Menos de')) {
+    const val = budgetText.match(/[\d,]+/)?.[0];
+    return val ? `Até R$ ${Math.round(+val.replace(/,/g, '') * rate).toLocaleString('pt-BR')}` : 'A combinar';
+  }
+  if ((budgetText.includes('Over') || budgetText.includes('Mais de')) && (budgetText.includes('hour') || budgetText.includes('hora'))) {
+    const val = budgetText.match(/[\d,]+/)?.[0];
+    return val ? `Acima de R$ ${Math.round(+val.replace(/,/g, '') * rate).toLocaleString('pt-BR')}/hr` : 'A combinar';
+  }
+  if (budgetText.includes('hour') || budgetText.includes('hora')) {
+    const vals = budgetText.match(/[\d,]+/g);
+    if (vals && vals.length >= 2)
+      return `R$ ${Math.round(+vals[0].replace(/,/g, '') * rate).toLocaleString('pt-BR')} - R$ ${Math.round(+vals[1].replace(/,/g, '') * rate).toLocaleString('pt-BR')}/hr`;
+  }
+
+  // Already in BRL (R$)?
+  if (budgetText.includes('R$')) return budgetText;
+
+  const vals = budgetText.match(/[\d,]+/g);
+  if (vals && vals.length >= 2)
+    return `R$ ${Math.round(+vals[0].replace(/,/g, '') * rate).toLocaleString('pt-BR')} - R$ ${Math.round(+vals[1].replace(/,/g, '') * rate).toLocaleString('pt-BR')}`;
+  if (vals && vals.length === 1)
+    return `R$ ${Math.round(+vals[0].replace(/,/g, '') * rate).toLocaleString('pt-BR')}`;
+
+  return 'A combinar';
+}
+
+async function fetchWorkanaJobs(): Promise<WorkanaJob[]> {
+  const allJobs: WorkanaJob[] = [];
+
+  for (const url of WORKANA_URLS) {
+    try {
+      const proxy = 'https://api.allorigins.win/get?url=';
+      const res = await fetch(proxy + encodeURIComponent(url));
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (!data.contents) continue;
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(data.contents, 'text/html');
+      const jobLinks = doc.querySelectorAll('h2 a[href*="/job/"]');
+
+      jobLinks.forEach((jobEl) => {
+        const card = jobEl.closest('li') || jobEl.closest('.project') || jobEl.parentElement?.parentElement;
+        const title = jobEl.textContent?.trim() || '';
+        const href = jobEl.getAttribute('href') || '';
+        const description = card?.querySelector('p')?.textContent?.trim() || '';
+        const rawBudget = card?.querySelector('[class*="budget"], [class*="price"]')?.textContent?.trim() || '';
+        const bidsText = card?.querySelector('[class*="bid"]')?.textContent?.match(/\d+/)?.[0] || '0';
+        const pubDate = card?.querySelector('[class*="date"], [class*="time"]')?.textContent?.trim() || 'Agora';
+        const skillEls = card?.querySelectorAll('a[href*="skills"]') || [];
+        const skills = Array.from(skillEls).slice(0, 4).map(s => s.textContent?.trim() || '').filter(Boolean);
+
+        if (title) {
+          allJobs.push({
+            title,
+            description,
+            skills,
+            budget: rawBudget ? parseWorkananBudget(rawBudget) : 'A combinar',
+            bids: parseInt(bidsText) || 0,
+            pubDate,
+            platform: 'Workana',
+            platformColor: '#00b04f',
+            url: href.startsWith('http') ? href : `https://www.workana.com${href}`,
+          });
+        }
+      });
+    } catch {
+      // continue to next URL
+    }
+  }
+
+  return allJobs;
+}
+
+const WORKANA_FALLBACK: WorkanaJob[] = [
+  {
+    title: "Designer/Desenvolvedor Hubspot para 22 Landing Pages de Alta Conversão",
+    description: "Desenvolvedor HubSpot para criar 22 Landing Pages de alta conversão para SaaS focado em bares e restaurantes.",
+    skills: ["Hubspot", "HTML", "CSS", "JavaScript"],
+    budget: "R$ 2.850 - R$ 5.700",
+    bids: 6,
+    pubDate: "39 minutos atrás",
+    platform: "Workana",
+    platformColor: "#00b04f",
+    url: "https://www.workana.com/job/designer-desenvolvedor-hubspot-para-22-landing-pages-de-alta-conversao"
+  },
+  {
+    title: "Editor de Vídeos com Expertise em After Effects e Premiere para Canal Dark",
+    description: "Editor para canal dark de review de produtos. Conhecimento intermediário a avançado em After Effects e Premiere.",
+    skills: ["Adobe After Effects", "Adobe Premiere", "Video Editing"],
+    budget: "Até R$ 285",
+    bids: 1,
+    pubDate: "1 hora atrás",
+    platform: "Workana",
+    platformColor: "#00b04f",
+    url: "https://www.workana.com/job/editor-de-videos-com-expertise-em-after-effects-e-premiere-para-canal-dark"
+  },
+  {
+    title: "Reconstrução Completa de E-commerce com Integração Bling e Segurança Avançada",
+    description: "Reconstruir e-commerce do zero com plugins modernos, mantendo funcionalidades críticas. Integração com Bling.",
+    skills: ["PHP", "MySQL", "WordPress", "WooCommerce"],
+    budget: "R$ 1.425 - R$ 2.850",
+    bids: 0,
+    pubDate: "Agora",
+    platform: "Workana",
+    platformColor: "#00b04f",
+    url: "https://www.workana.com/job/reconstrucao-completa-de-e-commerce-com-integracao-bling-e-seguranca-avancada"
+  },
+  {
+    title: "Vaga: Social Media Manager (Foco em Performance e Comprometimento)",
+    description: "Agência de marketing busca Social Media Manager para gestão de redes sociais de clientes com foco em resultados.",
+    skills: ["Social Media Marketing", "Marketing Strategy", "Advertising"],
+    budget: "R$ 85 - R$ 256/hr",
+    bids: 0,
+    pubDate: "Agora",
+    platform: "Workana",
+    platformColor: "#00b04f",
+    url: "https://www.workana.com/job/vaga-social-media-manager-foco-em-performance-e-comprometimento"
+  },
+  {
+    title: "Criação de Vídeo Promocional para Aplicativo de Educação Financeira",
+    description: "Vídeo de divulgação para app de educação financeira focado em estudantes de medicina.",
+    skills: ["Video Production", "Motion Graphics", "Adobe Premiere"],
+    budget: "R$ 285 - R$ 570",
+    bids: 0,
+    pubDate: "5 minutos atrás",
+    platform: "Workana",
+    platformColor: "#00b04f",
+    url: "https://www.workana.com/job/criacao-de-video-promocional-para-aplicativo-de-educacao-financeira"
+  },
+  {
+    title: "Animador 2D com Expertise em IA para Piloto de Desenho Animado Infantil",
+    description: "Animador 2D para produzir piloto de desenho animado infantil de 3-5 minutos. Estilo similar à Galinha Pintadinha.",
+    skills: ["Animation", "Illustration", "Video Production"],
+    budget: "R$ 570 - R$ 1.425",
+    bids: 0,
+    pubDate: "Agora",
+    platform: "Workana",
+    platformColor: "#00b04f",
+    url: "https://www.workana.com/job/animador-2d-com-expertise-em-ia-para-piloto-de-desenho-animado-infantil"
+  },
+];
+
+// --- Converters to UnifiedJob ---
+
+function freelancerToUnified(job: FreelancerJob, tr?: { title?: string; description?: string }): UnifiedJob {
+  const budget = job.budget
+    ? formatFreelancerBudget(job.budget, job.currency)
+    : { brl: 'A definir', original: '', sortValue: 0 };
+
+  return {
+    id: `fl-${job.id}`,
+    title: tr?.title || job.title,
+    description: tr?.description || job.preview_description || '',
+    url: `https://www.freelancer.com/projects/${job.seo_url}`,
+    budgetDisplay: budget.brl,
+    budgetOriginal: budget.original,
+    budgetSortValue: budget.sortValue,
+    bidsCount: job.bid_stats?.bid_count || 0,
+    skills: (job.jobs || []).map(j => ({ name: j.name, id: j.id })),
+    platform: 'Freelancer',
+    platformColor: '#0077b5',
+    timeLabel: timeAgo(job.time_submitted || job.submitdate),
+    timestamp: job.time_submitted || job.submitdate || 0,
+  };
+}
+
+function workanaToUnified(job: WorkanaJob, index: number): UnifiedJob {
+  return {
+    id: `wk-${index}-${job.title.slice(0, 20).replace(/\s/g, '')}`,
+    title: job.title,
+    description: job.description,
+    url: job.url,
+    budgetDisplay: job.budget,
+    budgetOriginal: '',
+    budgetSortValue: parseWorkanaBudgetSortValue(job.budget),
+    bidsCount: job.bids,
+    skills: job.skills.map(s => ({ name: s })),
+    platform: 'Workana',
+    platformColor: '#00b04f',
+    timeLabel: job.pubDate,
+    timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
+  };
+}
+
+// --- Translation ---
+
+async function translateToPT(text: string): Promise<string> {
+  if (!text || text.trim().length === 0) return text;
+  try {
+    const encoded = encodeURIComponent(text.slice(0, 500));
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encoded}&langpair=en|pt-br`
+    );
+    const data = await res.json();
+    const translated = data?.responseData?.translatedText;
+    if (!translated || translated.toUpperCase() === translated) {
+      return text;
+    }
+    return translated;
+  } catch {
+    return text;
+  }
+}
+
+function getTranslationCache(jobId: number, field: string): string | null {
+  try {
+    return localStorage.getItem(`tr_${jobId}_${field}`);
+  } catch {
+    return null;
+  }
+}
+
+function setTranslationCache(jobId: number, field: string, value: string): void {
+  try {
+    localStorage.setItem(`tr_${jobId}_${field}`, value);
+  } catch {
+    // ignore
+  }
+}
+
+interface TranslatedTexts {
+  [jobId: number]: { title?: string; description?: string };
+}
+
+// ========================
+// COMPONENT
+// ========================
 
 const Marketplace = () => {
   const navigate = useNavigate();
@@ -91,14 +431,24 @@ const Marketplace = () => {
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
 
-  const [jobs, setJobs] = useState<FreelancerJob[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Freelancer state
+  const [freelancerJobs, setFreelancerJobs] = useState<FreelancerJob[]>([]);
+  const [freelancerLoading, setFreelancerLoading] = useState(true);
+  const [freelancerError, setFreelancerError] = useState<string | null>(null);
+
+  // Workana state
+  const [workanaJobs, setWorkanaJobs] = useState<WorkanaJob[]>([]);
+  const [workanaLoading, setWorkanaLoading] = useState(true);
+  const [workanaUsedFallback, setWorkanaUsedFallback] = useState(false);
+
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [translations, setTranslations] = useState<TranslatedTexts>({});
+  const [translating, setTranslating] = useState(false);
+  const translationAbort = useRef<AbortController | null>(null);
 
   const fetchJobs = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) setRefreshing(true);
@@ -131,13 +481,100 @@ const Marketplace = () => {
     return () => clearInterval(interval);
   }, [fetchJobs]);
 
+  // Translate jobs when they load
+  useEffect(() => {
+    if (jobs.length === 0) return;
+
+    // Abort any in-flight translation batch
+    translationAbort.current?.abort();
+    const controller = new AbortController();
+    translationAbort.current = controller;
+
+    const translateAll = async () => {
+      setTranslating(true);
+
+      // Preload cached translations immediately
+      const cached: TranslatedTexts = {};
+      const toTranslate: { jobId: number; field: 'title' | 'description'; text: string }[] = [];
+
+      for (const job of jobs) {
+        const cachedTitle = getTranslationCache(job.id, 'title');
+        const cachedDesc = getTranslationCache(job.id, 'desc');
+
+        cached[job.id] = {
+          title: cachedTitle || undefined,
+          description: cachedDesc || undefined,
+        };
+
+        if (!cachedTitle && job.title) {
+          toTranslate.push({ jobId: job.id, field: 'title', text: job.title });
+        }
+        if (!cachedDesc && job.preview_description) {
+          toTranslate.push({ jobId: job.id, field: 'description', text: job.preview_description.slice(0, 500) });
+        }
+      }
+
+      // Show cached results immediately
+      setTranslations({ ...cached });
+
+      if (toTranslate.length === 0) {
+        setTranslating(false);
+        return;
+      }
+
+      // Translate in small batches (3 at a time) to respect API rate limits
+      const BATCH_SIZE = 3;
+      const updated = { ...cached };
+
+      for (let i = 0; i < toTranslate.length; i += BATCH_SIZE) {
+        if (controller.signal.aborted) return;
+
+        const batch = toTranslate.slice(i, i + BATCH_SIZE);
+        const results = await Promise.all(
+          batch.map(async (item) => {
+            const translated = await translateToPT(item.text);
+            return { ...item, translated };
+          })
+        );
+
+        for (const r of results) {
+          if (!updated[r.jobId]) updated[r.jobId] = {};
+          if (r.field === 'title') {
+            updated[r.jobId].title = r.translated;
+            setTranslationCache(r.jobId, 'title', r.translated);
+          } else {
+            updated[r.jobId].description = r.translated;
+            setTranslationCache(r.jobId, 'desc', r.translated);
+          }
+        }
+
+        if (!controller.signal.aborted) {
+          setTranslations({ ...updated });
+        }
+      }
+
+      if (!controller.signal.aborted) {
+        setTranslating(false);
+      }
+    };
+
+    translateAll();
+
+    return () => {
+      controller.abort();
+    };
+  }, [jobs]);
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
 
   const filteredJobs = useMemo(() => {
-    let result = [...jobs];
+    // Always filter to only relevant skill categories
+    let result = jobs.filter(job =>
+      job.jobs?.some(j => ALLOWED_SKILL_IDS.has(j.id))
+    );
 
     // Filter by tab
     if (activeFilter !== 'all') {
@@ -152,11 +589,16 @@ const Marketplace = () => {
     // Search
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(j =>
-        j.title.toLowerCase().includes(q) ||
-        j.preview_description?.toLowerCase().includes(q) ||
-        j.jobs?.some(s => s.name.toLowerCase().includes(q))
-      );
+      result = result.filter(j => {
+        const tr = translations[j.id];
+        return (
+          j.title.toLowerCase().includes(q) ||
+          j.preview_description?.toLowerCase().includes(q) ||
+          j.jobs?.some(s => s.name.toLowerCase().includes(q)) ||
+          tr?.title?.toLowerCase().includes(q) ||
+          tr?.description?.toLowerCase().includes(q)
+        );
+      });
     }
 
     // Sort
@@ -169,7 +611,7 @@ const Marketplace = () => {
     }
 
     return result;
-  }, [jobs, activeFilter, searchQuery, sortBy]);
+  }, [jobs, activeFilter, searchQuery, sortBy, translations]);
 
   const lastRefreshLabel = lastRefresh
     ? `Atualizado ${lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
@@ -276,6 +718,12 @@ const Marketplace = () => {
                   <span className="bg-white/20 backdrop-blur text-white text-sm font-body font-medium px-4 py-2 rounded-full">
                     {jobs.length} vagas disponíveis
                   </span>
+                  {translating && (
+                    <span className="bg-white/10 backdrop-blur text-white/80 text-xs font-body px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse" />
+                      Traduzindo...
+                    </span>
+                  )}
                   {lastRefreshLabel && (
                     <span className="bg-white/10 backdrop-blur text-white/80 text-xs font-body px-3 py-1.5 rounded-full">
                       {lastRefreshLabel}
@@ -417,15 +865,30 @@ const Marketplace = () => {
                           </div>
 
                           {/* Title */}
-                          <h4 className="font-heading font-bold text-[15px] text-[#1A1D26] leading-snug mb-2 line-clamp-2">
-                            {job.title}
-                          </h4>
+                          {translations[job.id]?.title ? (
+                            <h4 className="font-heading font-bold text-[15px] text-[#1A1D26] leading-snug mb-2 line-clamp-2">
+                              {translations[job.id].title}
+                            </h4>
+                          ) : (
+                            <div className="mb-2 space-y-1.5">
+                              <div className="h-4 w-full rounded bg-[#F3F4F8] animate-pulse" />
+                              <div className="h-4 w-2/3 rounded bg-[#F3F4F8] animate-pulse" />
+                            </div>
+                          )}
 
                           {/* Description */}
-                          <p className="text-xs font-body text-[#9CA3B4] mb-3 line-clamp-3 flex-1">
-                            {job.preview_description?.slice(0, 120)}
-                            {(job.preview_description?.length || 0) > 120 ? '...' : ''}
-                          </p>
+                          {translations[job.id]?.description ? (
+                            <p className="text-xs font-body text-[#9CA3B4] mb-3 line-clamp-3 flex-1">
+                              {translations[job.id].description!.slice(0, 120)}
+                              {(translations[job.id].description!.length || 0) > 120 ? '...' : ''}
+                            </p>
+                          ) : (
+                            <div className="mb-3 flex-1 space-y-1">
+                              <div className="h-3 w-full rounded bg-[#F3F4F8] animate-pulse" />
+                              <div className="h-3 w-full rounded bg-[#F3F4F8] animate-pulse" />
+                              <div className="h-3 w-1/2 rounded bg-[#F3F4F8] animate-pulse" />
+                            </div>
+                          )}
 
                           {/* Skills */}
                           {job.jobs && job.jobs.length > 0 && (
@@ -452,9 +915,21 @@ const Marketplace = () => {
                             <div className="flex items-center justify-between mb-3">
                               <div>
                                 <p className="text-[10px] font-body text-[#9CA3B4] uppercase tracking-wider mb-0.5">Orçamento</p>
-                                <p className="text-lg font-heading font-extrabold" style={{ color: '#0077b5' }}>
-                                  {job.budget ? formatBudget(job.budget, job.currency) : 'A definir'}
-                                </p>
+                                {job.budget ? (() => {
+                                  const formatted = formatBudget(job.budget, job.currency);
+                                  return (
+                                    <>
+                                      <p className="text-lg font-heading font-extrabold" style={{ color: '#0077b5' }}>
+                                        {formatted.brl}
+                                      </p>
+                                      {formatted.original && (
+                                        <p className="text-[10px] font-body text-[#9CA3B4] mt-0.5">{formatted.original}</p>
+                                      )}
+                                    </>
+                                  );
+                                })() : (
+                                  <p className="text-lg font-heading font-extrabold" style={{ color: '#0077b5' }}>A definir</p>
+                                )}
                               </div>
                               <div className="text-right">
                                 <div className="flex items-center gap-1 text-[#9CA3B4]">

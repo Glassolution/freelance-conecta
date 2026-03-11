@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import './landing.css';
 
 const LogoSvg = () => (
@@ -15,6 +16,7 @@ const ChevronSvg = () => (
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activePain, setActivePain] = useState(0);
   const statRefs = useRef<(HTMLDivElement | null)[]>([]);
   const featRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -106,8 +108,14 @@ const Index = () => {
             <li><a href="#">Para Profissionais</a></li>
           </ul>
           <div className="nav-right">
-            <button className="btn-nav-login">Login</button>
-            <button className="btn-nav-signup">Cadastrar</button>
+            {user ? (
+              <button className="btn-nav-signup" onClick={() => navigate('/dashboard')}>Painel</button>
+            ) : (
+              <>
+                <button className="btn-nav-login" onClick={() => navigate('/auth')}>Login</button>
+                <button className="btn-nav-signup" onClick={() => navigate('/auth')}>Cadastrar</button>
+              </>
+            )}
           </div>
         </nav>
       </div>

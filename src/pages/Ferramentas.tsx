@@ -8,9 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', active: false, path: '/dashboard' },
-  { icon: SlidersHorizontal, label: 'Filtros', active: false, path: null },
+  { icon: Briefcase, label: 'Explorar', active: false, path: '/explorar' },
   { icon: Globe, label: 'Criador.ia', active: false, path: null },
-  { icon: Briefcase, label: 'Serviços', active: false, path: null },
   { icon: CheckCircle, label: 'Serviços Aprovados', active: false, path: null },
   { icon: Send, label: 'Serviços Enviados', active: false, path: null },
   { icon: PackageCheck, label: 'Serviços Entregues', active: false, path: null },

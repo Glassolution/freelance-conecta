@@ -112,7 +112,7 @@ const Hero = () => {
               >
                 {card.text.includes('●') ? (
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-green-400 pulse-dot" />
+                    <span className="w-2 h-2 rounded-full pulse-dot" style={{ background: '#4ade80' }} />
                     <span className="font-body text-sm text-muted-foreground">Atualizado agora</span>
                   </div>
                 ) : (

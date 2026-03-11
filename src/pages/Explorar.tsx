@@ -43,6 +43,7 @@ interface Vaga {
   author_name: string;
   author_role: string;
   image_url: string | null;
+  url: string | null;
 }
 
 const Explorar = () => {

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const platforms = ['Workana', 'GetNinjas', '99Freelas', 'Upwork'];
 

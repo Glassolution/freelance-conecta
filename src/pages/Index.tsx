@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './landing.css';
 
 const LogoSvg = () => (
@@ -13,6 +14,7 @@ const ChevronSvg = () => (
 );
 
 const Index = () => {
+  const navigate = useNavigate();
   const [activePain, setActivePain] = useState(0);
   const statRefs = useRef<(HTMLDivElement | null)[]>([]);
   const featRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -131,7 +133,7 @@ const Index = () => {
           </p>
 
           <div className="hero-btns">
-            <button className="btn-orange">Encontrar Vagas</button>
+            <button className="btn-orange" onClick={() => navigate('/dashboard')}>Encontrar Vagas</button>
             <button className="btn-ghost-dark">Ver Como Funciona</button>
           </div>
         </div>
@@ -304,7 +306,7 @@ const Index = () => {
         <h2 className="cta-title">Pronto para Aumentar<br />sua Renda Extra?</h2>
         <p className="cta-sub">Mais de 12.000 vagas dispon&#237;veis agora mesmo. Gratuito para come&#231;ar.</p>
         <div className="cta-btns">
-          <button className="btn-orange">Encontrar Vagas Agora</button>
+          <button className="btn-orange" onClick={() => navigate('/dashboard')}>Encontrar Vagas Agora</button>
           <button className="btn-ghost-dark">Ver Como Funciona</button>
         </div>
       </div>

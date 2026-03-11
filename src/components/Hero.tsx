@@ -79,9 +79,10 @@ const Hero = () => {
 
           {/* Buttons */}
           <motion.div className="flex flex-wrap items-center gap-4 mt-8" {...fadeUp(0.25)}>
-            <button className="bg-primary text-primary-foreground font-heading font-bold text-base px-8 py-3.5 rounded-full hover:bg-primary/90 transition-colors">
-              Buscar Agora
-            </button>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="bg-primary text-primary-foreground font-heading font-bold text-base px-8 py-3.5 rounded-full hover:bg-primary/90 transition-colors"
+            >
             <a
               href="#como-funciona"
               className="font-body font-medium text-foreground text-sm hover:underline transition-colors"

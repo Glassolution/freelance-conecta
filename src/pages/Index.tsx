@@ -133,7 +133,7 @@ const Index = () => {
           </p>
 
           <div className="hero-btns">
-            <button className="btn-orange">Encontrar Vagas</button>
+            <button className="btn-orange" onClick={() => navigate('/dashboard')}>Encontrar Vagas</button>
             <button className="btn-ghost-dark">Ver Como Funciona</button>
           </div>
         </div>

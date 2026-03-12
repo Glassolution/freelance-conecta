@@ -1,8 +1,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --blue: #2563eb;
-  --blue-hover: #1d4ed8;
+  --blue: #29B2FE;
+  --blue-hover: #1a9ee8;
   --dark: #111111;
   --dark2: #1c1c1c;
   --text: #111111;

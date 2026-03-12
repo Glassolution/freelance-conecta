@@ -46,8 +46,8 @@ serve(async (req) => {
         excluded_payment_types: [],
         installments: 1,
       },
-      statement_descriptor: 'IKAS',
-      external_reference: `ikas_${planId}_${Date.now()}`,
+      statement_descriptor: 'MARKFY',
+      external_reference: `markfy_${planId}_${Date.now()}`,
     };
 
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {

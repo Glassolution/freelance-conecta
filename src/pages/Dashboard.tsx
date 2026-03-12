@@ -286,7 +286,7 @@ const Dashboard = () => {
                                   <p className="text-[10px] font-body text-[#9CA3B4]">{vaga.author_role}</p>
                                 </div>
                               </div>
-                              <span className="text-sm font-heading font-bold" style={{ color: '#2563eb' }}>
+                              <span className="text-sm font-heading font-bold" style={{ color: '#29B2FE' }}>
                                 R$ {Number(vaga.price).toLocaleString('pt-BR')}
                               </span>
                             </div>

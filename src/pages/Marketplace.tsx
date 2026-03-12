@@ -89,18 +89,32 @@ interface WorkanaJob {
   url: string;
 }
 
+// --- 99Freelas types ---
+
+interface Freelas99Job {
+  title: string;
+  description: string;
+  skills: string[];
+  budget: string;
+  bids: number;
+  pubDate: string;
+  platform: '99Freelas';
+  platformColor: string;
+  url: string;
+}
+
 // --- Filter config ---
 
 type FilterTab = 'all' | 'dev' | 'mobile' | 'marketing' | 'video' | 'design';
 type SortOption = 'newest' | 'budget_desc' | 'bids_asc';
 
-const WORKANA_SKILL_KEYWORDS: Record<FilterTab, string[]> = {
+const SKILL_KEYWORDS: Record<FilterTab, string[]> = {
   all: [],
-  dev: ['php', 'javascript', 'react', 'node', 'html', 'css', 'python', 'java', 'typescript', 'angular', 'vue', 'laravel', 'wordpress', 'woocommerce', 'mysql', 'mongodb', 'api', 'backend', 'frontend', 'fullstack', 'full-stack', 'full stack', 'web', 'programação', 'programming', 'developer', 'hubspot', '.net', 'ruby', 'django', 'flask'],
+  dev: ['php', 'javascript', 'react', 'node', 'html', 'css', 'python', 'java', 'typescript', 'angular', 'vue', 'laravel', 'wordpress', 'woocommerce', 'mysql', 'mongodb', 'api', 'backend', 'frontend', 'fullstack', 'full-stack', 'full stack', 'web', 'programação', 'programming', 'developer', 'hubspot', '.net', 'ruby', 'django', 'flask', 'html5'],
   mobile: ['android', 'ios', 'react native', 'flutter', 'swift', 'kotlin', 'mobile', 'app'],
-  marketing: ['marketing', 'seo', 'social media', 'facebook', 'instagram', 'google ads', 'advertising', 'mídia', 'tráfego', 'traffic', 'performance', 'branding', 'copywriting'],
-  video: ['video', 'after effects', 'premiere', 'capcut', 'animação', 'animation', 'motion', 'edição', 'editing', 'davinci'],
-  design: ['design', 'figma', 'ui', 'ux', 'logo', 'graphic', 'illustrator', 'photoshop', 'branding', 'identidade visual', 'visual identity'],
+  marketing: ['marketing', 'seo', 'social media', 'facebook', 'instagram', 'google ads', 'advertising', 'mídia', 'tráfego', 'traffic', 'performance', 'branding', 'copywriting', 'whatsapp'],
+  video: ['video', 'after effects', 'premiere', 'capcut', 'animação', 'animation', 'motion', 'edição', 'editing', 'davinci', 'runway', 'audiovisual', '3d'],
+  design: ['design', 'figma', 'ui', 'ux', 'logo', 'graphic', 'illustrator', 'photoshop', 'branding', 'identidade visual', 'visual identity', 'web design'],
 };
 
 const filterTabs: { key: FilterTab; label: string; jobIds: number[] }[] = [

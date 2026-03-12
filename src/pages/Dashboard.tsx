@@ -402,7 +402,7 @@ const Dashboard = () => {
                     {plataformas.map((p) => (
                       <div key={p.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[10px] font-bold">{p.name.substring(0, 2).toUpperCase()}</div>
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[10px] font-bold">{p.name.substring(0, 2).toUpperCase()}</div>
                           <div>
                             <p className="text-sm font-body font-medium text-[#1A1D26]">{p.name}</p>
                             <p className="text-[11px] font-body text-[#9CA3B4]">{p.role}</p>

@@ -234,7 +234,7 @@ const Index = () => {
                     <div className="chat-msg chat-msg-ai">Encontrei 4.120 projetos de design dispon&#237;veis. GetNinjas a partir de <span style={{ color: '#2563eb', fontWeight: 'bold' }}>R$ 80</span>, Workana a partir de <span style={{ color: '#2563eb', fontWeight: 'bold' }}>R$ 150</span>.</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div className="chat-avatar">IK</div>
+                    <div className="chat-avatar">MK</div>
                     <div style={{ height: '8px', width: '100%', background: '#2563eb', borderRadius: '4px', overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: '60%', background: '#2563eb', animation: 'load 1.5s ease-in-out infinite' }}></div>
                     </div>

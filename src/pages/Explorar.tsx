@@ -410,7 +410,7 @@ const Explorar = () => {
                           <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-[#9CA3B4] hover:text-red-500 transition-colors">
                             <Heart size={14} />
                           </button>
-                          <div className="absolute top-3 left-3 bg-[#2563eb] text-white text-[10px] font-body font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg">
+                          <div className="absolute top-3 left-3 bg-[#29B2FE] text-white text-[10px] font-body font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg">
                             Destaque
                           </div>
                         </div>

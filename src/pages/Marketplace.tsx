@@ -304,7 +304,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 1,
     pubDate: "1 hora atrás",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/editor-de-videos-com-expertise-em-after-effects-e-premiere-para-canal-dark"
   },
   {

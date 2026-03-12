@@ -271,7 +271,7 @@ async function fetchWorkanaJobs(): Promise<WorkanaJob[]> {
             bids: parseInt(bidsText) || 0,
             pubDate,
             platform: 'Workana',
-            platformColor: '#00b04f',
+            platformColor: '#0077b5',
             url: href.startsWith('http') ? href : `https://www.workana.com${href}`,
           });
         }

@@ -430,7 +430,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 1,
     pubDate: "17 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/especialista-em-edicao-de-video-com-ia-para-producao-de-criativos-de-ads-em-735789"
   },
   {

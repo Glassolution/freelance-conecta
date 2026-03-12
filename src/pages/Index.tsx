@@ -362,7 +362,7 @@ const Index = () => {
             </ul>
           </div>
         </footer>
-        <div className="footer-bottom">&copy; 2025 Ikas. Todos os direitos reservados.</div>
+        <div className="footer-bottom">&copy; 2025 Markfy. Todos os direitos reservados.</div>
       </div>
     </>
   );

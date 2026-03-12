@@ -238,10 +238,10 @@ const Auth = () => {
           </div>
 
           <h2 className="font-heading font-bold text-3xl text-white leading-tight mb-3">
-            Bem-vindo ao ikas
+            Bem-vindo ao Markfy
           </h2>
           <p className="font-body text-sm text-white/50 max-w-sm mb-6 leading-relaxed">
-            Ikas ajuda freelancers a encontrar as melhores vagas em todas as plataformas. 
+            Markfy ajuda freelancers a encontrar as melhores vagas em todas as plataformas. 
             Junte-se a nós e comece a encontrar projetos hoje.
           </p>
           <p className="font-body text-sm text-white/40 mb-8">

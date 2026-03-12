@@ -337,7 +337,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "5 minutos atrás",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/criacao-de-video-promocional-para-aplicativo-de-educacao-financeira"
   },
   {

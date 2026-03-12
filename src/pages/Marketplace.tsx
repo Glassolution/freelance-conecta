@@ -452,7 +452,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 5,
     pubDate: "43 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/automacao-de-atendimento-whatsapp-e-gestao-de-alugueis-de-kitnets-735783"
   },
   {

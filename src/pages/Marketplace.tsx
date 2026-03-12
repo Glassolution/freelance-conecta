@@ -973,9 +973,9 @@ const Marketplace = () => {
                     className={`px-4 py-2 rounded-xl text-sm font-body font-medium whitespace-nowrap transition-all ${
                       activeFilter === tab.key
                         ? 'text-white shadow-md'
-                        : 'text-[#6B7280] bg-white border border-[#E8ECF4] hover:border-[#0077b5]/30 hover:text-[#0077b5]'
+                        : 'text-[#6B7280] bg-white border border-[#E8ECF4] hover:border-[#29B2FE]/30 hover:text-[#29B2FE]'
                     }`}
-                    style={activeFilter === tab.key ? { background: '#0077b5' } : undefined}
+                    style={activeFilter === tab.key ? { background: '#29B2FE' } : undefined}
                   >
                     {tab.label}
                   </button>

@@ -497,7 +497,7 @@ function freelancerToUnified(job: FreelancerJob, tr?: { title?: string; descript
     bidsCount: job.bid_stats?.bid_count || 0,
     skills: (job.jobs || []).map(j => ({ name: j.name, id: j.id })),
     platform: 'Freelancer',
-    platformColor: '#0077b5',
+    platformColor: '#29B2FE',
     timeLabel: timeAgo(job.time_submitted || job.submitdate),
     timestamp: job.time_submitted || job.submitdate || 0,
   };

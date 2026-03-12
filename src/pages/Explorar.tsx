@@ -239,7 +239,7 @@ const Explorar = () => {
               placeholder="R$ 0"
               value={priceMin}
               onChange={(e) => setPriceMin(e.target.value)}
-              className="w-full px-3 py-2 text-sm font-body text-[#1A1D26] bg-transparent outline-none border border-[#E8ECF4] rounded-lg focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/20"
+              className="w-full px-3 py-2 text-sm font-body text-[#1A1D26] bg-transparent outline-none border border-[#E8ECF4] rounded-lg focus:border-[#29B2FE] focus:ring-1 focus:ring-[#29B2FE]/20"
             />
           </div>
           <div>

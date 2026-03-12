@@ -515,7 +515,7 @@ function workanaToUnified(job: WorkanaJob, index: number): UnifiedJob {
     bidsCount: job.bids,
     skills: job.skills.map(s => ({ name: s })),
     platform: 'Workana',
-    platformColor: '#0077b5',
+    platformColor: '#00b04f',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };

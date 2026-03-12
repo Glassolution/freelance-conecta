@@ -690,12 +690,14 @@ const Marketplace = () => {
   useEffect(() => {
     fetchJobs();
     fetchWorkanaJobsData();
+    fetch99FreelasJobsData();
     const interval = setInterval(() => {
       fetchJobs(true);
       fetchWorkanaJobsData();
+      fetch99FreelasJobsData();
     }, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchJobs, fetchWorkanaJobsData]);
+  }, [fetchJobs, fetchWorkanaJobsData, fetch99FreelasJobsData]);
 
   // Translate jobs when they load
   useEffect(() => {

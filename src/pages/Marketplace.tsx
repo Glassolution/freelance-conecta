@@ -293,7 +293,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 6,
     pubDate: "39 minutos atrás",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/designer-desenvolvedor-hubspot-para-22-landing-pages-de-alta-conversao"
   },
   {

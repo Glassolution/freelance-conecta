@@ -639,6 +639,29 @@ const Marketplace = () => {
     }
   }, []);
 
+  // Fetch 99Freelas jobs
+  const fetch99FreelasJobsData = useCallback(async () => {
+    setFreelas99Loading(true);
+    setFreelas99UsedFallback(false);
+    
+    try {
+      const jobs = await fetch99FreelasJobs();
+      if (jobs.length === 0) {
+        setFreelas99Jobs(FREELAS99_FALLBACK);
+        setFreelas99UsedFallback(true);
+      } else {
+        setFreelas99Jobs(jobs);
+        setFreelas99UsedFallback(false);
+      }
+    } catch (error) {
+      console.error('Error fetching 99Freelas jobs:', error);
+      setFreelas99Jobs(FREELAS99_FALLBACK);
+      setFreelas99UsedFallback(true);
+    } finally {
+      setFreelas99Loading(false);
+    }
+  }, []);
+
   const fetchJobs = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) setRefreshing(true);
     else setFreelancerLoading(true);

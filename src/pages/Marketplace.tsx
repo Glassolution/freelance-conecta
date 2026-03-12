@@ -1009,7 +1009,7 @@ const Marketplace = () => {
                 <button
                   onClick={() => fetchJobs()}
                   className="text-sm font-body font-semibold px-6 py-2.5 rounded-full text-white transition-all hover:brightness-110"
-                  style={{ background: '#0077b5' }}
+                  style={{ background: '#29B2FE' }}
                 >
                   Tentar novamente
                 </button>

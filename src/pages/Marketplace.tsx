@@ -315,7 +315,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "Agora",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/reconstrucao-completa-de-e-commerce-com-integracao-bling-e-seguranca-avancada"
   },
   {

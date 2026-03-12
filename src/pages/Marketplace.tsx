@@ -441,7 +441,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 15,
     pubDate: "38 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/desenvolvimento-de-site-para-equipe-de-motocross-735786"
   },
   {

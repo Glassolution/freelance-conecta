@@ -43,7 +43,7 @@ interface UnifiedJob {
   budgetSortValue: number;
   bidsCount: number;
   skills: { name: string; id?: number }[];
-  platform: 'Freelancer' | 'Workana';
+  platform: 'Freelancer' | 'Workana' | '99Freelas';
   platformColor: string;
   timeLabel: string;
   timestamp: number;

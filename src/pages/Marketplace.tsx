@@ -463,7 +463,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 3,
     pubDate: "59 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/branding-e-criacao-de-perfis-sem-rosto-para-instagram-e-tiktok-735776"
   },
   {

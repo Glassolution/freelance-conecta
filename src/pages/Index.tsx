@@ -5,8 +5,9 @@ import './landing.css';
 
 const LogoSvg = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="7.5" cy="7.5" r="5" stroke="white" strokeWidth="2.2" fill="none" />
-    <line x1="11.5" y1="11.5" x2="16" y2="16" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+    <rect x="2" y="2" width="14" height="14" rx="3" fill="white" stroke="none"/>
+    <path d="M6 7h6M9 4v6M5 11h8" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="13" cy="5" r="2" fill="#2563eb"/>
   </svg>
 );
 
@@ -231,12 +232,12 @@ const Index = () => {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                     <div className="chat-agent-name" style={{ textAlign: 'right' }}>Ikas</div>
-                    <div className="chat-msg chat-msg-ai">Encontrei 4.120 projetos de design dispon&#237;veis. GetNinjas a partir de R$ 80, Workana a partir de R$ 150.</div>
+                    <div className="chat-msg chat-msg-ai">Encontrei 4.120 projetos de design dispon&#237;veis. GetNinjas a partir de <span style={{ color: '#2563eb', fontWeight: 'bold' }}>R$ 80</span>, Workana a partir de <span style={{ color: '#2563eb', fontWeight: 'bold' }}>R$ 150</span>.</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div className="chat-avatar">IK</div>
-                    <div style={{ height: '8px', width: '100%', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: '60%', background: '#e5e7eb', animation: 'load 1.5s ease-in-out infinite' }}></div>
+                    <div style={{ height: '8px', width: '100%', background: '#2563eb', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: '60%', background: '#2563eb', animation: 'load 1.5s ease-in-out infinite' }}></div>
                     </div>
                   </div>
                 </div>
@@ -337,7 +338,7 @@ const Index = () => {
           <div className="footer-col">
             <h4>Plataforma</h4>
             <ul>
-              <li><a href="#">Explorar Vagas</a></li>
+              <li><a href="#">Marketplace</a></li>
               <li><a href="#">Como Funciona</a></li>
               <li><a href="#">Para Freelancers</a></li>
               <li><a href="#">Blog</a></li>

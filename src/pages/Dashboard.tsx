@@ -3,7 +3,7 @@ import {
   Home, SlidersHorizontal, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
   Settings, LogOut, Search, Bell, Mail, ChevronRight,
-  Heart, Plus, ExternalLink, Loader2
+  Heart, Plus, ExternalLink, Loader2, ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,7 +17,7 @@ const plataformas = [
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', active: true, path: '/dashboard' },
-  { icon: Briefcase, label: 'Explorar', active: false, path: '/explorar' },
+  { icon: ShoppingBag, label: 'Marketplace', active: false, path: '/marketplace' },
   { icon: Globe, label: 'Criador.ia', active: false, path: null },
   { icon: CheckCircle, label: 'Serviços Aprovados', active: false, path: null },
   { icon: Send, label: 'Serviços Enviados', active: false, path: null },
@@ -134,7 +134,7 @@ const Dashboard = () => {
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#e85d26' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
               {initials}
             </div>
             <div>
@@ -149,9 +149,9 @@ const Dashboard = () => {
                 key={link.label}
                 onClick={() => link.path && navigate(link.path)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#e85d26]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                  link.active ? 'text-[#2563eb]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
                 }`}
-                style={link.active ? { background: 'rgba(232,93,38,0.08)', border: '1px solid rgba(232,93,38,0.2)' } : undefined}
+                style={link.active ? { background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)' } : undefined}
               >
                 <link.icon size={18} />
                 {link.label}
@@ -195,7 +195,7 @@ const Dashboard = () => {
               {propostasCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />}
             </button>
             <div className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: 'hsl(var(--primary))' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
                 {initials}
               </div>
               <span className="text-sm font-body font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>
@@ -221,7 +221,7 @@ const Dashboard = () => {
                       Encontre as Melhores Vagas de Freelancer
                     </h2>
                     <button className="flex items-center gap-2 bg-white text-[#1A1D26] font-body font-medium text-sm px-5 py-2.5 rounded-full hover:bg-white/90 transition-colors">
-                      Explorar Vagas <ChevronRight size={16} />
+                      Marketplace <ChevronRight size={16} />
                     </button>
                   </div>
                   <div className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full opacity-20 bg-white max-md:hidden" />
@@ -278,7 +278,7 @@ const Dashboard = () => {
                             <h4 className="font-body font-semibold text-sm text-[#1A1D26] leading-snug mb-3 line-clamp-2">{vaga.title}</h4>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#38bdf8] to-[#a78bfa] flex items-center justify-center text-white text-[9px] font-bold">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[9px] font-bold">
                                   {vaga.author_name.split(' ').map(n => n[0]).join('')}
                                 </div>
                                 <div>
@@ -286,7 +286,7 @@ const Dashboard = () => {
                                   <p className="text-[10px] font-body text-[#9CA3B4]">{vaga.author_role}</p>
                                 </div>
                               </div>
-                              <span className="text-sm font-heading font-bold" style={{ color: 'hsl(var(--primary))' }}>
+                              <span className="text-sm font-heading font-bold" style={{ color: '#2563eb' }}>
                                 R$ {Number(vaga.price).toLocaleString('pt-BR')}
                               </span>
                             </div>
@@ -325,7 +325,7 @@ const Dashboard = () => {
                             <tr key={row.id} className="border-b border-[#E8ECF4] last:border-0">
                               <td className="px-5 py-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#34d399] to-[#38bdf8] flex items-center justify-center text-white text-[10px] font-bold">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[10px] font-bold">
                                     {row.client_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                   </div>
                                   <div>
@@ -402,17 +402,17 @@ const Dashboard = () => {
                     {plataformas.map((p) => (
                       <div key={p.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#a78bfa] to-[#38bdf8] flex items-center justify-center text-white text-[10px] font-bold">{p.name.substring(0, 2).toUpperCase()}</div>
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[10px] font-bold">{p.name.substring(0, 2).toUpperCase()}</div>
                           <div>
                             <p className="text-sm font-body font-medium text-[#1A1D26]">{p.name}</p>
                             <p className="text-[11px] font-body text-[#9CA3B4]">{p.role}</p>
                           </div>
                         </div>
-                        <button className="text-[11px] font-body font-medium px-3 py-1 rounded-full" style={{ color: 'hsl(var(--primary))', background: 'hsl(var(--primary) / 0.08)' }}>{p.status}</button>
+                        <button className="text-[11px] font-body font-medium px-3 py-1 rounded-full" style={{ color: 'var(--blue)', background: 'rgba(37,99,235,0.08)' }}>{p.status}</button>
                       </div>
                     ))}
                   </div>
-                  <button className="w-full mt-4 py-2.5 rounded-xl text-sm font-body font-medium transition-colors" style={{ background: 'hsl(var(--primary))', color: 'white' }}>Ver Todas</button>
+                  <button className="w-full mt-4 py-2.5 rounded-xl text-sm font-body font-medium transition-colors" style={{ background: 'var(--blue)', color: 'white' }}>Ver Todas</button>
                 </div>
               </div>
             </div>

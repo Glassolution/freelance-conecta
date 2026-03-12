@@ -12,7 +12,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const links = ['Explorar', 'Como Funciona', 'Para Freelancers'];
+  const links = ['Marketplace', 'Como Funciona', 'Para Freelancers'];
 
   return (
     <header

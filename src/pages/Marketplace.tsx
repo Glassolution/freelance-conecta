@@ -4,7 +4,7 @@ import {
   CheckCircle, Send, PackageCheck, Wrench,
   Settings, LogOut, Search, Bell, Mail,
   Clock, ExternalLink, RefreshCw, Filter,
-  ArrowUpDown, Users
+  ArrowUpDown, Users, ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,8 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', active: false, path: '/dashboard' },
-  { icon: Briefcase, label: 'Explorar', active: false, path: '/explorar' },
-  { icon: Globe, label: 'Marketplace', active: true, path: '/marketplace' },
+  { icon: ShoppingBag, label: 'Marketplace', active: true, path: '/marketplace' },
+  { icon: Globe, label: 'Criador.ia', active: false, path: null },
   { icon: CheckCircle, label: 'Serviços Aprovados', active: false, path: null },
   { icon: Send, label: 'Serviços Enviados', active: false, path: null },
   { icon: PackageCheck, label: 'Serviços Entregues', active: false, path: null },
@@ -189,6 +189,7 @@ const WORKANA_URLS = [
   'https://www.workana.com/jobs?category=it-programming&language=pt',
   'https://www.workana.com/jobs?category=design-multimedia&language=pt',
   'https://www.workana.com/jobs?category=sales-marketing&language=pt',
+  'https://www.workana.com/jobs?category=design-multimedia&skills=video-editing&language=pt',
 ];
 
 function parseWorkananBudget(budgetText: string): string {
@@ -450,10 +451,35 @@ const Marketplace = () => {
   const [translating, setTranslating] = useState(false);
   const translationAbort = useRef<AbortController | null>(null);
 
+  // Fetch Workana jobs
+  const fetchWorkanaJobsData = useCallback(async () => {
+    setWorkanaLoading(true);
+    setWorkanaUsedFallback(false);
+    
+    try {
+      const jobs = await fetchWorkanaJobs();
+      if (jobs.length === 0) {
+        // Use fallback if scraping returns no jobs
+        setWorkanaJobs(WORKANA_FALLBACK);
+        setWorkanaUsedFallback(true);
+      } else {
+        setWorkanaJobs(jobs);
+        setWorkanaUsedFallback(false);
+      }
+    } catch (error) {
+      console.error('Error fetching Workana jobs:', error);
+      // Use fallback on error
+      setWorkanaJobs(WORKANA_FALLBACK);
+      setWorkanaUsedFallback(true);
+    } finally {
+      setWorkanaLoading(false);
+    }
+  }, []);
+
   const fetchJobs = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) setRefreshing(true);
-    else setLoading(true);
-    setError(null);
+    else setFreelancerLoading(true);
+    setFreelancerError(null);
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('freelancer-jobs', {
@@ -464,26 +490,30 @@ const Marketplace = () => {
       if (!data?.success) throw new Error(data?.error || 'Failed to fetch');
 
       const projects = data.data?.projects || [];
-      setJobs(projects);
+      setFreelancerJobs(projects);
       setLastRefresh(new Date());
     } catch (err: any) {
       console.error('Error fetching jobs:', err);
-      setError(err.message);
+      setFreelancerError(err.message);
     } finally {
-      setLoading(false);
+      setFreelancerLoading(false);
       setRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
     fetchJobs();
-    const interval = setInterval(() => fetchJobs(true), 5 * 60 * 1000);
+    fetchWorkanaJobsData();
+    const interval = setInterval(() => {
+      fetchJobs(true);
+      fetchWorkanaJobsData();
+    }, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchJobs]);
+  }, [fetchJobs, fetchWorkanaJobsData]);
 
   // Translate jobs when they load
   useEffect(() => {
-    if (jobs.length === 0) return;
+    if (freelancerJobs.length === 0) return;
 
     // Abort any in-flight translation batch
     translationAbort.current?.abort();
@@ -497,7 +527,7 @@ const Marketplace = () => {
       const cached: TranslatedTexts = {};
       const toTranslate: { jobId: number; field: 'title' | 'description'; text: string }[] = [];
 
-      for (const job of jobs) {
+      for (const job of freelancerJobs) {
         const cachedTitle = getTranslationCache(job.id, 'title');
         const cachedDesc = getTranslationCache(job.id, 'desc');
 
@@ -563,56 +593,68 @@ const Marketplace = () => {
     return () => {
       controller.abort();
     };
-  }, [jobs]);
+  }, [freelancerJobs]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
 
-  const filteredJobs = useMemo(() => {
-    // Always filter to only relevant skill categories
-    let result = jobs.filter(job =>
-      job.jobs?.some(j => ALLOWED_SKILL_IDS.has(j.id))
-    );
+  // Combine and filter all jobs
+  const allJobs = useMemo(() => {
+    const freelancerUnified = freelancerJobs.map(job => freelancerToUnified(job, translations[job.id]));
+    const workanaUnified = workanaJobs.map((job, index) => workanaToUnified(job, index));
+    
+    return [...freelancerUnified, ...workanaUnified];
+  }, [freelancerJobs, workanaJobs, translations]);
 
-    // Filter by tab
+  const filteredJobs = useMemo(() => {
+    let result = allJobs;
+
+    // Filter by tab using skill keywords for Workana and job IDs for Freelancer
     if (activeFilter !== 'all') {
+      const keywords = WORKANA_SKILL_KEYWORDS[activeFilter];
       const tab = filterTabs.find(t => t.key === activeFilter);
-      if (tab) {
-        result = result.filter(job =>
-          job.jobs?.some(j => tab.jobIds.includes(j.id))
-        );
-      }
+      
+      result = result.filter(job => {
+        if (job.platform === 'Freelancer' && tab) {
+          // For Freelancer jobs, filter by job IDs
+          const freelancerJob = freelancerJobs.find(fj => fj.id === parseInt(job.id.replace('fl-', '')));
+          return freelancerJob?.jobs?.some(j => tab.jobIds.includes(j.id));
+        } else if (job.platform === 'Workana' && keywords.length > 0) {
+          // For Workana jobs, filter by skill keywords
+          const searchText = `${job.title} ${job.description} ${job.skills.map(s => s.name).join(' ')}`.toLowerCase();
+          return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+        }
+        return true;
+      });
     }
 
     // Search
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(j => {
-        const tr = translations[j.id];
-        return (
-          j.title.toLowerCase().includes(q) ||
-          j.preview_description?.toLowerCase().includes(q) ||
-          j.jobs?.some(s => s.name.toLowerCase().includes(q)) ||
-          tr?.title?.toLowerCase().includes(q) ||
-          tr?.description?.toLowerCase().includes(q)
-        );
+        const searchText = `${j.title} ${j.description} ${j.skills.map(s => s.name).join(' ')}`.toLowerCase();
+        return searchText.includes(q);
       });
     }
 
     // Sort
     if (sortBy === 'budget_desc') {
-      result.sort((a, b) => (b.budget?.maximum || 0) - (a.budget?.maximum || 0));
+      result.sort((a, b) => b.budgetSortValue - a.budgetSortValue);
     } else if (sortBy === 'bids_asc') {
-      result.sort((a, b) => (a.bid_stats?.bid_count || 0) - (b.bid_stats?.bid_count || 0));
+      result.sort((a, b) => a.bidsCount - b.bidsCount);
     } else {
-      result.sort((a, b) => (b.time_submitted || b.submitdate || 0) - (a.time_submitted || a.submitdate || 0));
+      result.sort((a, b) => b.timestamp - a.timestamp);
     }
 
     return result;
-  }, [jobs, activeFilter, searchQuery, sortBy, translations]);
+  }, [allJobs, activeFilter, searchQuery, sortBy, freelancerJobs]);
 
+  const isLoading = freelancerLoading || workanaLoading;
+  const hasError = freelancerError && !workanaUsedFallback;
+  const totalJobs = freelancerJobs.length + workanaJobs.length;
+  
   const lastRefreshLabel = lastRefresh
     ? `Atualizado ${lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
     : '';
@@ -623,7 +665,7 @@ const Marketplace = () => {
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#e85d26' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
               {initials}
             </div>
             <div>
@@ -638,9 +680,9 @@ const Marketplace = () => {
                 key={link.label}
                 onClick={() => link.path && navigate(link.path)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#e85d26]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                  link.active ? 'text-[#2563eb]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
                 }`}
-                style={link.active ? { background: 'rgba(232,93,38,0.08)', border: '1px solid rgba(232,93,38,0.2)' } : undefined}
+                style={link.active ? { background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)' } : undefined}
               >
                 <link.icon size={18} />
                 {link.label}
@@ -693,7 +735,7 @@ const Marketplace = () => {
               <Bell size={18} />
             </button>
             <div className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#e85d26' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
                 {initials}
               </div>
               <span className="text-sm font-body font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>
@@ -708,15 +750,15 @@ const Marketplace = () => {
             <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #0077b5, #00a6ff)', minHeight: '160px' }}>
               <div className="relative z-10 max-w-lg">
                 <p className="text-xs font-body font-medium text-white/70 uppercase tracking-wider mb-1">Marketplace Global</p>
-                <h2 className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">
-                  Vagas em Tempo Real do Freelancer.com
-                </h2>
+                <p className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">
+                  Vagas em Tempo Real do Freelancer.com + Workana
+                </p>
                 <p className="text-sm font-body text-white/80 mb-3">
-                  Encontre projetos internacionais atualizados automaticamente
+                  Encontre projetos internacionais e nacionais atualizados automaticamente
                 </p>
                 <div className="flex items-center gap-3">
                   <span className="bg-white/20 backdrop-blur text-white text-sm font-body font-medium px-4 py-2 rounded-full">
-                    {jobs.length} vagas disponíveis
+                    {totalJobs} vagas disponíveis
                   </span>
                   {translating && (
                     <span className="bg-white/10 backdrop-blur text-white/80 text-xs font-body px-3 py-1.5 rounded-full flex items-center gap-1.5">
@@ -768,7 +810,7 @@ const Marketplace = () => {
             </div>
 
             {/* Error State */}
-            {error && !loading && (
+            {hasError && !isLoading && (
               <div className="bg-white rounded-2xl border border-amber-200 p-8 text-center">
                 <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
                   <Globe size={24} className="text-amber-500" />
@@ -803,7 +845,7 @@ const Marketplace = () => {
             )}
 
             {/* Loading State */}
-            {loading && (
+            {isLoading && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div key={i} className="bg-white rounded-2xl border border-[#E8ECF4] p-5 space-y-3">
@@ -829,8 +871,15 @@ const Marketplace = () => {
             )}
 
             {/* Jobs Grid */}
-            {!loading && !error && (
+            {!isLoading && !hasError && (
               <>
+                {workanaUsedFallback && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+                    <p className="text-xs font-body text-amber-700">
+                      ⚠️ Exibindo últimas vagas salvas da Workana (serviço temporariamente indisponível)
+                    </p>
+                  </div>
+                )}
                 <p className="text-sm font-body text-[#9CA3B4]">
                   {filteredJobs.length} {filteredJobs.length === 1 ? 'vaga encontrada' : 'vagas encontradas'}
                 </p>
@@ -855,55 +904,43 @@ const Marketplace = () => {
                         <div className="p-5 flex flex-col flex-1">
                           {/* Header: platform + time */}
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-[10px] font-body font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg text-white" style={{ background: '#0077b5' }}>
-                              Freelancer
+                            <span 
+                              className="text-[10px] font-body font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg text-white" 
+                              style={{ background: job.platformColor }}
+                            >
+                              {job.platform}
                             </span>
                             <span className="text-[11px] font-body text-[#9CA3B4] flex items-center gap-1">
                               <Clock size={11} />
-                              {timeAgo(job.time_submitted || job.submitdate)}
+                              {job.timeLabel}
                             </span>
                           </div>
 
                           {/* Title */}
-                          {translations[job.id]?.title ? (
-                            <h4 className="font-heading font-bold text-[15px] text-[#1A1D26] leading-snug mb-2 line-clamp-2">
-                              {translations[job.id].title}
-                            </h4>
-                          ) : (
-                            <div className="mb-2 space-y-1.5">
-                              <div className="h-4 w-full rounded bg-[#F3F4F8] animate-pulse" />
-                              <div className="h-4 w-2/3 rounded bg-[#F3F4F8] animate-pulse" />
-                            </div>
-                          )}
+                          <h4 className="font-heading font-bold text-[15px] text-[#1A1D26] leading-snug mb-2 line-clamp-2">
+                            {job.title}
+                          </h4>
 
                           {/* Description */}
-                          {translations[job.id]?.description ? (
-                            <p className="text-xs font-body text-[#9CA3B4] mb-3 line-clamp-3 flex-1">
-                              {translations[job.id].description!.slice(0, 120)}
-                              {(translations[job.id].description!.length || 0) > 120 ? '...' : ''}
-                            </p>
-                          ) : (
-                            <div className="mb-3 flex-1 space-y-1">
-                              <div className="h-3 w-full rounded bg-[#F3F4F8] animate-pulse" />
-                              <div className="h-3 w-full rounded bg-[#F3F4F8] animate-pulse" />
-                              <div className="h-3 w-1/2 rounded bg-[#F3F4F8] animate-pulse" />
-                            </div>
-                          )}
+                          <p className="text-xs font-body text-[#9CA3B4] mb-3 line-clamp-3 flex-1">
+                            {job.description.slice(0, 120)}
+                            {job.description.length > 120 ? '...' : ''}
+                          </p>
 
                           {/* Skills */}
-                          {job.jobs && job.jobs.length > 0 && (
+                          {job.skills && job.skills.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-4">
-                              {job.jobs.slice(0, 4).map((skill) => (
+                              {job.skills.slice(0, 4).map((skill, index) => (
                                 <span
-                                  key={skill.id}
+                                  key={index}
                                   className="text-[10px] font-body font-medium px-2 py-0.5 rounded-md bg-[#F3F4F8] text-[#6B7280]"
                                 >
                                   {skill.name}
                                 </span>
                               ))}
-                              {job.jobs.length > 4 && (
+                              {job.skills.length > 4 && (
                                 <span className="text-[10px] font-body text-[#9CA3B4]">
-                                  +{job.jobs.length - 4}
+                                  +{job.skills.length - 4}
                                 </span>
                               )}
                             </div>
@@ -915,27 +952,18 @@ const Marketplace = () => {
                             <div className="flex items-center justify-between mb-3">
                               <div>
                                 <p className="text-[10px] font-body text-[#9CA3B4] uppercase tracking-wider mb-0.5">Orçamento</p>
-                                {job.budget ? (() => {
-                                  const formatted = formatBudget(job.budget, job.currency);
-                                  return (
-                                    <>
-                                      <p className="text-lg font-heading font-extrabold" style={{ color: '#0077b5' }}>
-                                        {formatted.brl}
-                                      </p>
-                                      {formatted.original && (
-                                        <p className="text-[10px] font-body text-[#9CA3B4] mt-0.5">{formatted.original}</p>
-                                      )}
-                                    </>
-                                  );
-                                })() : (
-                                  <p className="text-lg font-heading font-extrabold" style={{ color: '#0077b5' }}>A definir</p>
+                                <p className="text-lg font-heading font-extrabold" style={{ color: job.platformColor }}>
+                                  {job.budgetDisplay}
+                                </p>
+                                {job.budgetOriginal && (
+                                  <p className="text-[10px] font-body text-[#9CA3B4] mt-0.5">{job.budgetOriginal}</p>
                                 )}
                               </div>
                               <div className="text-right">
                                 <div className="flex items-center gap-1 text-[#9CA3B4]">
                                   <Users size={12} />
                                   <span className="text-xs font-body font-medium">
-                                    {job.bid_stats?.bid_count || 0} propostas
+                                    {job.bidsCount} proposta{job.bidsCount !== 1 ? 's' : ''}
                                   </span>
                                 </div>
                               </div>
@@ -943,16 +971,17 @@ const Marketplace = () => {
 
                             {/* CTA */}
                             <a
-                              href={`https://www.freelancer.com/projects/${job.seo_url}`}
+                              href={job.url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="block"
                             >
-                              <button className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
-                                style={{ background: '#0077b5' }}
+                              <button 
+                                className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                                style={{ background: job.platformColor }}
                               >
                                 <ExternalLink size={14} />
-                                Ver Vaga
+                                Ver Vaga na {job.platform}
                               </button>
                             </a>
                           </div>

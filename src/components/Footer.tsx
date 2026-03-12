@@ -25,7 +25,7 @@ const Footer = () => {
           {/* Col 2 */}
           <div>
             <h4 className="font-heading font-semibold text-sm text-foreground mb-4">Plataforma</h4>
-            {['Explorar Serviços', 'Como Funciona', 'Para Freelancers', 'Blog'].map((l) => (
+            {['Marketplace', 'Como Funciona', 'Para Freelancers', 'Blog'].map((l) => (
               <a key={l} href="#" className="block font-body text-sm text-muted-foreground hover:text-foreground transition-colors mb-2.5">
                 {l}
               </a>

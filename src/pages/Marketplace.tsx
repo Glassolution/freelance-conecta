@@ -397,7 +397,7 @@ async function fetch99FreelasJobs(): Promise<Freelas99Job[]> {
             bids: parseInt(propostas) || 0,
             pubDate,
             platform: '99Freelas',
-            platformColor: '#0077b5',
+            platformColor: '#0a7aff',
             url: href.startsWith('http') ? href : `https://www.99freelas.com.br${href}`,
           });
         }

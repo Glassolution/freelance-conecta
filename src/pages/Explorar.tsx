@@ -606,9 +606,10 @@ const Explorar = () => {
                           )}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
+              </div>
             </div>
           )}
         </div>

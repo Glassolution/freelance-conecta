@@ -286,7 +286,7 @@ body {
 }
 
 .chat-card {
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
+  background: linear-gradient(135deg, #29B2FE 0%, #1a9ee8 50%, #0077cc 100%);
   border-radius: 16px; padding: 24px;
   position: relative; overflow: hidden;
 }

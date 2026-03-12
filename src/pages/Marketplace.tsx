@@ -419,7 +419,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 23,
     pubDate: "3 horas atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/melhorar-layout-e-design-do-site-wordpress-735737"
   },
   {

@@ -600,6 +600,11 @@ const Marketplace = () => {
   const [workanaLoading, setWorkanaLoading] = useState(true);
   const [workanaUsedFallback, setWorkanaUsedFallback] = useState(false);
 
+  // 99Freelas state
+  const [freelas99Jobs, setFreelas99Jobs] = useState<Freelas99Job[]>([]);
+  const [freelas99Loading, setFreelas99Loading] = useState(true);
+  const [freelas99UsedFallback, setFreelas99UsedFallback] = useState(false);
+
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');

@@ -26,8 +26,8 @@ serve(async (req) => {
       items: [
         {
           id: planId,
-          title: `Ikas - Plano ${planName}`,
-          description: `Assinatura ${planName} da plataforma Ikas`,
+          title: `Markfy - Plano ${planName}`,
+          description: `Assinatura ${planName} da plataforma Markfy`,
           quantity: 1,
           currency_id: 'BRL',
           unit_price: Number(price),

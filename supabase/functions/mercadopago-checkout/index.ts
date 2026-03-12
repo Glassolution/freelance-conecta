@@ -37,9 +37,9 @@ serve(async (req) => {
         email: userEmail || undefined,
       },
       back_urls: {
-        success: `${req.headers.get('origin') || 'https://ikas.com'}/dashboard?payment=success`,
-        failure: `${req.headers.get('origin') || 'https://ikas.com'}/pricing?payment=failure`,
-        pending: `${req.headers.get('origin') || 'https://ikas.com'}/pricing?payment=pending`,
+        success: `${req.headers.get('origin') || 'https://markfy.com'}/dashboard?payment=success`,
+        failure: `${req.headers.get('origin') || 'https://markfy.com'}/pricing?payment=failure`,
+        pending: `${req.headers.get('origin') || 'https://markfy.com'}/pricing?payment=pending`,
       },
       auto_return: 'approved',
       payment_methods: {

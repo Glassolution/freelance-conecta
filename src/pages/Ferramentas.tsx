@@ -213,7 +213,7 @@ const Ferramentas = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs font-body font-semibold px-4 py-2 rounded-full transition-colors"
-                      style={{ color: '#2563eb', background: 'rgba(37,99,235,0.08)' }}
+                      style={{ color: '#29B2FE', background: 'rgba(41,178,254,0.08)' }}
                     >
                       Acessar <ExternalLink size={12} />
                     </a>

@@ -852,7 +852,7 @@ const Marketplace = () => {
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
               {initials}
             </div>
             <div>

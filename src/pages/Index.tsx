@@ -99,7 +99,7 @@ const Index = () => {
         <nav className="landing-nav">
           <a href="#" className="logo">
             <div className="logo-icon"><LogoSvg /></div>
-            <span className="logo-name">ikas</span>
+            <span className="logo-name">Markfy</span>
           </a>
           <ul className="nav-links">
             <li><a href="#" className="active">In&#237;cio</a></li>

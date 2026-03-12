@@ -798,20 +798,18 @@ const Marketplace = () => {
   }, [freelancerJobs, workanaJobs, freelas99Jobs, translations]);
 
   const filteredJobs = useMemo(() => {
-    let result = allJobs;
+    let result = allJobsMerged;
 
-    // Filter by tab using skill keywords for Workana and job IDs for Freelancer
+    // Filter by tab
     if (activeFilter !== 'all') {
-      const keywords = WORKANA_SKILL_KEYWORDS[activeFilter];
+      const keywords = SKILL_KEYWORDS[activeFilter];
       const tab = filterTabs.find(t => t.key === activeFilter);
       
       result = result.filter(job => {
         if (job.platform === 'Freelancer' && tab) {
-          // For Freelancer jobs, filter by job IDs
           const freelancerJob = freelancerJobs.find(fj => fj.id === parseInt(job.id.replace('fl-', '')));
           return freelancerJob?.jobs?.some(j => tab.jobIds.includes(j.id));
-        } else if (job.platform === 'Workana' && keywords.length > 0) {
-          // For Workana jobs, filter by skill keywords
+        } else if ((job.platform === 'Workana' || job.platform === '99Freelas') && keywords.length > 0) {
           const searchText = `${job.title} ${job.description} ${job.skills.map(s => s.name).join(' ')}`.toLowerCase();
           return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
         }
@@ -838,11 +836,11 @@ const Marketplace = () => {
     }
 
     return result;
-  }, [allJobs, activeFilter, searchQuery, sortBy, freelancerJobs]);
+  }, [allJobsMerged, activeFilter, searchQuery, sortBy, freelancerJobs]);
 
-  const isLoading = freelancerLoading || workanaLoading;
-  const hasError = freelancerError && !workanaUsedFallback;
-  const totalJobs = freelancerJobs.length + workanaJobs.length;
+  const isLoading = freelancerLoading || workanaLoading || freelas99Loading;
+  const hasError = freelancerError && !workanaUsedFallback && !freelas99UsedFallback;
+  const totalJobs = freelancerJobs.length + workanaJobs.length + freelas99Jobs.length;
   
   const lastRefreshLabel = lastRefresh
     ? `Atualizado ${lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`

@@ -278,7 +278,7 @@ const Dashboard = () => {
                             <h4 className="font-body font-semibold text-sm text-[#1A1D26] leading-snug mb-3 line-clamp-2">{vaga.title}</h4>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[9px] font-bold">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[9px] font-bold">
                                   {vaga.author_name.split(' ').map(n => n[0]).join('')}
                                 </div>
                                 <div>

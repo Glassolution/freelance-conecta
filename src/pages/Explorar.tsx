@@ -443,7 +443,7 @@ const Explorar = () => {
                             <div className="flex items-center justify-between mb-4">
                               <div>
                                 <p className="text-[10px] font-body text-[#9CA3B4] uppercase tracking-wider mb-0.5">A partir de</p>
-                                <p className="text-xl font-heading font-extrabold" style={{ color: '#2563eb' }}>
+                              <p className="text-xl font-heading font-extrabold" style={{ color: '#29B2FE' }}>
                                   R$ {Number(vaga.price).toLocaleString('pt-BR')}
                                 </p>
                               </div>

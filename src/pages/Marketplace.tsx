@@ -934,7 +934,7 @@ const Marketplace = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
             {/* Banner */}
-            <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #0077b5, #00a6ff)', minHeight: '160px' }}>
+            <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #29B2FE, #0077cc)', minHeight: '160px' }}>
               <div className="relative z-10 max-w-lg">
                 <p className="text-xs font-body font-medium text-white/70 uppercase tracking-wider mb-1">Marketplace Global</p>
                 <p className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">

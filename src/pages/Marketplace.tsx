@@ -1067,6 +1067,13 @@ const Marketplace = () => {
                     </p>
                   </div>
                 )}
+                {freelas99UsedFallback && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4">
+                    <p className="text-xs font-body text-blue-700">
+                      ⚠️ Exibindo últimas vagas salvas do 99Freelas
+                    </p>
+                  </div>
+                )}
                 <p className="text-sm font-body text-[#9CA3B4]">
                   {filteredJobs.length} {filteredJobs.length === 1 ? 'vaga encontrada' : 'vagas encontradas'}
                 </p>

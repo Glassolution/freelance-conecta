@@ -1093,7 +1093,7 @@ const Marketplace = () => {
                     {filteredJobs.map((job) => (
                       <div
                         key={job.id}
-                        className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden group hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:border-[#0077b5]/20 flex flex-col"
+                        className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden group hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:border-[#29B2FE]/20 flex flex-col"
                       >
                         <div className="p-5 flex flex-col flex-1">
                           {/* Header: platform + time */}

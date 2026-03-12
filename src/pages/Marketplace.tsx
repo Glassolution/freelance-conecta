@@ -521,6 +521,24 @@ function workanaToUnified(job: WorkanaJob, index: number): UnifiedJob {
   };
 }
 
+function freelas99ToUnified(job: Freelas99Job, index: number): UnifiedJob {
+  return {
+    id: `99f-${index}-${job.title.slice(0, 20).replace(/\s/g, '')}`,
+    title: job.title,
+    description: job.description,
+    url: job.url,
+    budgetDisplay: job.budget,
+    budgetOriginal: '',
+    budgetSortValue: 0,
+    bidsCount: job.bids,
+    skills: job.skills.map(s => ({ name: s })),
+    platform: '99Freelas',
+    platformColor: '#0a7aff',
+    timeLabel: job.pubDate,
+    timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
+  };
+}
+
 // --- Translation ---
 
 async function translateToPT(text: string): Promise<string> {

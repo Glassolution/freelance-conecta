@@ -271,7 +271,7 @@ async function fetchWorkanaJobs(): Promise<WorkanaJob[]> {
             bids: parseInt(bidsText) || 0,
             pubDate,
             platform: 'Workana',
-            platformColor: '#00b04f',
+            platformColor: '#0077b5',
             url: href.startsWith('http') ? href : `https://www.workana.com${href}`,
           });
         }
@@ -293,7 +293,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 6,
     pubDate: "39 minutos atrás",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#0077b5",
     url: "https://www.workana.com/job/designer-desenvolvedor-hubspot-para-22-landing-pages-de-alta-conversao"
   },
   {
@@ -304,7 +304,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 1,
     pubDate: "1 hora atrás",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#0077b5",
     url: "https://www.workana.com/job/editor-de-videos-com-expertise-em-after-effects-e-premiere-para-canal-dark"
   },
   {
@@ -315,7 +315,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "Agora",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#0077b5",
     url: "https://www.workana.com/job/reconstrucao-completa-de-e-commerce-com-integracao-bling-e-seguranca-avancada"
   },
   {
@@ -326,7 +326,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "Agora",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#0077b5",
     url: "https://www.workana.com/job/vaga-social-media-manager-foco-em-performance-e-comprometimento"
   },
   {
@@ -337,7 +337,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "5 minutos atrás",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#0077b5",
     url: "https://www.workana.com/job/criacao-de-video-promocional-para-aplicativo-de-educacao-financeira"
   },
   {
@@ -348,7 +348,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "Agora",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#0077b5",
     url: "https://www.workana.com/job/animador-2d-com-expertise-em-ia-para-piloto-de-desenho-animado-infantil"
   },
 ];
@@ -397,7 +397,7 @@ async function fetch99FreelasJobs(): Promise<Freelas99Job[]> {
             bids: parseInt(propostas) || 0,
             pubDate,
             platform: '99Freelas',
-            platformColor: '#0a7aff',
+            platformColor: '#0077b5',
             url: href.startsWith('http') ? href : `https://www.99freelas.com.br${href}`,
           });
         }
@@ -419,7 +419,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 23,
     pubDate: "3 horas atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/melhorar-layout-e-design-do-site-wordpress-735737"
   },
   {
@@ -430,7 +430,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 1,
     pubDate: "17 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/especialista-em-edicao-de-video-com-ia-para-producao-de-criativos-de-ads-em-735789"
   },
   {
@@ -441,7 +441,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 15,
     pubDate: "38 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/desenvolvimento-de-site-para-equipe-de-motocross-735786"
   },
   {
@@ -452,7 +452,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 5,
     pubDate: "43 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/automacao-de-atendimento-whatsapp-e-gestao-de-alugueis-de-kitnets-735783"
   },
   {
@@ -463,7 +463,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 3,
     pubDate: "59 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/branding-e-criacao-de-perfis-sem-rosto-para-instagram-e-tiktok-735776"
   },
   {
@@ -474,7 +474,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 2,
     pubDate: "1 hora atrás",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#0077b5",
     url: "https://www.99freelas.com.br/project/video-institucional-com-animacao-3d-735778"
   },
 ];
@@ -515,7 +515,7 @@ function workanaToUnified(job: WorkanaJob, index: number): UnifiedJob {
     bidsCount: job.bids,
     skills: job.skills.map(s => ({ name: s })),
     platform: 'Workana',
-    platformColor: '#00b04f',
+    platformColor: '#0077b5',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };
@@ -533,7 +533,7 @@ function freelas99ToUnified(job: Freelas99Job, index: number): UnifiedJob {
     bidsCount: job.bids,
     skills: job.skills.map(s => ({ name: s })),
     platform: '99Freelas',
-    platformColor: '#0a7aff',
+    platformColor: '#0077b5',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };

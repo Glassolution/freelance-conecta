@@ -221,7 +221,7 @@ const Index = () => {
               <div className="chat-speed-badge">&#9889; Vagas em tempo real</div>
               <div className="chat-window">
                 <div className="chat-topbar">
-                  <span className="chat-agent-label">Ikas Search</span>
+                  <span className="chat-agent-label">Markfy Search</span>
                   <span className="chat-close">&times;</span>
                 </div>
                 <div className="chat-body">

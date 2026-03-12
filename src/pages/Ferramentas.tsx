@@ -163,7 +163,7 @@ const Ferramentas = () => {
               <Bell size={18} />
             </button>
             <div className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
                 {initials}
               </div>
               <span className="text-sm font-body font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>

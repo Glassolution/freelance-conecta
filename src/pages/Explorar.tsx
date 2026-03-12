@@ -403,7 +403,7 @@ const Explorar = () => {
                           {vaga.image_url ? (
                             <img src={vaga.image_url} alt={vaga.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2563eb]/10 to-[#3b82f6]/10">
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#29B2FE]/10 to-[#0077cc]/10">
                               <Briefcase size={36} className="text-[#9CA3B4]" />
                             </div>
                           )}

@@ -62,7 +62,7 @@ const Auth = () => {
             >
               <Search size={18} className="text-white" />
             </div>
-            <span className="font-heading font-extrabold text-xl text-[#060912]">ikas</span>
+            <span className="font-heading font-extrabold text-xl text-[#060912]">Markfy</span>
           </button>
 
           {/* Title */}

@@ -230,7 +230,7 @@ const Index = () => {
                     <div className="chat-msg chat-msg-user">Sou designer, quero projetos de logo para come&#231;ar</div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <div className="chat-agent-name" style={{ textAlign: 'right' }}>Ikas</div>
+                    <div className="chat-agent-name" style={{ textAlign: 'right' }}>Markfy</div>
                     <div className="chat-msg chat-msg-ai">Encontrei 4.120 projetos de design dispon&#237;veis. GetNinjas a partir de <span style={{ color: '#2563eb', fontWeight: 'bold' }}>R$ 80</span>, Workana a partir de <span style={{ color: '#2563eb', fontWeight: 'bold' }}>R$ 150</span>.</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -325,7 +325,7 @@ const Index = () => {
           <div>
             <div className="f-logo">
               <div className="f-logo-icon"><LogoSvg /></div>
-              ikas
+              Markfy
             </div>
             <p className="f-tag">A forma mais inteligente de freelancers encontrarem mais trabalho.</p>
             <div className="f-socials">

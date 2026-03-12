@@ -474,7 +474,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 2,
     pubDate: "1 hora atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/video-institucional-com-animacao-3d-735778"
   },
 ];

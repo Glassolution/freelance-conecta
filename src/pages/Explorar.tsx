@@ -259,7 +259,7 @@ const Explorar = () => {
       {hasActiveFilters && (
         <button
           onClick={clearFilters}
-          className="w-full py-2.5 rounded-xl text-sm font-body font-medium text-[#2563eb] border border-[#2563eb]/20 hover:bg-[#2563eb]/5 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 rounded-xl text-sm font-body font-medium text-[#29B2FE] border border-[#29B2FE]/20 hover:bg-[#29B2FE]/5 transition-colors flex items-center justify-center gap-2"
         >
           <X size={14} />
           Limpar Filtros

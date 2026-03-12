@@ -789,12 +789,13 @@ const Marketplace = () => {
   };
 
   // Combine and filter all jobs
-  const allJobs = useMemo(() => {
+  const allJobsMerged = useMemo(() => {
     const freelancerUnified = freelancerJobs.map(job => freelancerToUnified(job, translations[job.id]));
     const workanaUnified = workanaJobs.map((job, index) => workanaToUnified(job, index));
+    const freelas99Unified = freelas99Jobs.map((job, index) => freelas99ToUnified(job, index));
     
-    return [...freelancerUnified, ...workanaUnified];
-  }, [freelancerJobs, workanaJobs, translations]);
+    return [...freelancerUnified, ...workanaUnified, ...freelas99Unified];
+  }, [freelancerJobs, workanaJobs, freelas99Jobs, translations]);
 
   const filteredJobs = useMemo(() => {
     let result = allJobs;

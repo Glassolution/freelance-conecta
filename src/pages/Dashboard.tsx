@@ -408,7 +408,7 @@ const Dashboard = () => {
                             <p className="text-[11px] font-body text-[#9CA3B4]">{p.role}</p>
                           </div>
                         </div>
-                        <button className="text-[11px] font-body font-medium px-3 py-1 rounded-full" style={{ color: 'var(--blue)', background: 'rgba(37,99,235,0.08)' }}>{p.status}</button>
+                        <button className="text-[11px] font-body font-medium px-3 py-1 rounded-full" style={{ color: '#29B2FE', background: 'rgba(41,178,254,0.08)' }}>{p.status}</button>
                       </div>
                     ))}
                   </div>

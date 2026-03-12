@@ -457,7 +457,7 @@ const Explorar = () => {
                             {vaga.url ? (
                               <a href={vaga.url} target="_blank" rel="noopener noreferrer" className="block">
                                 <button className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
-                                  style={{ background: '#2563eb' }}
+                                style={{ background: '#29B2FE' }}
                                 >
                                   <ShoppingCart size={15} />
                                   Contratar Serviço

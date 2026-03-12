@@ -533,7 +533,7 @@ function freelas99ToUnified(job: Freelas99Job, index: number): UnifiedJob {
     bidsCount: job.bids,
     skills: job.skills.map(s => ({ name: s })),
     platform: '99Freelas',
-    platformColor: '#0077b5',
+    platformColor: '#0a7aff',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };

@@ -515,7 +515,7 @@ const Explorar = () => {
                     <button
                       onClick={clearFilters}
                       className="text-sm font-body font-medium px-5 py-2.5 rounded-full transition-colors"
-                      style={{ color: 'white', background: '#2563eb' }}
+                      style={{ color: 'white', background: '#29B2FE' }}
                     >
                       Limpar Filtros
                     </button>

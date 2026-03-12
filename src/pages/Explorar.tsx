@@ -488,7 +488,7 @@ const Explorar = () => {
                         Filtros
                       </h3>
                       {hasActiveFilters && (
-                        <span className="text-[10px] font-body font-bold text-white bg-[#2563eb] rounded-full w-5 h-5 flex items-center justify-center">
+                        <span className="text-[10px] font-body font-bold text-white bg-[#29B2FE] rounded-full w-5 h-5 flex items-center justify-center">
                           {selectedCategories.length + selectedPlatforms.length + (priceMin || priceMax ? 1 : 0)}
                         </span>
                       )}

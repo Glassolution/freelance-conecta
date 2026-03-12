@@ -43,7 +43,7 @@ interface UnifiedJob {
   budgetSortValue: number;
   bidsCount: number;
   skills: { name: string; id?: number }[];
-  platform: 'Freelancer' | 'Workana';
+  platform: 'Freelancer' | 'Workana' | '99Freelas';
   platformColor: string;
   timeLabel: string;
   timestamp: number;
@@ -89,18 +89,32 @@ interface WorkanaJob {
   url: string;
 }
 
+// --- 99Freelas types ---
+
+interface Freelas99Job {
+  title: string;
+  description: string;
+  skills: string[];
+  budget: string;
+  bids: number;
+  pubDate: string;
+  platform: '99Freelas';
+  platformColor: string;
+  url: string;
+}
+
 // --- Filter config ---
 
 type FilterTab = 'all' | 'dev' | 'mobile' | 'marketing' | 'video' | 'design';
 type SortOption = 'newest' | 'budget_desc' | 'bids_asc';
 
-const WORKANA_SKILL_KEYWORDS: Record<FilterTab, string[]> = {
+const SKILL_KEYWORDS: Record<FilterTab, string[]> = {
   all: [],
-  dev: ['php', 'javascript', 'react', 'node', 'html', 'css', 'python', 'java', 'typescript', 'angular', 'vue', 'laravel', 'wordpress', 'woocommerce', 'mysql', 'mongodb', 'api', 'backend', 'frontend', 'fullstack', 'full-stack', 'full stack', 'web', 'programação', 'programming', 'developer', 'hubspot', '.net', 'ruby', 'django', 'flask'],
+  dev: ['php', 'javascript', 'react', 'node', 'html', 'css', 'python', 'java', 'typescript', 'angular', 'vue', 'laravel', 'wordpress', 'woocommerce', 'mysql', 'mongodb', 'api', 'backend', 'frontend', 'fullstack', 'full-stack', 'full stack', 'web', 'programação', 'programming', 'developer', 'hubspot', '.net', 'ruby', 'django', 'flask', 'html5'],
   mobile: ['android', 'ios', 'react native', 'flutter', 'swift', 'kotlin', 'mobile', 'app'],
-  marketing: ['marketing', 'seo', 'social media', 'facebook', 'instagram', 'google ads', 'advertising', 'mídia', 'tráfego', 'traffic', 'performance', 'branding', 'copywriting'],
-  video: ['video', 'after effects', 'premiere', 'capcut', 'animação', 'animation', 'motion', 'edição', 'editing', 'davinci'],
-  design: ['design', 'figma', 'ui', 'ux', 'logo', 'graphic', 'illustrator', 'photoshop', 'branding', 'identidade visual', 'visual identity'],
+  marketing: ['marketing', 'seo', 'social media', 'facebook', 'instagram', 'google ads', 'advertising', 'mídia', 'tráfego', 'traffic', 'performance', 'branding', 'copywriting', 'whatsapp'],
+  video: ['video', 'after effects', 'premiere', 'capcut', 'animação', 'animation', 'motion', 'edição', 'editing', 'davinci', 'runway', 'audiovisual', '3d'],
+  design: ['design', 'figma', 'ui', 'ux', 'logo', 'graphic', 'illustrator', 'photoshop', 'branding', 'identidade visual', 'visual identity', 'web design'],
 };
 
 const filterTabs: { key: FilterTab; label: string; jobIds: number[] }[] = [
@@ -339,6 +353,132 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
   },
 ];
 
+// --- 99Freelas scraping + fallback ---
+
+const FREELAS99_URLS = [
+  'https://www.99freelas.com.br/projects?category=web-mobile-software',
+  'https://www.99freelas.com.br/projects?category=design-criacao',
+  'https://www.99freelas.com.br/projects?category=vendas-marketing',
+  'https://www.99freelas.com.br/projects?category=fotografia-audiovisual',
+];
+
+async function fetch99FreelasJobs(): Promise<Freelas99Job[]> {
+  const allJobs: Freelas99Job[] = [];
+
+  for (const url of FREELAS99_URLS) {
+    try {
+      const proxy = 'https://api.allorigins.win/get?url=';
+      const res = await fetch(proxy + encodeURIComponent(url));
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (!data.contents) continue;
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(data.contents, 'text/html');
+      const items = doc.querySelectorAll('h1 a[href*="/project/"]');
+
+      items.forEach((jobEl) => {
+        const card = jobEl.closest('li') || jobEl.closest('.project-item') || jobEl.parentElement?.parentElement;
+        const title = jobEl.textContent?.trim() || '';
+        const href = jobEl.getAttribute('href') || '';
+        const fullText = card?.textContent || '';
+        const description = card?.querySelector('p, .description')?.textContent?.trim()?.slice(0, 150) || '';
+        const propostas = fullText.match(/Propostas:\s*(\d+)/)?.[1] || '0';
+        const pubDate = fullText.match(/Publicado:\s*([^|]+)/)?.[1]?.trim() || 'Agora';
+        const skillEls = card?.querySelectorAll('a[href*="/projects?q="]') || [];
+        const skills = Array.from(skillEls).slice(0, 4).map(s => s.textContent?.trim() || '').filter(Boolean);
+
+        if (title) {
+          allJobs.push({
+            title,
+            description,
+            skills,
+            budget: 'A combinar',
+            bids: parseInt(propostas) || 0,
+            pubDate,
+            platform: '99Freelas',
+            platformColor: '#0a7aff',
+            url: href.startsWith('http') ? href : `https://www.99freelas.com.br${href}`,
+          });
+        }
+      });
+    } catch {
+      // continue to next URL
+    }
+  }
+
+  return allJobs;
+}
+
+const FREELAS99_FALLBACK: Freelas99Job[] = [
+  {
+    title: "Melhorar layout e design do site WordPress",
+    description: "Melhorar o visual da página: ajustar cores, organizar layout, criar banner rotativo e deixar o site mais moderno.",
+    skills: ["Web Design", "WordPress"],
+    budget: "A combinar",
+    bids: 23,
+    pubDate: "3 horas atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/melhorar-layout-e-design-do-site-wordpress-735737"
+  },
+  {
+    title: "Especialista em Edição de Vídeo com IA para Produção de Criativos de Ads",
+    description: "Edição de vídeo com IA para produzir 16-20 vídeos/dia para campanhas de geração de leads em múltiplos formatos.",
+    skills: ["CapCut", "Premiere", "After Effects", "Runway"],
+    budget: "A combinar",
+    bids: 1,
+    pubDate: "17 minutos atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/especialista-em-edicao-de-video-com-ia-para-producao-de-criativos-de-ads-em-735789"
+  },
+  {
+    title: "Desenvolvimento de site para equipe de motocross",
+    description: "Desenvolver front-end, back-end, integração com loja e deploy na Hostinger. Layout já pronto no Figma.",
+    skills: ["CSS", "HTML5", "JavaScript", "React"],
+    budget: "A combinar",
+    bids: 15,
+    pubDate: "38 minutos atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/desenvolvimento-de-site-para-equipe-de-motocross-735786"
+  },
+  {
+    title: "Automação de atendimento WhatsApp e gestão de aluguéis de kitnets",
+    description: "Automatizar atendimento via WhatsApp com Typebot, integração Evolution API e gestão financeira com boletos/PIX.",
+    skills: ["WhatsApp API", "Typebot", "Automação"],
+    budget: "A combinar",
+    bids: 5,
+    pubDate: "43 minutos atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/automacao-de-atendimento-whatsapp-e-gestao-de-alugueis-de-kitnets-735783"
+  },
+  {
+    title: "Branding e criação de perfis sem rosto para Instagram e TikTok",
+    description: "Criar e estruturar página profissional no Instagram e TikTok com identidade visual, feed inicial e estratégia de conteúdo.",
+    skills: ["Social Media", "Branding", "Instagram"],
+    budget: "A combinar",
+    bids: 3,
+    pubDate: "59 minutos atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/branding-e-criacao-de-perfis-sem-rosto-para-instagram-e-tiktok-735776"
+  },
+  {
+    title: "Vídeo institucional com animação 3D",
+    description: "Vídeo institucional de 3 minutos com animação 3D sobre saneamento básico. Formatos: YouTube e Reels.",
+    skills: ["Animação 3D", "Video Production"],
+    budget: "A combinar",
+    bids: 2,
+    pubDate: "1 hora atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/video-institucional-com-animacao-3d-735778"
+  },
+];
+
 // --- Converters to UnifiedJob ---
 
 function freelancerToUnified(job: FreelancerJob, tr?: { title?: string; description?: string }): UnifiedJob {
@@ -376,6 +516,24 @@ function workanaToUnified(job: WorkanaJob, index: number): UnifiedJob {
     skills: job.skills.map(s => ({ name: s })),
     platform: 'Workana',
     platformColor: '#00b04f',
+    timeLabel: job.pubDate,
+    timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
+  };
+}
+
+function freelas99ToUnified(job: Freelas99Job, index: number): UnifiedJob {
+  return {
+    id: `99f-${index}-${job.title.slice(0, 20).replace(/\s/g, '')}`,
+    title: job.title,
+    description: job.description,
+    url: job.url,
+    budgetDisplay: job.budget,
+    budgetOriginal: '',
+    budgetSortValue: 0,
+    bidsCount: job.bids,
+    skills: job.skills.map(s => ({ name: s })),
+    platform: '99Freelas',
+    platformColor: '#0a7aff',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };
@@ -442,6 +600,11 @@ const Marketplace = () => {
   const [workanaLoading, setWorkanaLoading] = useState(true);
   const [workanaUsedFallback, setWorkanaUsedFallback] = useState(false);
 
+  // 99Freelas state
+  const [freelas99Jobs, setFreelas99Jobs] = useState<Freelas99Job[]>([]);
+  const [freelas99Loading, setFreelas99Loading] = useState(true);
+  const [freelas99UsedFallback, setFreelas99UsedFallback] = useState(false);
+
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -476,6 +639,29 @@ const Marketplace = () => {
     }
   }, []);
 
+  // Fetch 99Freelas jobs
+  const fetch99FreelasJobsData = useCallback(async () => {
+    setFreelas99Loading(true);
+    setFreelas99UsedFallback(false);
+    
+    try {
+      const jobs = await fetch99FreelasJobs();
+      if (jobs.length === 0) {
+        setFreelas99Jobs(FREELAS99_FALLBACK);
+        setFreelas99UsedFallback(true);
+      } else {
+        setFreelas99Jobs(jobs);
+        setFreelas99UsedFallback(false);
+      }
+    } catch (error) {
+      console.error('Error fetching 99Freelas jobs:', error);
+      setFreelas99Jobs(FREELAS99_FALLBACK);
+      setFreelas99UsedFallback(true);
+    } finally {
+      setFreelas99Loading(false);
+    }
+  }, []);
+
   const fetchJobs = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) setRefreshing(true);
     else setFreelancerLoading(true);
@@ -504,12 +690,14 @@ const Marketplace = () => {
   useEffect(() => {
     fetchJobs();
     fetchWorkanaJobsData();
+    fetch99FreelasJobsData();
     const interval = setInterval(() => {
       fetchJobs(true);
       fetchWorkanaJobsData();
+      fetch99FreelasJobsData();
     }, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchJobs, fetchWorkanaJobsData]);
+  }, [fetchJobs, fetchWorkanaJobsData, fetch99FreelasJobsData]);
 
   // Translate jobs when they load
   useEffect(() => {
@@ -601,28 +789,27 @@ const Marketplace = () => {
   };
 
   // Combine and filter all jobs
-  const allJobs = useMemo(() => {
+  const allJobsMerged = useMemo(() => {
     const freelancerUnified = freelancerJobs.map(job => freelancerToUnified(job, translations[job.id]));
     const workanaUnified = workanaJobs.map((job, index) => workanaToUnified(job, index));
+    const freelas99Unified = freelas99Jobs.map((job, index) => freelas99ToUnified(job, index));
     
-    return [...freelancerUnified, ...workanaUnified];
-  }, [freelancerJobs, workanaJobs, translations]);
+    return [...freelancerUnified, ...workanaUnified, ...freelas99Unified];
+  }, [freelancerJobs, workanaJobs, freelas99Jobs, translations]);
 
   const filteredJobs = useMemo(() => {
-    let result = allJobs;
+    let result = allJobsMerged;
 
-    // Filter by tab using skill keywords for Workana and job IDs for Freelancer
+    // Filter by tab
     if (activeFilter !== 'all') {
-      const keywords = WORKANA_SKILL_KEYWORDS[activeFilter];
+      const keywords = SKILL_KEYWORDS[activeFilter];
       const tab = filterTabs.find(t => t.key === activeFilter);
       
       result = result.filter(job => {
         if (job.platform === 'Freelancer' && tab) {
-          // For Freelancer jobs, filter by job IDs
           const freelancerJob = freelancerJobs.find(fj => fj.id === parseInt(job.id.replace('fl-', '')));
           return freelancerJob?.jobs?.some(j => tab.jobIds.includes(j.id));
-        } else if (job.platform === 'Workana' && keywords.length > 0) {
-          // For Workana jobs, filter by skill keywords
+        } else if ((job.platform === 'Workana' || job.platform === '99Freelas') && keywords.length > 0) {
           const searchText = `${job.title} ${job.description} ${job.skills.map(s => s.name).join(' ')}`.toLowerCase();
           return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
         }
@@ -649,11 +836,11 @@ const Marketplace = () => {
     }
 
     return result;
-  }, [allJobs, activeFilter, searchQuery, sortBy, freelancerJobs]);
+  }, [allJobsMerged, activeFilter, searchQuery, sortBy, freelancerJobs]);
 
-  const isLoading = freelancerLoading || workanaLoading;
-  const hasError = freelancerError && !workanaUsedFallback;
-  const totalJobs = freelancerJobs.length + workanaJobs.length;
+  const isLoading = freelancerLoading || workanaLoading || freelas99Loading;
+  const hasError = freelancerError && !workanaUsedFallback && !freelas99UsedFallback;
+  const totalJobs = freelancerJobs.length + workanaJobs.length + freelas99Jobs.length;
   
   const lastRefreshLabel = lastRefresh
     ? `Atualizado ${lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
@@ -751,7 +938,7 @@ const Marketplace = () => {
               <div className="relative z-10 max-w-lg">
                 <p className="text-xs font-body font-medium text-white/70 uppercase tracking-wider mb-1">Marketplace Global</p>
                 <p className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">
-                  Vagas em Tempo Real do Freelancer.com + Workana
+                  Vagas em Tempo Real do Freelancer.com + Workana + 99Freelas
                 </p>
                 <p className="text-sm font-body text-white/80 mb-3">
                   Encontre projetos internacionais e nacionais atualizados automaticamente
@@ -877,6 +1064,13 @@ const Marketplace = () => {
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
                     <p className="text-xs font-body text-amber-700">
                       ⚠️ Exibindo últimas vagas salvas da Workana (serviço temporariamente indisponível)
+                    </p>
+                  </div>
+                )}
+                {freelas99UsedFallback && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4">
+                    <p className="text-xs font-body text-blue-700">
+                      ⚠️ Exibindo últimas vagas salvas do 99Freelas
                     </p>
                   </div>
                 )}

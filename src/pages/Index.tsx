@@ -4,10 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import './landing.css';
 
 const LogoSvg = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="2" width="14" height="14" rx="3" fill="white" stroke="none"/>
-    <path d="M6 7h6M9 4v6M5 11h8" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="13" cy="5" r="2" fill="#2563eb"/>
+  <svg width="18" height="18" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <rect width="40" height="40" rx="9" fill="#29B2FE"/>
+    <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="22" fill="white">M</text>
   </svg>
 );
 

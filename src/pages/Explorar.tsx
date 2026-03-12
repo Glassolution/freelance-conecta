@@ -367,7 +367,7 @@ const Explorar = () => {
           ) : (
             <div className="p-6 space-y-6">
               {/* Featured Banner */}
-              <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #2563eb, #3b82f6)', minHeight: '180px' }}>
+              <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #29B2FE, #0077cc)', minHeight: '180px' }}>
                 <div className="relative z-10 max-w-lg">
                   <p className="text-xs font-body font-medium text-white/70 uppercase tracking-wider mb-1">Marketplace</p>
                   <h2 className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">

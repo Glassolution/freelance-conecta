@@ -353,6 +353,132 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
   },
 ];
 
+// --- 99Freelas scraping + fallback ---
+
+const FREELAS99_URLS = [
+  'https://www.99freelas.com.br/projects?category=web-mobile-software',
+  'https://www.99freelas.com.br/projects?category=design-criacao',
+  'https://www.99freelas.com.br/projects?category=vendas-marketing',
+  'https://www.99freelas.com.br/projects?category=fotografia-audiovisual',
+];
+
+async function fetch99FreelasJobs(): Promise<Freelas99Job[]> {
+  const allJobs: Freelas99Job[] = [];
+
+  for (const url of FREELAS99_URLS) {
+    try {
+      const proxy = 'https://api.allorigins.win/get?url=';
+      const res = await fetch(proxy + encodeURIComponent(url));
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (!data.contents) continue;
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(data.contents, 'text/html');
+      const items = doc.querySelectorAll('h1 a[href*="/project/"]');
+
+      items.forEach((jobEl) => {
+        const card = jobEl.closest('li') || jobEl.closest('.project-item') || jobEl.parentElement?.parentElement;
+        const title = jobEl.textContent?.trim() || '';
+        const href = jobEl.getAttribute('href') || '';
+        const fullText = card?.textContent || '';
+        const description = card?.querySelector('p, .description')?.textContent?.trim()?.slice(0, 150) || '';
+        const propostas = fullText.match(/Propostas:\s*(\d+)/)?.[1] || '0';
+        const pubDate = fullText.match(/Publicado:\s*([^|]+)/)?.[1]?.trim() || 'Agora';
+        const skillEls = card?.querySelectorAll('a[href*="/projects?q="]') || [];
+        const skills = Array.from(skillEls).slice(0, 4).map(s => s.textContent?.trim() || '').filter(Boolean);
+
+        if (title) {
+          allJobs.push({
+            title,
+            description,
+            skills,
+            budget: 'A combinar',
+            bids: parseInt(propostas) || 0,
+            pubDate,
+            platform: '99Freelas',
+            platformColor: '#0a7aff',
+            url: href.startsWith('http') ? href : `https://www.99freelas.com.br${href}`,
+          });
+        }
+      });
+    } catch {
+      // continue to next URL
+    }
+  }
+
+  return allJobs;
+}
+
+const FREELAS99_FALLBACK: Freelas99Job[] = [
+  {
+    title: "Melhorar layout e design do site WordPress",
+    description: "Melhorar o visual da página: ajustar cores, organizar layout, criar banner rotativo e deixar o site mais moderno.",
+    skills: ["Web Design", "WordPress"],
+    budget: "A combinar",
+    bids: 23,
+    pubDate: "3 horas atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/melhorar-layout-e-design-do-site-wordpress-735737"
+  },
+  {
+    title: "Especialista em Edição de Vídeo com IA para Produção de Criativos de Ads",
+    description: "Edição de vídeo com IA para produzir 16-20 vídeos/dia para campanhas de geração de leads em múltiplos formatos.",
+    skills: ["CapCut", "Premiere", "After Effects", "Runway"],
+    budget: "A combinar",
+    bids: 1,
+    pubDate: "17 minutos atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/especialista-em-edicao-de-video-com-ia-para-producao-de-criativos-de-ads-em-735789"
+  },
+  {
+    title: "Desenvolvimento de site para equipe de motocross",
+    description: "Desenvolver front-end, back-end, integração com loja e deploy na Hostinger. Layout já pronto no Figma.",
+    skills: ["CSS", "HTML5", "JavaScript", "React"],
+    budget: "A combinar",
+    bids: 15,
+    pubDate: "38 minutos atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/desenvolvimento-de-site-para-equipe-de-motocross-735786"
+  },
+  {
+    title: "Automação de atendimento WhatsApp e gestão de aluguéis de kitnets",
+    description: "Automatizar atendimento via WhatsApp com Typebot, integração Evolution API e gestão financeira com boletos/PIX.",
+    skills: ["WhatsApp API", "Typebot", "Automação"],
+    budget: "A combinar",
+    bids: 5,
+    pubDate: "43 minutos atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/automacao-de-atendimento-whatsapp-e-gestao-de-alugueis-de-kitnets-735783"
+  },
+  {
+    title: "Branding e criação de perfis sem rosto para Instagram e TikTok",
+    description: "Criar e estruturar página profissional no Instagram e TikTok com identidade visual, feed inicial e estratégia de conteúdo.",
+    skills: ["Social Media", "Branding", "Instagram"],
+    budget: "A combinar",
+    bids: 3,
+    pubDate: "59 minutos atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/branding-e-criacao-de-perfis-sem-rosto-para-instagram-e-tiktok-735776"
+  },
+  {
+    title: "Vídeo institucional com animação 3D",
+    description: "Vídeo institucional de 3 minutos com animação 3D sobre saneamento básico. Formatos: YouTube e Reels.",
+    skills: ["Animação 3D", "Video Production"],
+    budget: "A combinar",
+    bids: 2,
+    pubDate: "1 hora atrás",
+    platform: "99Freelas",
+    platformColor: "#0a7aff",
+    url: "https://www.99freelas.com.br/project/video-institucional-com-animacao-3d-735778"
+  },
+];
+
 // --- Converters to UnifiedJob ---
 
 function freelancerToUnified(job: FreelancerJob, tr?: { title?: string; description?: string }): UnifiedJob {

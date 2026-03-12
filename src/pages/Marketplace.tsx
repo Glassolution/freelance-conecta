@@ -938,7 +938,7 @@ const Marketplace = () => {
               <div className="relative z-10 max-w-lg">
                 <p className="text-xs font-body font-medium text-white/70 uppercase tracking-wider mb-1">Marketplace Global</p>
                 <p className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">
-                  Vagas em Tempo Real do Freelancer.com + Workana
+                  Vagas em Tempo Real do Freelancer.com + Workana + 99Freelas
                 </p>
                 <p className="text-sm font-body text-white/80 mb-3">
                   Encontre projetos internacionais e nacionais atualizados automaticamente

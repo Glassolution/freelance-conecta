@@ -234,7 +234,7 @@ const Auth = () => {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)' }}>
               <Search size={14} className="text-white" />
             </div>
-            <span className="font-heading font-bold text-sm text-white/70">ikas</span>
+            <span className="font-heading font-bold text-sm text-white/70">Markfy</span>
           </div>
 
           <h2 className="font-heading font-bold text-3xl text-white leading-tight mb-3">

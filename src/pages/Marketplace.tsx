@@ -987,7 +987,7 @@ const Marketplace = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="text-sm font-body font-medium text-[#6B7280] bg-transparent outline-none cursor-pointer border border-[#E8ECF4] rounded-lg px-3 py-1.5 hover:border-[#0077b5]/30 transition-colors"
+                  className="text-sm font-body font-medium text-[#6B7280] bg-transparent outline-none cursor-pointer border border-[#E8ECF4] rounded-lg px-3 py-1.5 hover:border-[#29B2FE]/30 transition-colors"
                 >
                   <option value="newest">Mais recentes</option>
                   <option value="budget_desc">Maior orçamento</option>

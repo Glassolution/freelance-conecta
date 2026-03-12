@@ -201,7 +201,7 @@ const Ferramentas = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                        style={{ background: '#2563eb' }}
+                        style={{ background: '#29B2FE' }}
                       >
                         <ExternalLink size={14} />
                       </a>

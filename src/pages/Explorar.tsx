@@ -552,7 +552,7 @@ const Explorar = () => {
                       <div className="p-5">
                         {/* Author */}
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563eb] to-[#3b82f6] flex items-center justify-center text-white text-[11px] font-bold">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[11px] font-bold">
                             {vaga.author_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                           </div>
                           <div>

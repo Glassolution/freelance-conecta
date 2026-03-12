@@ -325,7 +325,7 @@ const Dashboard = () => {
                             <tr key={row.id} className="border-b border-[#E8ECF4] last:border-0">
                               <td className="px-5 py-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[10px] font-bold">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[10px] font-bold">
                                     {row.client_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                   </div>
                                   <div>

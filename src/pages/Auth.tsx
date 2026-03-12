@@ -62,7 +62,7 @@ const Auth = () => {
             >
               <Search size={18} className="text-white" />
             </div>
-            <span className="font-heading font-extrabold text-xl text-[#060912]">ikas</span>
+            <span className="font-heading font-extrabold text-xl text-[#060912]">Markfy</span>
           </button>
 
           {/* Title */}
@@ -234,14 +234,14 @@ const Auth = () => {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)' }}>
               <Search size={14} className="text-white" />
             </div>
-            <span className="font-heading font-bold text-sm text-white/70">ikas</span>
+            <span className="font-heading font-bold text-sm text-white/70">Markfy</span>
           </div>
 
           <h2 className="font-heading font-bold text-3xl text-white leading-tight mb-3">
-            Bem-vindo ao ikas
+            Bem-vindo ao Markfy
           </h2>
           <p className="font-body text-sm text-white/50 max-w-sm mb-6 leading-relaxed">
-            Ikas ajuda freelancers a encontrar as melhores vagas em todas as plataformas. 
+            Markfy ajuda freelancers a encontrar as melhores vagas em todas as plataformas. 
             Junte-se a nós e comece a encontrar projetos hoje.
           </p>
           <p className="font-body text-sm text-white/40 mb-8">

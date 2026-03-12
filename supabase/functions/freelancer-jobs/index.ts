@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'Ikas-App/1.0',
+        'User-Agent': 'Markfy-App/1.0',
       },
     });
 

@@ -239,7 +239,7 @@ const Explorar = () => {
               placeholder="R$ 0"
               value={priceMin}
               onChange={(e) => setPriceMin(e.target.value)}
-              className="w-full px-3 py-2 text-sm font-body text-[#1A1D26] bg-transparent outline-none border border-[#E8ECF4] rounded-lg focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/20"
+              className="w-full px-3 py-2 text-sm font-body text-[#1A1D26] bg-transparent outline-none border border-[#E8ECF4] rounded-lg focus:border-[#29B2FE] focus:ring-1 focus:ring-[#29B2FE]/20"
             />
           </div>
           <div>
@@ -249,7 +249,7 @@ const Explorar = () => {
               placeholder="R$ 9999"
               value={priceMax}
               onChange={(e) => setPriceMax(e.target.value)}
-              className="w-full px-3 py-2 text-sm font-body text-[#1A1D26] bg-transparent outline-none border border-[#E8ECF4] rounded-lg focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/20"
+              className="w-full px-3 py-2 text-sm font-body text-[#1A1D26] bg-transparent outline-none border border-[#E8ECF4] rounded-lg focus:border-[#29B2FE] focus:ring-1 focus:ring-[#29B2FE]/20"
             />
           </div>
         </div>
@@ -259,7 +259,7 @@ const Explorar = () => {
       {hasActiveFilters && (
         <button
           onClick={clearFilters}
-          className="w-full py-2.5 rounded-xl text-sm font-body font-medium text-[#2563eb] border border-[#2563eb]/20 hover:bg-[#2563eb]/5 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 rounded-xl text-sm font-body font-medium text-[#29B2FE] border border-[#29B2FE]/20 hover:bg-[#29B2FE]/5 transition-colors flex items-center justify-center gap-2"
         >
           <X size={14} />
           Limpar Filtros
@@ -274,7 +274,7 @@ const Explorar = () => {
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
               {initials}
             </div>
             <div>
@@ -289,9 +289,9 @@ const Explorar = () => {
                 key={link.label}
                 onClick={() => link.path && navigate(link.path)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#2563eb]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                  link.active ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
                 }`}
-                style={link.active ? { background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)' } : undefined}
+                style={link.active ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
               >
                 <link.icon size={18} />
                 {link.label}
@@ -334,7 +334,7 @@ const Explorar = () => {
               <Bell size={18} />
             </button>
             <div className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
                 {initials}
               </div>
               <span className="text-sm font-body font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>
@@ -367,7 +367,7 @@ const Explorar = () => {
           ) : (
             <div className="p-6 space-y-6">
               {/* Featured Banner */}
-              <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #2563eb, #3b82f6)', minHeight: '180px' }}>
+              <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #29B2FE, #0077cc)', minHeight: '180px' }}>
                 <div className="relative z-10 max-w-lg">
                   <p className="text-xs font-body font-medium text-white/70 uppercase tracking-wider mb-1">Marketplace</p>
                   <h2 className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">
@@ -403,14 +403,14 @@ const Explorar = () => {
                           {vaga.image_url ? (
                             <img src={vaga.image_url} alt={vaga.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2563eb]/10 to-[#3b82f6]/10">
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#29B2FE]/10 to-[#0077cc]/10">
                               <Briefcase size={36} className="text-[#9CA3B4]" />
                             </div>
                           )}
                           <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-[#9CA3B4] hover:text-red-500 transition-colors">
                             <Heart size={14} />
                           </button>
-                          <div className="absolute top-3 left-3 bg-[#2563eb] text-white text-[10px] font-body font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg">
+                          <div className="absolute top-3 left-3 bg-[#29B2FE] text-white text-[10px] font-body font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg">
                             Destaque
                           </div>
                         </div>
@@ -418,7 +418,7 @@ const Explorar = () => {
                         <div className="p-5">
                           {/* Author */}
                           <div className="flex items-center gap-3 mb-4">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563eb] to-[#3b82f6] flex items-center justify-center text-white text-[11px] font-bold">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[11px] font-bold">
                               {vaga.author_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                             </div>
                             <div>
@@ -443,7 +443,7 @@ const Explorar = () => {
                             <div className="flex items-center justify-between mb-4">
                               <div>
                                 <p className="text-[10px] font-body text-[#9CA3B4] uppercase tracking-wider mb-0.5">A partir de</p>
-                                <p className="text-xl font-heading font-extrabold" style={{ color: '#2563eb' }}>
+                              <p className="text-xl font-heading font-extrabold" style={{ color: '#29B2FE' }}>
                                   R$ {Number(vaga.price).toLocaleString('pt-BR')}
                                 </p>
                               </div>
@@ -457,7 +457,7 @@ const Explorar = () => {
                             {vaga.url ? (
                               <a href={vaga.url} target="_blank" rel="noopener noreferrer" className="block">
                                 <button className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
-                                  style={{ background: '#2563eb' }}
+                                style={{ background: '#29B2FE' }}
                                 >
                                   <ShoppingCart size={15} />
                                   Contratar Serviço
@@ -488,7 +488,7 @@ const Explorar = () => {
                         Filtros
                       </h3>
                       {hasActiveFilters && (
-                        <span className="text-[10px] font-body font-bold text-white bg-[#2563eb] rounded-full w-5 h-5 flex items-center justify-center">
+                        <span className="text-[10px] font-body font-bold text-white bg-[#29B2FE] rounded-full w-5 h-5 flex items-center justify-center">
                           {selectedCategories.length + selectedPlatforms.length + (priceMin || priceMax ? 1 : 0)}
                         </span>
                       )}
@@ -501,7 +501,7 @@ const Explorar = () => {
                         <select
                           value={sortBy}
                           onChange={(e) => setSortBy(e.target.value)}
-                          className="text-sm font-body font-medium text-[#6B7280] bg-transparent outline-none cursor-pointer border border-[#E8ECF4] rounded-lg px-3 py-1.5 hover:border-[#2563eb]/30 transition-colors"
+                          className="text-sm font-body font-medium text-[#6B7280] bg-transparent outline-none cursor-pointer border border-[#E8ECF4] rounded-lg px-3 py-1.5 hover:border-[#29B2FE]/30 transition-colors"
                         >
                           <option value="newest">Mais recentes</option>
                           <option value="price_asc">Menor preço</option>
@@ -515,7 +515,7 @@ const Explorar = () => {
                     <button
                       onClick={clearFilters}
                       className="text-sm font-body font-medium px-5 py-2.5 rounded-full transition-colors"
-                      style={{ color: 'white', background: '#2563eb' }}
+                      style={{ color: 'white', background: '#29B2FE' }}
                     >
                       Limpar Filtros
                     </button>
@@ -534,7 +534,7 @@ const Explorar = () => {
                         {vaga.image_url ? (
                           <img src={vaga.image_url} alt={vaga.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#2563eb]/10 to-[#3b82f6]/10">
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#29B2FE]/10 to-[#0077cc]/10">
                             <Briefcase size={32} className="text-[#9CA3B4]" />
                           </div>
                         )}
@@ -552,7 +552,7 @@ const Explorar = () => {
                       <div className="p-5">
                         {/* Author */}
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563eb] to-[#3b82f6] flex items-center justify-center text-white text-[11px] font-bold">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[11px] font-bold">
                             {vaga.author_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                           </div>
                           <div>
@@ -577,7 +577,7 @@ const Explorar = () => {
                           <div className="flex items-center justify-between mb-4">
                             <div>
                               <p className="text-[10px] font-body text-[#9CA3B4] uppercase tracking-wider mb-0.5">A partir de</p>
-                              <p className="text-xl font-heading font-extrabold" style={{ color: '#2563eb' }}>
+                              <p className="text-xl font-heading font-extrabold" style={{ color: '#29B2FE' }}>
                                 R$ {Number(vaga.price).toLocaleString('pt-BR')}
                               </p>
                             </div>
@@ -591,7 +591,7 @@ const Explorar = () => {
                           {vaga.url ? (
                             <a href={vaga.url} target="_blank" rel="noopener noreferrer" className="block">
                               <button className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
-                                style={{ background: '#2563eb' }}
+                                style={{ background: '#29B2FE' }}
                               >
                                 <ShoppingCart size={15} />
                                 Contratar Serviço

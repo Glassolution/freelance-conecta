@@ -98,7 +98,7 @@ const Pricing = () => {
           <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'hsl(var(--primary))' }}>
             <Search size={14} className="text-white" />
           </div>
-          <span className="font-heading font-extrabold text-xl text-white">ikas</span>
+          <span className="font-heading font-extrabold text-xl text-white">Markfy</span>
         </div>
         <h1 className="font-heading font-extrabold text-3xl md:text-5xl text-white mb-4">
           Escolha seu Plano

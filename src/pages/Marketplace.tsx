@@ -271,7 +271,7 @@ async function fetchWorkanaJobs(): Promise<WorkanaJob[]> {
             bids: parseInt(bidsText) || 0,
             pubDate,
             platform: 'Workana',
-            platformColor: '#0077b5',
+            platformColor: '#00b04f',
             url: href.startsWith('http') ? href : `https://www.workana.com${href}`,
           });
         }
@@ -293,7 +293,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 6,
     pubDate: "39 minutos atrás",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/designer-desenvolvedor-hubspot-para-22-landing-pages-de-alta-conversao"
   },
   {
@@ -304,7 +304,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 1,
     pubDate: "1 hora atrás",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/editor-de-videos-com-expertise-em-after-effects-e-premiere-para-canal-dark"
   },
   {
@@ -315,7 +315,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "Agora",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/reconstrucao-completa-de-e-commerce-com-integracao-bling-e-seguranca-avancada"
   },
   {
@@ -326,7 +326,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "Agora",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/vaga-social-media-manager-foco-em-performance-e-comprometimento"
   },
   {
@@ -337,7 +337,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "5 minutos atrás",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/criacao-de-video-promocional-para-aplicativo-de-educacao-financeira"
   },
   {
@@ -348,7 +348,7 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     bids: 0,
     pubDate: "Agora",
     platform: "Workana",
-    platformColor: "#0077b5",
+    platformColor: "#00b04f",
     url: "https://www.workana.com/job/animador-2d-com-expertise-em-ia-para-piloto-de-desenho-animado-infantil"
   },
 ];
@@ -397,7 +397,7 @@ async function fetch99FreelasJobs(): Promise<Freelas99Job[]> {
             bids: parseInt(propostas) || 0,
             pubDate,
             platform: '99Freelas',
-            platformColor: '#0077b5',
+            platformColor: '#0a7aff',
             url: href.startsWith('http') ? href : `https://www.99freelas.com.br${href}`,
           });
         }
@@ -419,7 +419,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 23,
     pubDate: "3 horas atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/melhorar-layout-e-design-do-site-wordpress-735737"
   },
   {
@@ -430,7 +430,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 1,
     pubDate: "17 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/especialista-em-edicao-de-video-com-ia-para-producao-de-criativos-de-ads-em-735789"
   },
   {
@@ -441,7 +441,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 15,
     pubDate: "38 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/desenvolvimento-de-site-para-equipe-de-motocross-735786"
   },
   {
@@ -452,7 +452,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 5,
     pubDate: "43 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/automacao-de-atendimento-whatsapp-e-gestao-de-alugueis-de-kitnets-735783"
   },
   {
@@ -463,7 +463,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 3,
     pubDate: "59 minutos atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/branding-e-criacao-de-perfis-sem-rosto-para-instagram-e-tiktok-735776"
   },
   {
@@ -474,7 +474,7 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     bids: 2,
     pubDate: "1 hora atrás",
     platform: "99Freelas",
-    platformColor: "#0077b5",
+    platformColor: "#0a7aff",
     url: "https://www.99freelas.com.br/project/video-institucional-com-animacao-3d-735778"
   },
 ];
@@ -497,7 +497,7 @@ function freelancerToUnified(job: FreelancerJob, tr?: { title?: string; descript
     bidsCount: job.bid_stats?.bid_count || 0,
     skills: (job.jobs || []).map(j => ({ name: j.name, id: j.id })),
     platform: 'Freelancer',
-    platformColor: '#0077b5',
+    platformColor: '#29B2FE',
     timeLabel: timeAgo(job.time_submitted || job.submitdate),
     timestamp: job.time_submitted || job.submitdate || 0,
   };
@@ -515,7 +515,7 @@ function workanaToUnified(job: WorkanaJob, index: number): UnifiedJob {
     bidsCount: job.bids,
     skills: job.skills.map(s => ({ name: s })),
     platform: 'Workana',
-    platformColor: '#0077b5',
+    platformColor: '#00b04f',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };
@@ -533,7 +533,7 @@ function freelas99ToUnified(job: Freelas99Job, index: number): UnifiedJob {
     bidsCount: job.bids,
     skills: job.skills.map(s => ({ name: s })),
     platform: '99Freelas',
-    platformColor: '#0077b5',
+    platformColor: '#0a7aff',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };
@@ -852,7 +852,7 @@ const Marketplace = () => {
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
               {initials}
             </div>
             <div>
@@ -867,9 +867,9 @@ const Marketplace = () => {
                 key={link.label}
                 onClick={() => link.path && navigate(link.path)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#2563eb]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                  link.active ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
                 }`}
-                style={link.active ? { background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)' } : undefined}
+                style={link.active ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
               >
                 <link.icon size={18} />
                 {link.label}
@@ -922,7 +922,7 @@ const Marketplace = () => {
               <Bell size={18} />
             </button>
             <div className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
                 {initials}
               </div>
               <span className="text-sm font-body font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>
@@ -934,7 +934,7 @@ const Marketplace = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
             {/* Banner */}
-            <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #0077b5, #00a6ff)', minHeight: '160px' }}>
+            <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #29B2FE, #0077cc)', minHeight: '160px' }}>
               <div className="relative z-10 max-w-lg">
                 <p className="text-xs font-body font-medium text-white/70 uppercase tracking-wider mb-1">Marketplace Global</p>
                 <p className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">
@@ -973,9 +973,9 @@ const Marketplace = () => {
                     className={`px-4 py-2 rounded-xl text-sm font-body font-medium whitespace-nowrap transition-all ${
                       activeFilter === tab.key
                         ? 'text-white shadow-md'
-                        : 'text-[#6B7280] bg-white border border-[#E8ECF4] hover:border-[#0077b5]/30 hover:text-[#0077b5]'
+                        : 'text-[#6B7280] bg-white border border-[#E8ECF4] hover:border-[#29B2FE]/30 hover:text-[#29B2FE]'
                     }`}
-                    style={activeFilter === tab.key ? { background: '#0077b5' } : undefined}
+                    style={activeFilter === tab.key ? { background: '#29B2FE' } : undefined}
                   >
                     {tab.label}
                   </button>
@@ -987,7 +987,7 @@ const Marketplace = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="text-sm font-body font-medium text-[#6B7280] bg-transparent outline-none cursor-pointer border border-[#E8ECF4] rounded-lg px-3 py-1.5 hover:border-[#0077b5]/30 transition-colors"
+                  className="text-sm font-body font-medium text-[#6B7280] bg-transparent outline-none cursor-pointer border border-[#E8ECF4] rounded-lg px-3 py-1.5 hover:border-[#29B2FE]/30 transition-colors"
                 >
                   <option value="newest">Mais recentes</option>
                   <option value="budget_desc">Maior orçamento</option>
@@ -1009,7 +1009,7 @@ const Marketplace = () => {
                 <button
                   onClick={() => fetchJobs()}
                   className="text-sm font-body font-semibold px-6 py-2.5 rounded-full text-white transition-all hover:brightness-110"
-                  style={{ background: '#0077b5' }}
+                  style={{ background: '#29B2FE' }}
                 >
                   Tentar novamente
                 </button>
@@ -1093,7 +1093,7 @@ const Marketplace = () => {
                     {filteredJobs.map((job) => (
                       <div
                         key={job.id}
-                        className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden group hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:border-[#0077b5]/20 flex flex-col"
+                        className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden group hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:border-[#29B2FE]/20 flex flex-col"
                       >
                         <div className="p-5 flex flex-col flex-1">
                           {/* Header: platform + time */}

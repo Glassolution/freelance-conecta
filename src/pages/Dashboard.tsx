@@ -134,7 +134,7 @@ const Dashboard = () => {
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
               {initials}
             </div>
             <div>
@@ -149,9 +149,9 @@ const Dashboard = () => {
                 key={link.label}
                 onClick={() => link.path && navigate(link.path)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#2563eb]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                  link.active ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
                 }`}
-                style={link.active ? { background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)' } : undefined}
+                style={link.active ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
               >
                 <link.icon size={18} />
                 {link.label}
@@ -195,7 +195,7 @@ const Dashboard = () => {
               {propostasCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />}
             </button>
             <div className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#2563eb' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
                 {initials}
               </div>
               <span className="text-sm font-body font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>
@@ -278,7 +278,7 @@ const Dashboard = () => {
                             <h4 className="font-body font-semibold text-sm text-[#1A1D26] leading-snug mb-3 line-clamp-2">{vaga.title}</h4>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[9px] font-bold">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[9px] font-bold">
                                   {vaga.author_name.split(' ').map(n => n[0]).join('')}
                                 </div>
                                 <div>
@@ -286,7 +286,7 @@ const Dashboard = () => {
                                   <p className="text-[10px] font-body text-[#9CA3B4]">{vaga.author_role}</p>
                                 </div>
                               </div>
-                              <span className="text-sm font-heading font-bold" style={{ color: '#2563eb' }}>
+                              <span className="text-sm font-heading font-bold" style={{ color: '#29B2FE' }}>
                                 R$ {Number(vaga.price).toLocaleString('pt-BR')}
                               </span>
                             </div>
@@ -325,7 +325,7 @@ const Dashboard = () => {
                             <tr key={row.id} className="border-b border-[#E8ECF4] last:border-0">
                               <td className="px-5 py-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[10px] font-bold">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[10px] font-bold">
                                     {row.client_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                   </div>
                                   <div>
@@ -402,13 +402,13 @@ const Dashboard = () => {
                     {plataformas.map((p) => (
                       <div key={p.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2563eb] to-[#60a5fa] flex items-center justify-center text-white text-[10px] font-bold">{p.name.substring(0, 2).toUpperCase()}</div>
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[10px] font-bold">{p.name.substring(0, 2).toUpperCase()}</div>
                           <div>
                             <p className="text-sm font-body font-medium text-[#1A1D26]">{p.name}</p>
                             <p className="text-[11px] font-body text-[#9CA3B4]">{p.role}</p>
                           </div>
                         </div>
-                        <button className="text-[11px] font-body font-medium px-3 py-1 rounded-full" style={{ color: 'var(--blue)', background: 'rgba(37,99,235,0.08)' }}>{p.status}</button>
+                        <button className="text-[11px] font-body font-medium px-3 py-1 rounded-full" style={{ color: '#29B2FE', background: 'rgba(41,178,254,0.08)' }}>{p.status}</button>
                       </div>
                     ))}
                   </div>

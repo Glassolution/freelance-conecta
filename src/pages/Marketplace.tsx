@@ -666,54 +666,59 @@ const Marketplace = () => {
   // Markfy tab state
   const [activeTab, setActiveTab] = useState<'geral' | 'markfy'>('geral');
   const [markfyAds, setMarkfyAds] = useState<MarkfyAd[]>([]);
+  const [markfyLoading, setMarkfyLoading] = useState(false);
   const [showProposalModal, setShowProposalModal] = useState<MarkfyAd | null>(null);
   const [proposalText, setProposalText] = useState('');
   const [proposalValue, setProposalValue] = useState<number | ''>('');
   const [proposalDeadline, setProposalDeadline] = useState<number | ''>('');
 
-  // Load Markfy ads from localStorage
-  useEffect(() => {
-    const load = () => {
-      try { setMarkfyAds(JSON.parse(localStorage.getItem('markfy_ads') || '[]')); } catch { setMarkfyAds([]); }
-    };
-    load();
-    window.addEventListener('storage', load);
-    return () => window.removeEventListener('storage', load);
+  // Load Markfy ads from Supabase
+  const fetchMarkfyAds = useCallback(async () => {
+    setMarkfyLoading(true);
+    const { data } = await supabase
+      .from('ads')
+      .select('*, author:profiles!ads_user_id_fkey(full_name)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false }) as any;
+    const ads = (data || []).map((a: any) => ({
+      ...a,
+      author_name: a.author?.full_name || 'Freelancer',
+    }));
+    setMarkfyAds(ads);
+    setMarkfyLoading(false);
   }, []);
 
-  const activeMarkfyAds = markfyAds.filter(a => a.status === 'ativo');
+  useEffect(() => {
+    if (user) { ensureProfile(); fetchMarkfyAds(); }
+  }, [user, fetchMarkfyAds]);
 
-  const handleSendProposal = () => {
-    if (!showProposalModal || !proposalText.trim() || !proposalValue || !proposalDeadline) return;
-    const proposal: MarkfyProposal = {
-      id: crypto.randomUUID(),
-      adId: showProposalModal.id,
-      freelancerName: getUserDisplayName(user),
-      text: proposalText,
-      value: Number(proposalValue),
-      deadline: Number(proposalDeadline),
-      status: 'pendente',
-      createdAt: new Date().toISOString(),
-    };
-    // Save to markfy_proposals
-    try {
-      const existing = JSON.parse(localStorage.getItem('markfy_proposals') || '[]');
-      existing.push(proposal);
-      localStorage.setItem('markfy_proposals', JSON.stringify(existing));
-    } catch {}
-    // Also add to the ad's proposals in markfy_ads
-    try {
-      const ads: MarkfyAd[] = JSON.parse(localStorage.getItem('markfy_ads') || '[]');
-      const idx = ads.findIndex(a => a.id === showProposalModal.id);
-      if (idx !== -1) {
-        ads[idx].proposals.push(proposal);
-        ads[idx].views = (ads[idx].views || 0) + 1;
-        localStorage.setItem('markfy_ads', JSON.stringify(ads));
-        setMarkfyAds(ads);
-      }
-    } catch {}
+  const handleSendProposal = async () => {
+    if (!showProposalModal || !proposalText.trim() || !proposalValue || !proposalDeadline || !user) return;
+
+    const { error } = await supabase.from('ad_proposals').insert({
+      ad_id: showProposalModal.id,
+      sender_id: user.id,
+      message: proposalText,
+      price: Number(proposalValue),
+      deadline_days: Number(proposalDeadline),
+    } as any);
+
+    if (error) { toast({ title: 'Erro ao enviar proposta', variant: 'destructive', duration: 3000 }); return; }
+
+    // Increment views
+    await supabase.rpc('increment_ad_views', { p_ad_id: showProposalModal.id } as any);
+
+    // Notify ad owner
+    await supabase.from('notifications').insert({
+      user_id: showProposalModal.user_id,
+      title: 'Nova proposta recebida!',
+      message: `${getUserDisplayName(user)} enviou uma proposta para "${showProposalModal.title}"`,
+      type: 'proposal',
+    } as any);
+
     setShowProposalModal(null); setProposalText(''); setProposalValue(''); setProposalDeadline('');
-    import('@/hooks/use-toast').then(m => m.toast({ title: 'Proposta enviada com sucesso!', duration: 3000 }));
+    toast({ title: 'Proposta enviada com sucesso!', duration: 3000 });
+    fetchMarkfyAds();
   };
 
   // Fetch Workana jobs

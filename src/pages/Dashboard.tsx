@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import {
-  Home, SlidersHorizontal, Globe, Briefcase,
+  Home, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
-  Settings, LogOut, Search, Bell, Mail, ChevronRight,
-  Heart, Plus, ExternalLink, Loader2, ShoppingBag, Megaphone, Users, MessageSquare
+  Settings, LogOut, Search, Bell, ChevronRight, ChevronDown,
+  Loader2, ShoppingBag, Megaphone, Users, MessageSquare,
+  TrendingUp, TrendingDown, ExternalLink, Eye, FileText, DollarSign, UserCheck
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,6 +63,7 @@ interface Vaga {
   author_name: string;
   author_role: string;
   image_url: string | null;
+  created_at: string;
 }
 
 interface Proposta {
@@ -74,20 +76,18 @@ interface Proposta {
   status: string;
 }
 
-interface UserStat {
-  period_label: string;
-  period_value: number;
-}
+// Monthly chart data
+const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedView, setSelectedView] = useState('Semanal');
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
 
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [propostas, setPropostas] = useState<Proposta[]>([]);
-  const [stats, setStats] = useState<UserStat[]>([]);
   const [loading, setLoading] = useState(true);
 
   const initials = getUserInitials(user);
@@ -97,22 +97,14 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-
-      const [vagasRes, propostasRes, statsRes] = await Promise.all([
-        supabase.from('vagas').select('*').order('created_at', { ascending: false }).limit(6),
-        supabase.from('propostas').select('*').order('created_at', { ascending: false }).limit(5),
-        supabase.from('user_stats').select('period_label, period_value').order('created_at', { ascending: true }),
+      const [vagasRes, propostasRes] = await Promise.all([
+        supabase.from('vagas').select('*').order('created_at', { ascending: false }).limit(10),
+        supabase.from('propostas').select('*').order('created_at', { ascending: false }).limit(10),
       ]);
-
       if (vagasRes.data) setVagas(vagasRes.data);
       if (propostasRes.data) setPropostas(propostasRes.data);
-      if (statsRes.data && statsRes.data.length > 0) {
-        setStats(statsRes.data);
-      }
-
       setLoading(false);
     };
-
     fetchData();
   }, []);
 
@@ -121,31 +113,69 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const filteredVagas = searchQuery
-    ? vagas.filter(v =>
-        v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        v.platform.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        v.tag.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : vagas;
-
   const vagasCount = vagas.length;
   const propostasCount = propostas.length;
-  const progressPercent = vagasCount > 0 ? Math.min(Math.round((propostasCount / vagasCount) * 100), 100) : 0;
 
-  const revenueData = Array.from({length: 30}, (_, i) => ({day: i + 1, value: 0}));
+  // Generate chart data
+  const chartData = monthLabels.map((label, i) => ({
+    name: label,
+    pendente: Math.floor(Math.random() * 5),
+    enviada: Math.floor(Math.random() * 8),
+    recusada: Math.floor(Math.random() * 2),
+  }));
+
+  const views = ['Últimas 24h', 'Semanal', 'Mensal', 'Anual'];
+
+  const kpiCards = [
+    {
+      label: 'Vagas Disponíveis',
+      value: vagasCount.toString(),
+      change: '+12%',
+      positive: true,
+      subtitle: 'vs últimos 7 dias',
+      icon: Briefcase,
+      iconBg: 'hsl(200, 95%, 57%)',
+    },
+    {
+      label: 'Propostas Enviadas',
+      value: propostasCount.toString(),
+      change: '+4.2%',
+      positive: true,
+      subtitle: 'vs últimos 7 dias',
+      icon: Send,
+      iconBg: 'hsl(142, 71%, 45%)',
+    },
+    {
+      label: 'Receita Total',
+      value: 'R$ 0,00',
+      change: '0%',
+      positive: true,
+      subtitle: 'vs últimos 7 dias',
+      icon: DollarSign,
+      iconBg: 'hsl(200, 95%, 57%)',
+    },
+    {
+      label: 'Clientes Ativos',
+      value: '0',
+      change: '0%',
+      positive: true,
+      subtitle: 'vs últimos 7 dias',
+      icon: UserCheck,
+      iconBg: 'hsl(262, 83%, 68%)',
+    },
+  ];
 
   return (
-    <div className="flex h-screen" style={{ background: '#f4f6fb' }}>
+    <div className="flex h-screen" style={{ background: '#f8f9fc' }}>
       {/* LEFT SIDEBAR */}
-      <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
+      <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#edf0f7]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
               {initials}
             </div>
             <div>
-              <p className="text-sm font-heading font-bold text-[#111111] leading-tight">{displayName}</p>
+              <p className="text-sm font-heading font-bold text-[#111] leading-tight">{displayName}</p>
               <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
             </div>
           </div>
@@ -158,7 +188,7 @@ const Dashboard = () => {
                   key={link.label}
                   onClick={() => link.path && navigate(link.path)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                    isActive ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                    isActive ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6]'
                   }`}
                   style={isActive ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
                 >
@@ -171,7 +201,7 @@ const Dashboard = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
+          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6] transition-colors">
             <Settings size={18} /> Configurações
           </button>
           <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-red-400 hover:bg-red-500/10 transition-colors">
@@ -182,290 +212,295 @@ const Dashboard = () => {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* TOP HEADER */}
+        <header className="h-16 shrink-0 bg-white border-b border-[#edf0f7] flex items-center justify-between px-6">
+          <div>
+            <h1 className="font-heading font-bold text-xl text-[#111]">Dashboard</h1>
+            <p className="text-xs font-body text-[#9CA3B4]">{getGreeting()}, {firstName}!</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Search */}
+            <div className="relative hidden md:block">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3B4]" />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar..."
+                className="pl-9 pr-16 py-2 rounded-xl border border-[#edf0f7] bg-[#f8f9fc] text-sm font-body text-[#111] placeholder:text-[#9CA3B4] focus:outline-none focus:ring-2 focus:ring-[#29B2FE]/30 w-[240px]"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-body text-[#9CA3B4] bg-white border border-[#edf0f7] px-1.5 py-0.5 rounded">⌘ K</span>
+            </div>
+
+            {/* Notification */}
+            <button className="relative w-9 h-9 rounded-xl border border-[#edf0f7] flex items-center justify-center text-[#6B7280] hover:text-[#111] hover:bg-[#f8f9fc] transition-colors">
+              <Bell size={18} />
+            </button>
+
+            {/* Avatar */}
+            <div className="flex items-center gap-2 cursor-pointer">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-xs font-bold">
+                {initials}
+              </div>
+              <div className="hidden md:block">
+                <p className="text-sm font-body font-medium text-[#111] leading-tight">{firstName}</p>
+                <p className="text-[10px] font-body text-[#29B2FE]">• Freelancer</p>
+              </div>
+              <ChevronDown size={14} className="text-[#9CA3B4] hidden md:block" />
+            </div>
+          </div>
+        </header>
+
         {/* SCROLLABLE BODY */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 size={32} className="animate-spin text-[#9CA3B4]" />
             </div>
           ) : (
-            <div className="flex max-xl:flex-col">
-              {/* CENTER COLUMN */}
-              <div className="flex-1 p-6 space-y-6">
-                {/* Banner */}
-                <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), #a78bfa)', minHeight: '180px' }}>
-                  <div className="relative z-10 max-w-md">
-                    <p className="text-xs font-body font-medium text-white/70 uppercase tracking-wider mb-1">Plataforma de Freelancers</p>
-                    <h2 className="font-heading font-extrabold text-2xl md:text-3xl text-white leading-tight mb-4">
-                      Encontre as Melhores Vagas de Freelancer
-                    </h2>
-                    <button className="flex items-center gap-2 bg-white text-[#1A1D26] font-body font-medium text-sm px-5 py-2.5 rounded-full hover:bg-white/90 transition-colors">
-                      Marketplace <ChevronRight size={16} />
-                    </button>
-                  </div>
-                  <div className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full opacity-20 bg-white max-md:hidden" />
-                  <div className="absolute right-20 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full opacity-10 bg-white max-md:hidden" />
-                </div>
+            <div className="space-y-6 max-w-[1200px] mx-auto">
+              {/* VIEW TABS */}
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-body font-medium text-[#9CA3B4] mr-2">Visualizar</span>
+                <ChevronRight size={14} className="text-[#9CA3B4] mr-2" />
+                {views.map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setSelectedView(v)}
+                    className={`px-4 py-2 rounded-lg text-sm font-body font-medium transition-colors ${
+                      selectedView === v
+                        ? 'text-[#29B2FE] border-b-2 border-[#29B2FE] bg-transparent'
+                        : 'text-[#6B7280] hover:text-[#111]'
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
 
-                {/* Category counts from real data */}
-                <div className="flex gap-4 overflow-x-auto pb-1">
-                  {[
-                    { name: 'Dev & Tecnologia', icon: '💻', color: 'hsl(var(--primary))', count: vagas.filter(v => v.tag === 'DEV & TECH').length },
-                    { name: 'Design & Criação', icon: '🎨', color: '#a78bfa', count: vagas.filter(v => v.tag === 'DESIGN').length },
-                    { name: 'Marketing Digital', icon: '📈', color: '#38bdf8', count: vagas.filter(v => v.tag === 'MARKETING').length },
-                  ].map((cat) => (
-                    <div key={cat.name} className="flex items-center gap-3 bg-white rounded-2xl px-5 py-4 border border-[#E8ECF4] min-w-[200px]">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: `${cat.color}15` }}>
-                        {cat.icon}
+              {/* KPI CARDS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                {kpiCards.map((card) => (
+                  <div key={card.label} className="bg-white rounded-2xl border border-[#edf0f7] p-5 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${card.iconBg}15` }}>
+                        <card.icon size={20} style={{ color: card.iconBg }} />
                       </div>
-                      <div>
-                        <p className="text-[11px] font-body text-[#9CA3B4]">{cat.count} vagas</p>
-                        <p className="text-sm font-body font-medium text-[#1A1D26]">{cat.name}</p>
+                      <span className="text-sm font-body font-medium text-[#6B7280]">{card.label}</span>
+                    </div>
+                    <div className="flex items-end gap-3">
+                      <p className="text-2xl font-heading font-bold text-[#111]">{card.value}</p>
+                      <div className="flex items-center gap-1 mb-1">
+                        {card.positive ? (
+                          <TrendingUp size={14} className="text-emerald-500" />
+                        ) : (
+                          <TrendingDown size={14} className="text-red-500" />
+                        )}
+                        <span className={`text-xs font-body font-medium ${card.positive ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {card.change}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <p className="text-[11px] font-body text-[#9CA3B4] mt-1">{card.subtitle}</p>
+                  </div>
+                ))}
+              </div>
 
-                {/* Receita do Mês Card */}
-                <div style={{ background: 'white', borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                  {/* Header row */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                    <div>
-                      <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Receita do Mês</p>
-                      <h2 style={{ fontSize: 32, fontWeight: 700, margin: '4px 0', color: '#111827' }}>R$ 0,00</h2>
-                      <span style={{ background: '#f0f9ff', color: '#29B2FE', fontSize: 12, padding: '2px 8px', borderRadius: 20 }}>↑ 0,00% vs período anterior</span>
-                    </div>
-                    {/* Period selector */}
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      {['Hoje', 'Esta semana', 'Este mês'].map(p => (
-                        <button key={p} style={{ padding: '6px 14px', borderRadius: 20, border: p === 'Este mês' ? 'none' : '1px solid #e5e7eb', background: p === 'Este mês' ? '#29B2FE' : 'white', color: p === 'Este mês' ? 'white' : '#6b7280', fontSize: 13, cursor: 'pointer' }}>
-                          {p}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Chart */}
-                  <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={revenueData}>
-                      <defs>
-                        <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#29B2FE" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="#29B2FE" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                      <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v}`} />
-                      <Tooltip formatter={(v) => [`R$ ${v}`, 'Receita']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                      <Area type="monotone" dataKey="value" stroke="#29B2FE" strokeWidth={2} fill="url(#blueGrad)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                  {/* Bottom: Hoje badge */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                    <div style={{ border: '1px solid #29B2FE', borderRadius: 8, padding: '4px 12px', fontSize: 12, color: '#29B2FE' }}>Hoje · R$ 0,00</div>
-                  </div>
-                </div>
-
-                {/* Vagas Recentes */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-heading font-bold text-lg text-[#1A1D26]">
-                      Vagas Recentes {vagasCount > 0 && <span className="text-sm font-body font-normal text-[#9CA3B4]">({vagasCount})</span>}
-                    </h3>
-                  </div>
-                  {filteredVagas.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-[#E8ECF4] p-12 text-center">
-                      <p className="font-body text-[#9CA3B4]">
-                        {searchQuery ? 'Nenhuma vaga encontrada para essa busca.' : 'Nenhuma vaga disponível no momento.'}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {filteredVagas.slice(0, 3).map((vaga) => (
-                        <div key={vaga.id} className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden group hover:shadow-lg transition-shadow">
-                          <div className="relative h-36 overflow-hidden">
-                            {vaga.image_url && <img src={vaga.image_url} alt={vaga.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
-                            <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-[#9CA3B4] hover:text-red-500 transition-colors">
-                              <Heart size={14} />
-                            </button>
+              {/* CHARTS ROW */}
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                {/* Bar Chart - Desempenho */}
+                <div className="xl:col-span-2 bg-white rounded-2xl border border-[#edf0f7] p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-heading font-bold text-base text-[#111]">Desempenho de Propostas</h3>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-6">
+                        {[
+                          { label: 'Pendente', color: '#e5e7eb' },
+                          { label: 'Enviada', color: '#29B2FE' },
+                          { label: 'Recusada', color: '#111' },
+                        ].map((item) => (
+                          <div key={item.label} className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
+                            <span className="text-xs font-body text-[#6B7280]">{item.label}</span>
                           </div>
-                          <div className="p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-[10px] font-body font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ color: vaga.tag_color, background: `${vaga.tag_color}15` }}>{vaga.tag}</span>
-                              <span className="text-[10px] font-body text-[#9CA3B4]">{vaga.platform}</span>
-                            </div>
-                            <h4 className="font-body font-semibold text-sm text-[#1A1D26] leading-snug mb-3 line-clamp-2">{vaga.title}</h4>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[9px] font-bold">
-                                  {vaga.author_name.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <div>
-                                  <p className="text-xs font-body font-medium text-[#1A1D26] leading-tight">{vaga.author_name}</p>
-                                  <p className="text-[10px] font-body text-[#9CA3B4]">{vaga.author_role}</p>
-                                </div>
-                              </div>
-                              <span className="text-sm font-heading font-bold" style={{ color: '#29B2FE' }}>
-                                R$ {Number(vaga.price).toLocaleString('pt-BR')}
-                              </span>
-                            </div>
+                        ))}
+                      </div>
+                      <button className="flex items-center gap-1 text-xs font-body text-[#6B7280] border border-[#edf0f7] px-3 py-1.5 rounded-lg hover:bg-[#f8f9fc] transition-colors">
+                        Anual <ChevronDown size={12} />
+                      </button>
+                    </div>
+                  </div>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={chartData} barGap={2} barCategoryGap="20%">
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: 12,
+                          border: 'none',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                          fontSize: 12,
+                        }}
+                      />
+                      <Bar dataKey="pendente" fill="#e5e7eb" radius={[4, 4, 0, 0]} name="Pendente" />
+                      <Bar dataKey="enviada" fill="#29B2FE" radius={[4, 4, 0, 0]} name="Enviada" />
+                      <Bar dataKey="recusada" fill="#111827" radius={[4, 4, 0, 0]} name="Recusada" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Plataformas Card */}
+                <div className="bg-white rounded-2xl border border-[#edf0f7] p-6">
+                  <h3 className="font-heading font-bold text-base text-[#111] mb-5">Plataformas Conectadas</h3>
+                  <div className="flex flex-col gap-4">
+                    {plataformas.map((p) => (
+                      <div key={p.name} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[10px] font-bold">
+                            {p.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="text-sm font-body font-medium text-[#111]">{p.name}</p>
+                            <p className="text-[11px] font-body text-[#9CA3B4]">{p.role}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Suas Propostas */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-heading font-bold text-lg text-[#1A1D26]">
-                      Suas Propostas {propostasCount > 0 && <span className="text-sm font-body font-normal text-[#9CA3B4]">({propostasCount})</span>}
-                    </h3>
+                        <span className="text-[11px] font-body font-medium px-3 py-1 rounded-full" style={{ color: '#10b981', background: 'rgba(16,185,129,0.08)' }}>
+                          {p.status}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  {propostas.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-[#E8ECF4] p-12 text-center">
-                      <p className="font-body text-[#9CA3B4]">Você ainda não enviou nenhuma proposta.</p>
-                      <p className="font-body text-xs text-[#9CA3B4] mt-1">Explore as vagas acima e candidate-se!</p>
-                    </div>
-                  ) : (
-                    <div className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-[#E8ECF4]">
-                            <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Cliente</th>
-                            <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Categoria</th>
-                            <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Descrição</th>
-                            <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Ação</th>
+
+                  {/* Métricas inline */}
+                  <div className="mt-6 pt-5 border-t border-[#edf0f7] space-y-3">
+                    {[
+                      { icon: '💰', label: 'Receita Total', value: 'R$ 0,00' },
+                      { icon: '👥', label: 'Clientes', value: '0' },
+                      { icon: '📋', label: 'Anúncios Ativos', value: '0' },
+                    ].map((m) => (
+                      <div key={m.label} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{m.icon}</span>
+                          <span className="text-xs font-body text-[#6B7280]">{m.label}</span>
+                        </div>
+                        <span className="text-sm font-heading font-bold text-[#111]">{m.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* TABLES ROW */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                {/* Propostas Recentes */}
+                <div className="bg-white rounded-2xl border border-[#edf0f7] overflow-hidden">
+                  <div className="flex items-center justify-between p-5 pb-0">
+                    <h3 className="font-heading font-bold text-base text-[#111]">Propostas Recentes</h3>
+                    <button className="flex items-center gap-1 text-xs font-body text-[#29B2FE] hover:underline">
+                      Ver Detalhes <ExternalLink size={12} />
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-[#edf0f7]">
+                          <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Cliente</th>
+                          <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Categoria</th>
+                          <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Data</th>
+                          <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {propostas.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="px-5 py-8 text-center text-sm font-body text-[#9CA3B4]">
+                              Nenhuma proposta enviada ainda.
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {propostas.map((row) => (
-                            <tr key={row.id} className="border-b border-[#E8ECF4] last:border-0">
+                        ) : (
+                          propostas.slice(0, 4).map((row) => (
+                            <tr key={row.id} className="border-b border-[#edf0f7] last:border-0 hover:bg-[#f8f9fc] transition-colors">
                               <td className="px-5 py-3">
                                 <div className="flex items-center gap-3">
                                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[10px] font-bold">
                                     {row.client_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                   </div>
-                                  <div>
-                                    <p className="text-sm font-body font-medium text-[#1A1D26]">{row.client_name}</p>
-                                    {row.client_date && <p className="text-[11px] font-body text-[#9CA3B4]">{row.client_date}</p>}
-                                  </div>
+                                  <p className="text-sm font-body font-medium text-[#111]">{row.client_name}</p>
                                 </div>
                               </td>
                               <td className="px-5 py-3">
-                                <span className="text-[10px] font-body font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ color: row.tag_color, background: `${row.tag_color}15` }}>{row.tag}</span>
+                                <span className="text-[10px] font-body font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ color: row.tag_color, background: `${row.tag_color}15` }}>
+                                  {row.tag}
+                                </span>
                               </td>
-                              <td className="px-5 py-3 text-sm font-body text-[#6B7280]">{row.description}</td>
+                              <td className="px-5 py-3 text-xs font-body text-[#6B7280]">{row.client_date || '—'}</td>
                               <td className="px-5 py-3">
-                                <button className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'hsl(var(--primary))', color: 'white' }}>
-                                  <ExternalLink size={14} />
+                                <button className="text-xs font-body font-medium px-3 py-1.5 rounded-lg" style={{ background: '#29B2FE', color: 'white' }}>
+                                  Ver Detalhe
                                 </button>
                               </td>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* RIGHT SIDEBAR */}
-              <div className="w-[300px] shrink-0 border-l border-[#E8ECF4] bg-white p-6 space-y-6 max-xl:w-full max-xl:border-l-0 max-xl:border-t max-xl:flex max-xl:gap-6 max-xl:flex-wrap">
-                {/* Estatísticas */}
-                <div className="flex-1 min-w-[260px]">
-                  <h3 className="font-heading font-bold text-base text-[#1A1D26] mb-4">Estatísticas</h3>
-                  <div className="flex flex-col items-center mb-4">
-                    <div className="relative w-20 h-20 mb-3">
-                      <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E8ECF4" strokeWidth="3" />
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="hsl(var(--primary))" strokeWidth="3" strokeDasharray={`${progressPercent}, 100`} strokeLinecap="round" />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-sm font-heading font-bold text-[#1A1D26]">{progressPercent}%</span>
-                      </div>
-                    </div>
-                    <p className="font-heading font-bold text-lg text-[#1A1D26]">{getGreeting()}, {firstName} 🔥</p>
-                    <p className="text-xs font-body text-[#9CA3B4] text-center">
-                      {propostasCount === 0
-                        ? 'Comece explorando as vagas disponíveis!'
-                        : `Você enviou ${propostasCount} proposta${propostasCount > 1 ? 's' : ''}. Continue assim!`}
-                    </p>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
                   </div>
-
-                  {/* Mini bar chart — real stats or empty state */}
-                  {stats.length > 0 ? (
-                    <div className="flex items-end justify-between gap-3 h-24 mb-2">
-                      {stats.map((s) => (
-                        <div key={s.period_label} className="flex-1 flex flex-col items-center gap-1">
-                          <div className="w-full rounded-t-lg transition-all" style={{ height: `${Math.max(s.period_value * 2, 4)}px`, background: s.period_value === Math.max(...stats.map(d => d.period_value)) ? 'hsl(var(--primary))' : '#E8ECF4' }} />
-                          <span className="text-[10px] font-body text-[#9CA3B4]">{s.period_label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl p-4 text-center" style={{ background: '#f4f6fb' }}>
-                      <p className="text-xs font-body text-[#9CA3B4]">Seus dados de atividade aparecerão aqui conforme você usa a plataforma.</p>
-                    </div>
-                  )}
                 </div>
 
-                {/* Plataformas */}
-                <div className="flex-1 min-w-[260px]">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-heading font-bold text-base text-[#1A1D26]">Plataformas</h3>
-                    <button className="w-7 h-7 rounded-full border border-[#E8ECF4] flex items-center justify-center text-[#9CA3B4] hover:text-[#1A1D26] transition-colors"><Plus size={14} /></button>
+                {/* Vagas Recentes */}
+                <div className="bg-white rounded-2xl border border-[#edf0f7] overflow-hidden">
+                  <div className="flex items-center justify-between p-5 pb-0">
+                    <h3 className="font-heading font-bold text-base text-[#111]">Vagas Recentes</h3>
+                    <button onClick={() => navigate('/marketplace')} className="flex items-center gap-1 text-xs font-body text-[#29B2FE] hover:underline">
+                      Ver Mais <ExternalLink size={12} />
+                    </button>
                   </div>
-                  <div className="flex flex-col gap-3">
-                    {plataformas.map((p) => (
-                      <div key={p.name} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-[10px] font-bold">{p.name.substring(0, 2).toUpperCase()}</div>
-                          <div>
-                            <p className="text-sm font-body font-medium text-[#1A1D26]">{p.name}</p>
-                            <p className="text-[11px] font-body text-[#9CA3B4]">{p.role}</p>
-                          </div>
-                        </div>
-                        <button className="text-[11px] font-body font-medium px-3 py-1 rounded-full" style={{ color: '#29B2FE', background: 'rgba(41,178,254,0.08)' }}>{p.status}</button>
-                      </div>
-                    ))}
-                  </div>
-                  <button className="w-full mt-4 py-2.5 rounded-xl text-sm font-body font-medium transition-colors" style={{ background: '#29B2FE', color: 'white' }}>Ver Todas</button>
-                </div>
-
-                {/* Métricas Rápidas */}
-                <div className="flex-1 min-w-[260px]">
-                  <h3 className="font-heading font-bold text-base text-[#1A1D26] mb-4">Métricas Rápidas</h3>
-                  <div className="flex flex-col gap-3">
-                    <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '20px' }}>💰</span>
-                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Receita Total</p>
-                      </div>
-                      <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>R$ 0,00</p>
-                    </div>
-                    <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '20px' }}>👥</span>
-                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Clientes</p>
-                      </div>
-                      <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>0</p>
-                    </div>
-                    <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '20px' }}>📋</span>
-                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Anúncios Ativos</p>
-                      </div>
-                      <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>0</p>
-                    </div>
-                    <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '20px' }}>💬</span>
-                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Mensagens</p>
-                      </div>
-                      <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>0 novas</p>
-                    </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-[#edf0f7]">
+                          <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Vaga</th>
+                          <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Valor</th>
+                          <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Plataforma</th>
+                          <th className="text-left text-[11px] font-body font-medium text-[#9CA3B4] uppercase tracking-wider px-5 py-3">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {vagas.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="px-5 py-8 text-center text-sm font-body text-[#9CA3B4]">
+                              Nenhuma vaga disponível.
+                            </td>
+                          </tr>
+                        ) : (
+                          vagas.slice(0, 4).map((vaga) => (
+                            <tr key={vaga.id} className="border-b border-[#edf0f7] last:border-0 hover:bg-[#f8f9fc] transition-colors">
+                              <td className="px-5 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${vaga.tag_color}15` }}>
+                                    <Briefcase size={14} style={{ color: vaga.tag_color }} />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-body font-medium text-[#111] line-clamp-1 max-w-[180px]">{vaga.title}</p>
+                                    <p className="text-[10px] font-body text-[#9CA3B4]">{vaga.tag}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-5 py-3 text-sm font-heading font-bold text-[#111]">
+                                R$ {Number(vaga.price).toLocaleString('pt-BR')}
+                              </td>
+                              <td className="px-5 py-3 text-xs font-body text-[#6B7280]">{vaga.platform}</td>
+                              <td className="px-5 py-3">
+                                <span className="text-[10px] font-body font-medium px-2.5 py-1 rounded-full" style={{ color: '#29B2FE', background: 'rgba(41,178,254,0.08)' }}>
+                                  DISPONÍVEL
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>

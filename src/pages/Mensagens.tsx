@@ -3,9 +3,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, ShoppingBag, Megaphone, Users, MessageSquare, Globe,
   CheckCircle, Send, PackageCheck, Wrench, Settings, LogOut,
-  Search, Bell, SendHorizontal
+  Search, SendHorizontal
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ensureProfile } from '@/lib/ensureProfile';
+import NotificationBell from '@/components/NotificationBell';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', path: '/dashboard' },
@@ -20,54 +24,24 @@ const sidebarLinks = [
   { icon: Wrench, label: 'Ferramentas', path: '/ferramentas' },
 ];
 
-interface ChatMessage {
+interface ConversationItem {
   id: string;
-  text: string;
-  sender: 'me' | 'them';
-  timestamp: string;
+  participant_1: string;
+  participant_2: string;
+  other_name: string;
+  last_message?: string;
+  last_message_at?: string;
+  unread_count: number;
 }
 
-interface Conversation {
+interface Message {
   id: string;
-  name: string;
-  online: boolean;
-  unread: number;
-  messages: ChatMessage[];
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  read: boolean;
+  created_at: string;
 }
-
-const MOCK_CONVERSATIONS: Conversation[] = [
-  {
-    id: 'conv-1',
-    name: 'Farmácia São José',
-    online: true,
-    unread: 1,
-    messages: [
-      { id: 'm1', text: 'Olá, vi seu anúncio e tenho interesse!', sender: 'them', timestamp: new Date(Date.now() - 3600000).toISOString() },
-      { id: 'm2', text: 'Pode me contar mais sobre o projeto?', sender: 'them', timestamp: new Date(Date.now() - 3500000).toISOString() },
-    ],
-  },
-  {
-    id: 'conv-2',
-    name: 'Tech Startup BR',
-    online: false,
-    unread: 0,
-    messages: [
-      { id: 'm3', text: 'Preciso de um desenvolvedor React.', sender: 'them', timestamp: new Date(Date.now() - 86400000).toISOString() },
-      { id: 'm4', text: 'Claro! Tenho experiência com React e TypeScript. Podemos conversar sobre os detalhes?', sender: 'me', timestamp: new Date(Date.now() - 85000000).toISOString() },
-      { id: 'm5', text: 'Ótimo! Vou te enviar o briefing do projeto.', sender: 'them', timestamp: new Date(Date.now() - 84000000).toISOString() },
-    ],
-  },
-];
-
-function getConversations(): Conversation[] {
-  try {
-    const saved = localStorage.getItem('markfy_messages');
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  localStorage.setItem('markfy_messages', JSON.stringify(MOCK_CONVERSATIONS));
-  return MOCK_CONVERSATIONS;
-}
-function saveConversations(c: Conversation[]) { localStorage.setItem('markfy_messages', JSON.stringify(c)); }
 
 function getUserInitials(user: any): string {
   const name = user?.user_metadata?.full_name;
@@ -96,17 +70,6 @@ function getDateLabel(ts: string): string {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function getLastMessagePreview(conv: Conversation): string {
-  if (conv.messages.length === 0) return '';
-  const last = conv.messages[conv.messages.length - 1];
-  return last.text.length > 40 ? last.text.slice(0, 40) + '...' : last.text;
-}
-
-function getLastMessageTime(conv: Conversation): string {
-  if (conv.messages.length === 0) return '';
-  return formatTime(conv.messages[conv.messages.length - 1].timestamp);
-}
-
 const Mensagens = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -114,62 +77,160 @@ const Mensagens = () => {
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
 
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<ConversationItem[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setConversations(getConversations()); }, []);
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [activeConvId, conversations]);
+  const fetchConversations = async () => {
+    if (!user) return;
+    setLoading(true);
 
-  const activeConv = conversations.find(c => c.id === activeConvId) || null;
+    // Get conversations where user is a participant
+    const { data: convs } = await supabase
+      .from('conversations')
+      .select('*')
+      .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
+      .order('created_at', { ascending: false }) as any;
 
-  const filteredConversations = searchQuery
-    ? conversations.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : conversations;
+    if (!convs || convs.length === 0) {
+      setConversations([]);
+      setLoading(false);
+      return;
+    }
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim() || !activeConvId) return;
-    const updated = conversations.map(c => {
-      if (c.id !== activeConvId) return c;
+    // Get other participant profiles
+    const otherIds = convs.map((c: any) => c.participant_1 === user.id ? c.participant_2 : c.participant_1);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', otherIds) as any;
+
+    const profileMap: Record<string, string> = {};
+    (profiles || []).forEach((p: any) => { profileMap[p.id] = p.full_name || 'Usuário'; });
+
+    // Get last messages and unread counts
+    const items: ConversationItem[] = await Promise.all(convs.map(async (c: any) => {
+      const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
+
+      const { data: lastMsg } = await supabase
+        .from('messages')
+        .select('content, created_at')
+        .eq('conversation_id', c.id)
+        .order('created_at', { ascending: false })
+        .limit(1) as any;
+
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('conversation_id', c.id)
+        .eq('read', false)
+        .neq('sender_id', user.id) as any;
+
       return {
-        ...c,
-        messages: [...c.messages, {
-          id: crypto.randomUUID(),
-          text: messageInput.trim(),
-          sender: 'me' as const,
-          timestamp: new Date().toISOString(),
-        }],
+        id: c.id,
+        participant_1: c.participant_1,
+        participant_2: c.participant_2,
+        other_name: profileMap[otherId] || 'Usuário',
+        last_message: lastMsg?.[0]?.content,
+        last_message_at: lastMsg?.[0]?.created_at,
+        unread_count: count || 0,
       };
-    });
-    saveConversations(updated); setConversations(updated); setMessageInput('');
+    }));
+
+    setConversations(items);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (user) { ensureProfile(); fetchConversations(); }
+  }, [user]);
+
+  const loadMessages = async (convId: string) => {
+    setMessagesLoading(true);
+    setActiveConvId(convId);
+
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', convId)
+      .order('created_at', { ascending: true }) as any;
+
+    setMessages(data || []);
+    setMessagesLoading(false);
+
+    // Mark as read
+    if (user) {
+      await supabase
+        .from('messages')
+        .update({ read: true } as any)
+        .eq('conversation_id', convId)
+        .neq('sender_id', user.id)
+        .eq('read', false);
+
+      setConversations(prev => prev.map(c => c.id === convId ? { ...c, unread_count: 0 } : c));
+    }
+  };
+
+  // Realtime subscription for messages
+  useEffect(() => {
+    if (!activeConvId) return;
+    const channel = supabase
+      .channel(`messages-${activeConvId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${activeConvId}`,
+      }, (payload: any) => {
+        setMessages(prev => [...prev, payload.new as Message]);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [activeConvId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || !activeConvId || !user) return;
+    const content = messageInput.trim();
+    setMessageInput('');
+
+    await supabase.from('messages').insert({
+      conversation_id: activeConvId,
+      sender_id: user.id,
+      content,
+    } as any);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
   };
 
-  const selectConversation = (id: string) => {
-    setActiveConvId(id);
-    const updated = conversations.map(c => c.id === id ? { ...c, unread: 0 } : c);
-    saveConversations(updated); setConversations(updated);
-  };
-
   const handleSignOut = async () => { await signOut(); navigate('/'); };
 
+  const activeConv = conversations.find(c => c.id === activeConvId);
+  const filteredConversations = searchQuery
+    ? conversations.filter(c => c.other_name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : conversations;
+
   // Group messages by date
-  const groupedMessages: { label: string; messages: ChatMessage[] }[] = [];
-  if (activeConv) {
-    let currentLabel = '';
-    for (const msg of activeConv.messages) {
-      const label = getDateLabel(msg.timestamp);
-      if (label !== currentLabel) {
-        currentLabel = label;
-        groupedMessages.push({ label, messages: [] });
-      }
-      groupedMessages[groupedMessages.length - 1].messages.push(msg);
+  const groupedMessages: { label: string; messages: Message[] }[] = [];
+  let currentLabel = '';
+  for (const msg of messages) {
+    const label = getDateLabel(msg.created_at);
+    if (label !== currentLabel) {
+      currentLabel = label;
+      groupedMessages.push({ label, messages: [] });
     }
+    groupedMessages[groupedMessages.length - 1].messages.push(msg);
   }
 
   return (
@@ -208,7 +269,10 @@ const Mensagens = () => {
         {/* LEFT — Conversation List */}
         <div className="w-[320px] shrink-0 bg-white border-r border-[#E8ECF4] flex flex-col">
           <div className="p-4 border-b border-[#E8ECF4]">
-            <h2 className="text-lg font-bold text-[#111827] mb-3">Mensagens</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-[#111827]">Mensagens</h2>
+              <NotificationBell />
+            </div>
             <div className="flex items-center gap-2 bg-[#F3F4F8] rounded-full px-3 py-2">
               <Search size={14} className="text-[#9CA3B4]" />
               <input type="text" placeholder="Buscar conversa..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
@@ -216,30 +280,51 @@ const Mensagens = () => {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {filteredConversations.map(conv => (
-              <button key={conv.id} onClick={() => selectConversation(conv.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#F8F9FC] relative ${activeConvId === conv.id ? 'bg-[#F8F9FC]' : ''}`}>
-                {activeConvId === conv.id && <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full" style={{ background: '#29B2FE' }} />}
-                <div className="relative shrink-0">
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: avatarColor(conv.name) }}>
-                    {nameInitials(conv.name)}
+            {loading ? (
+              <div className="p-4 space-y-3">
+                {[1,2,3].map(i => (
+                  <div key={i} className="flex items-center gap-3">
+                    <Skeleton className="w-11 h-11 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-40" />
+                    </div>
                   </div>
-                  {conv.online && <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-[#111827] truncate">{conv.name}</p>
-                    <span className="text-[10px] text-[#9CA3B4] shrink-0 ml-2">{getLastMessageTime(conv)}</span>
+                ))}
+              </div>
+            ) : filteredConversations.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-sm text-[#9CA3B4]">Nenhuma conversa ainda</p>
+              </div>
+            ) : (
+              filteredConversations.map(conv => (
+                <button key={conv.id} onClick={() => loadMessages(conv.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#F8F9FC] relative ${activeConvId === conv.id ? 'bg-[#F8F9FC]' : ''}`}>
+                  {activeConvId === conv.id && <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full" style={{ background: '#29B2FE' }} />}
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: avatarColor(conv.other_name) }}>
+                    {nameInitials(conv.other_name)}
                   </div>
-                  <p className="text-xs text-[#9CA3B4] truncate mt-0.5">{getLastMessagePreview(conv)}</p>
-                </div>
-                {conv.unread > 0 && (
-                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: '#29B2FE' }}>
-                    {conv.unread}
-                  </span>
-                )}
-              </button>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-[#111827] truncate">{conv.other_name}</p>
+                      {conv.last_message_at && (
+                        <span className="text-[10px] text-[#9CA3B4] shrink-0 ml-2">{formatTime(conv.last_message_at)}</span>
+                      )}
+                    </div>
+                    {conv.last_message && (
+                      <p className="text-xs text-[#9CA3B4] truncate mt-0.5">
+                        {conv.last_message.length > 40 ? conv.last_message.slice(0, 40) + '...' : conv.last_message}
+                      </p>
+                    )}
+                  </div>
+                  {conv.unread_count > 0 && (
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: '#29B2FE' }}>
+                      {conv.unread_count}
+                    </span>
+                  )}
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -257,46 +342,52 @@ const Mensagens = () => {
             <>
               {/* Chat top bar */}
               <div className="flex items-center gap-3 px-6 h-16 bg-white border-b border-[#E8ECF4] shrink-0">
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: avatarColor(activeConv.name) }}>
-                    {nameInitials(activeConv.name)}
-                  </div>
-                  {activeConv.online && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />}
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: avatarColor(activeConv.other_name) }}>
+                  {nameInitials(activeConv.other_name)}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[#111827]">{activeConv.name}</p>
-                  <p className="text-[10px] text-[#9CA3B4]">{activeConv.online ? 'Online' : 'Offline'}</p>
+                  <p className="text-sm font-bold text-[#111827]">{activeConv.other_name}</p>
                 </div>
               </div>
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto px-6 py-4">
-                {groupedMessages.map(group => (
-                  <div key={group.label}>
-                    <div className="flex items-center gap-3 my-4">
-                      <div className="flex-1 h-px bg-[#E8ECF4]" />
-                      <span className="text-[10px] font-semibold text-[#9CA3B4] uppercase tracking-wider">{group.label}</span>
-                      <div className="flex-1 h-px bg-[#E8ECF4]" />
-                    </div>
-                    {group.messages.map(msg => (
-                      <div key={msg.id} className={`flex mb-3 ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
-                        <div className="max-w-[70%]">
-                          <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                            msg.sender === 'me'
-                              ? 'text-white rounded-br-md'
-                              : 'bg-white text-[#1A1D26] border border-[#E8ECF4] rounded-bl-md'
-                          }`}
-                            style={msg.sender === 'me' ? { background: '#29B2FE' } : undefined}>
-                            {msg.text}
-                          </div>
-                          <p className={`text-[10px] text-[#9CA3B4] mt-1 ${msg.sender === 'me' ? 'text-right' : ''}`}>
-                            {formatTime(msg.timestamp)}
-                          </p>
-                        </div>
+                {messagesLoading ? (
+                  <div className="space-y-3">
+                    {[1,2,3].map(i => (
+                      <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                        <Skeleton className="h-10 w-48 rounded-2xl" />
                       </div>
                     ))}
                   </div>
-                ))}
+                ) : (
+                  groupedMessages.map(group => (
+                    <div key={group.label}>
+                      <div className="flex items-center gap-3 my-4">
+                        <div className="flex-1 h-px bg-[#E8ECF4]" />
+                        <span className="text-[10px] font-semibold text-[#9CA3B4] uppercase tracking-wider">{group.label}</span>
+                        <div className="flex-1 h-px bg-[#E8ECF4]" />
+                      </div>
+                      {group.messages.map(msg => (
+                        <div key={msg.id} className={`flex mb-3 ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
+                          <div className="max-w-[70%]">
+                            <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                              msg.sender_id === user?.id
+                                ? 'text-white rounded-br-md'
+                                : 'bg-white text-[#1A1D26] border border-[#E8ECF4] rounded-bl-md'
+                            }`}
+                              style={msg.sender_id === user?.id ? { background: '#29B2FE' } : undefined}>
+                              {msg.content}
+                            </div>
+                            <p className={`text-[10px] text-[#9CA3B4] mt-1 ${msg.sender_id === user?.id ? 'text-right' : ''}`}>
+                              {formatTime(msg.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))
+                )}
                 <div ref={messagesEndRef} />
               </div>
 

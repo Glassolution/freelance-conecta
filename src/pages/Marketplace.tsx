@@ -1277,9 +1277,118 @@ const Marketplace = () => {
                 )}
               </>
             )}
+            </>)}
+
+            {/* MARKFY TAB */}
+            {activeTab === 'markfy' && (
+              <>
+                <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #29B2FE, #0077cc)', minHeight: '140px' }}>
+                  <div className="relative z-10 max-w-lg">
+                    <p className="text-xs font-medium text-white/70 uppercase tracking-wider mb-1">Marketplace Markfy</p>
+                    <p className="font-extrabold text-2xl md:text-3xl text-white leading-tight mb-2">Serviços publicados na Markfy</p>
+                    <p className="text-sm text-white/80">Encontre freelancers da comunidade Markfy</p>
+                  </div>
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full opacity-15 bg-white max-md:hidden" />
+                </div>
+
+                <p className="text-sm text-[#9CA3B4]">{activeMarkfyAds.length} {activeMarkfyAds.length === 1 ? 'anúncio disponível' : 'anúncios disponíveis'}</p>
+
+                {activeMarkfyAds.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-[#E8ECF4] p-12 text-center">
+                    <div className="w-16 h-16 rounded-full bg-[#F3F4F8] flex items-center justify-center mx-auto mb-4">
+                      <Megaphone size={24} className="text-[#9CA3B4]" />
+                    </div>
+                    <p className="font-bold text-lg text-[#1A1D26] mb-1">Nenhum anúncio Markfy disponível</p>
+                    <p className="text-sm text-[#9CA3B4]">Crie seu anúncio em "Meus Anúncios" para aparecer aqui.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {activeMarkfyAds.map(ad => (
+                      <div key={ad.id} className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden group hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:border-[#29B2FE]/20 flex flex-col">
+                        <div className="p-5 flex flex-col flex-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg text-white" style={{ background: '#29B2FE' }}>MARKFY</span>
+                            <span className="text-[10px] font-medium text-[#9CA3B4] bg-[#F3F4F8] px-2 py-0.5 rounded-md">{ad.category}</span>
+                          </div>
+                          <h4 className="font-bold text-[15px] text-[#1A1D26] leading-snug mb-2 line-clamp-2">{ad.title}</h4>
+                          <p className="text-xs text-[#9CA3B4] mb-3 line-clamp-3 flex-1">{ad.description}</p>
+                          {ad.skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-4">
+                              {ad.skills.slice(0, 4).map(s => (
+                                <span key={s} className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#F3F4F8] text-[#6B7280]">{s}</span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="border-t border-[#E8ECF4] pt-3 mt-auto">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <p className="text-[10px] text-[#9CA3B4] uppercase tracking-wider mb-0.5">Orçamento</p>
+                                <p className="text-lg font-extrabold" style={{ color: '#29B2FE' }}>R$ {ad.value.toLocaleString('pt-BR')}</p>
+                              </div>
+                              <div className="text-right text-xs text-[#9CA3B4]">
+                                <span className="flex items-center gap-1"><Eye size={12} /> {ad.views}</span>
+                                <span className="flex items-center gap-1 mt-0.5"><FileText size={12} /> {ad.proposals.length}</span>
+                              </div>
+                            </div>
+                            <button onClick={() => { setShowProposalModal(ad); setProposalText(''); setProposalValue(''); setProposalDeadline(''); }}
+                              className="w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                              style={{ background: '#29B2FE' }}>
+                              <Send size={14} /> Enviar Proposta
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {/* MODAL — Enviar Proposta */}
+      {showProposalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
+          <div className="bg-white rounded-2xl w-full max-w-lg mx-4 shadow-2xl">
+            <div className="flex items-center justify-between p-6 border-b border-[#E8ECF4]">
+              <div>
+                <h3 className="text-lg font-bold text-[#111827]">Enviar Proposta</h3>
+                <p className="text-xs text-[#9CA3B4] mt-0.5">{showProposalModal.title}</p>
+              </div>
+              <button onClick={() => setShowProposalModal(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3B4] hover:text-[#111] hover:bg-[#F3F4F8]"><X size={18} /></button>
+            </div>
+            <div className="p-6 space-y-5">
+              <div>
+                <label className="text-sm font-medium text-[#111827] mb-1.5 block">Descreva sua experiência</label>
+                <textarea value={proposalText} onChange={e => setProposalText(e.target.value)} rows={4} placeholder="Descreva sua experiência e por que você é ideal para este projeto..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#E8ECF4] text-sm outline-none focus:border-[#29B2FE] resize-none" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-[#111827] mb-1.5 block">Valor (R$)</label>
+                  <input type="number" value={proposalValue} onChange={e => setProposalValue(e.target.value ? Number(e.target.value) : '')} placeholder="1500"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#E8ECF4] text-sm outline-none focus:border-[#29B2FE]" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-[#111827] mb-1.5 block">Prazo (dias)</label>
+                  <input type="number" value={proposalDeadline} onChange={e => setProposalDeadline(e.target.value ? Number(e.target.value) : '')} placeholder="15"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#E8ECF4] text-sm outline-none focus:border-[#29B2FE]" />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 p-6 border-t border-[#E8ECF4]">
+              <button onClick={() => setShowProposalModal(null)}
+                className="px-5 py-2.5 rounded-xl text-sm font-medium text-[#6B7280] border border-[#E8ECF4] hover:bg-[#F3F4F8]">Cancelar</button>
+              <button onClick={handleSendProposal}
+                className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center gap-2 hover:brightness-110"
+                style={{ background: '#29B2FE' }}>
+                Enviar Proposta <Send size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

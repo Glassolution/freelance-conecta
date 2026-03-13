@@ -58,22 +58,22 @@ const Auth = () => {
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'hsl(var(--primary))' }}
+              style={{ background: '#29B2FE' }}
             >
               <Search size={18} className="text-white" />
             </div>
-            <span className="font-heading font-extrabold text-xl text-[#060912]">Markfy</span>
+            <span className="font-heading font-extrabold text-xl text-[#111827]">Markfy</span>
           </button>
 
           {/* Title */}
           <h1 className="font-heading font-bold text-3xl text-[#060912] mb-8">
-            {isLogin ? 'Sign in' : 'Sign up'}
+            {isLogin ? 'Entrar' : 'Cadastre-se'}
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div>
-                <label className="block text-sm font-body font-medium text-[#060912] mb-2">
+                <label className="block text-sm font-body font-medium text-[#111827] mb-2">
                   Nome Completo
                 </label>
                 <div className="relative">
@@ -94,8 +94,8 @@ const Auth = () => {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-body font-medium text-[#060912] mb-2">
-                Email Address
+              <label className="block text-sm font-body font-medium text-[#111827] mb-2">
+                E-mail
               </label>
               <div className="relative">
                 <input
@@ -114,8 +114,8 @@ const Auth = () => {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-body font-medium text-[#060912] mb-2">
-                Password
+              <label className="block text-sm font-body font-medium text-[#111827] mb-2">
+                Senha
               </label>
               <div className="relative">
                 <input
@@ -147,9 +147,9 @@ const Auth = () => {
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="w-4 h-4 rounded border-[#D0D0D0] accent-[#060912]"
+                  className="w-4 h-4 rounded border-[#D0D0D0] accent-[#29B2FE]"
                 />
-                <span className="text-sm font-body text-[#060912]">Remember me</span>
+                <span className="text-sm font-body text-[#111827]">Lembrar de mim</span>
               </label>
             )}
 
@@ -162,26 +162,28 @@ const Auth = () => {
               type="submit"
               disabled={loading}
               className="w-full py-3.5 rounded-xl font-body font-semibold text-sm text-white transition-colors disabled:opacity-50"
-              style={{ background: 'hsl(var(--primary))' }}
+              style={{ background: '#29B2FE' }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#1a9ee8')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#29B2FE')}
             >
-              {loading ? 'Aguarde...' : isLogin ? 'Sign in' : 'Sign up'}
+              {loading ? 'Aguarde...' : isLogin ? 'Entrar' : 'Cadastre-se'}
             </button>
           </form>
 
           {/* Toggle + Forgot */}
           <div className="mt-5 space-y-1">
             <p className="text-sm font-body text-[#A0A0A0]">
-              {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+              {isLogin ? "Não tem uma conta?" : 'Já tem uma conta?'}{' '}
               <button
                 onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                className="font-medium text-[#060912] underline"
+                className="font-medium text-[#29B2FE] underline"
               >
-                {isLogin ? 'Sign up' : 'Sign in'}
+                {isLogin ? 'Cadastre-se' : 'Entrar'}
               </button>
             </p>
             {isLogin && (
-              <button className="text-sm font-body text-[#A0A0A0] hover:text-[#060912] transition-colors">
-                Forgot Password
+              <button className="text-sm font-body text-[#A0A0A0] hover:text-[#111827] transition-colors">
+                Esqueci minha senha
               </button>
             )}
           </div>
@@ -231,10 +233,10 @@ const Auth = () => {
         <div className="relative z-10 mt-auto">
           {/* Brand */}
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#29B2FE' }}>
               <Search size={14} className="text-white" />
             </div>
-            <span className="font-heading font-bold text-sm text-white/70">Markfy</span>
+            <span className="font-heading font-bold text-sm text-white">Markfy</span>
           </div>
 
           <h2 className="font-heading font-bold text-3xl text-white leading-tight mb-3">

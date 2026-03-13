@@ -4,21 +4,24 @@ import {
   CheckCircle, Send, PackageCheck, Wrench,
   Settings, LogOut, Search, Bell, Mail,
   Clock, ExternalLink, RefreshCw, Filter,
-  ArrowUpDown, Users, ShoppingBag
+  ArrowUpDown, Users, ShoppingBag, Megaphone, MessageSquare
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const sidebarLinks = [
-  { icon: Home, label: 'Início', active: false, path: '/dashboard' },
-  { icon: ShoppingBag, label: 'Marketplace', active: true, path: '/marketplace' },
-  { icon: Globe, label: 'Criador.ia', active: false, path: null },
-  { icon: CheckCircle, label: 'Serviços Aprovados', active: false, path: null },
-  { icon: Send, label: 'Serviços Enviados', active: false, path: null },
-  { icon: PackageCheck, label: 'Serviços Entregues', active: false, path: null },
-  { icon: Wrench, label: 'Ferramentas', active: false, path: '/ferramentas' },
+  { icon: Home, label: 'Início', path: '/dashboard' },
+  { icon: ShoppingBag, label: 'Marketplace', path: '/marketplace' },
+  { icon: Megaphone, label: 'Meus Anúncios', path: '/meus-anuncios' },
+  { icon: Users, label: 'Meus Clientes', path: '/meus-clientes' },
+  { icon: MessageSquare, label: 'Mensagens', path: '/mensagens' },
+  { icon: Globe, label: 'Criador.ia', path: null },
+  { icon: CheckCircle, label: 'Serviços Aprovados', path: null },
+  { icon: Send, label: 'Serviços Enviados', path: null },
+  { icon: PackageCheck, label: 'Serviços Entregues', path: null },
+  { icon: Wrench, label: 'Ferramentas', path: '/ferramentas' },
 ];
 
 function getUserInitials(user: any): string {
@@ -108,14 +111,28 @@ interface Freelas99Job {
 type FilterTab = 'all' | 'dev' | 'mobile' | 'marketing' | 'video' | 'design';
 type SortOption = 'newest' | 'budget_desc' | 'bids_asc';
 
-const SKILL_KEYWORDS: Record<FilterTab, string[]> = {
-  all: [],
-  dev: ['php', 'javascript', 'react', 'node', 'html', 'css', 'python', 'java', 'typescript', 'angular', 'vue', 'laravel', 'wordpress', 'woocommerce', 'mysql', 'mongodb', 'api', 'backend', 'frontend', 'fullstack', 'full-stack', 'full stack', 'web', 'programação', 'programming', 'developer', 'hubspot', '.net', 'ruby', 'django', 'flask', 'html5'],
-  mobile: ['android', 'ios', 'react native', 'flutter', 'swift', 'kotlin', 'mobile', 'app'],
-  marketing: ['marketing', 'seo', 'social media', 'facebook', 'instagram', 'google ads', 'advertising', 'mídia', 'tráfego', 'traffic', 'performance', 'branding', 'copywriting', 'whatsapp'],
-  video: ['video', 'after effects', 'premiere', 'capcut', 'animação', 'animation', 'motion', 'edição', 'editing', 'davinci', 'runway', 'audiovisual', '3d'],
-  design: ['design', 'figma', 'ui', 'ux', 'logo', 'graphic', 'illustrator', 'photoshop', 'branding', 'identidade visual', 'visual identity', 'web design'],
+const categoryKeywords: Record<string, string[]> = {
+  'Dev & Programação': ['php', 'javascript', 'react', 'node', 'html', 'css', 'wordpress', 'woocommerce', 'web', 'site', 'sistema', 'desenvolvimento web', 'front-end', 'back-end', 'fullstack', 'python', 'java', 'api', 'banco de dados', 'sql', 'mysql', 'postgresql', 'typescript', 'next.js', 'vue', 'angular', 'e-commerce', 'loja virtual', 'landing page', 'hubspot'],
+  'Apps Mobile': ['app', 'aplicativo', 'mobile', 'android', 'ios', 'react native', 'flutter', 'swift', 'kotlin', 'play store', 'app store', 'aplicação mobile'],
+  'Marketing': ['marketing', 'seo', 'ads', 'google ads', 'facebook ads', 'meta ads', 'tráfego', 'social media', 'instagram', 'tiktok', 'email marketing', 'copywriting', 'leads', 'funil', 'crm', 'vendas', 'sdp', 'closer'],
+  'Edição de Vídeo': ['vídeo', 'video', 'edição', 'premiere', 'after effects', 'capcut', 'motion', 'animação', 'reels', 'youtube', 'shorts', 'produção audiovisual', 'montagem'],
+  'Design': ['design', 'logo', 'identidade visual', 'branding', 'figma', 'illustrator', 'photoshop', 'indesign', 'ui', 'ux', 'gráfico', 'banner', 'flyer', 'folder'],
 };
+
+function jobMatchesCategory(job: any, category: string): boolean {
+  if (category === 'Todos') return true;
+  
+  const categoryLabel = filterTabs.find(t => t.key === category)?.label || '';
+  const keywords = categoryKeywords[categoryLabel] || [];
+  
+  const searchText = [
+    job.title || '',
+    job.description || '',
+    ...(job.skills || []).map((s: any) => typeof s === 'string' ? s : s.name || '')
+  ].join(' ').toLowerCase();
+  
+  return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+}
 
 const filterTabs: { key: FilterTab; label: string; jobIds: number[] }[] = [
   { key: 'all', label: 'Todos', jobIds: [] },
@@ -165,30 +182,29 @@ function convertToBRL(amount: number, currencyCode: string): number {
   return Math.round(amount * rate);
 }
 
-function formatFreelancerBudget(budget: FreelancerJob['budget'], currency?: FreelancerJob['currency']): { brl: string; original: string; sortValue: number } {
-  const code = currency?.code || 'USD';
-  const sign = currency?.sign || '$';
-
-  const minBRL = convertToBRL(budget.minimum, code);
-  const maxBRL = convertToBRL(budget.maximum, code);
-
-  let brl: string;
-  if (budget.minimum === budget.maximum) {
-    brl = `R$ ${minBRL.toLocaleString('pt-BR')}`;
-  } else {
-    brl = `R$ ${minBRL.toLocaleString('pt-BR')} - R$ ${maxBRL.toLocaleString('pt-BR')}`;
-  }
-
-  let original = '';
-  if (code !== 'BRL') {
-    if (budget.minimum === budget.maximum) {
-      original = `(${code} ${sign}${budget.minimum.toLocaleString()})`;
-    } else {
-      original = `(${code} ${sign}${budget.minimum.toLocaleString()} - ${sign}${budget.maximum.toLocaleString()})`;
+function formatFreelancerBudget(project: any): string {
+  try {
+    if (!project) return 'A combinar';
+    const budget = project.budget;
+    if (!budget) return 'A combinar';
+    const min = Number(budget.minimum || 0);
+    const max = Number(budget.maximum || 0);
+    const currency = budget.currency_code || budget.currency || 'USD';
+    if (!min && !max) return 'A combinar';
+    const rate: Record<string, number> = {
+      USD: 5.70, EUR: 6.20, GBP: 7.20,
+      AUD: 3.60, CAD: 4.10, BRL: 1.0, INR: 0.068
+    };
+    const r = rate[currency] || 5.70;
+    const minBRL = Math.round(min * r);
+    const maxBRL = Math.round(max * r);
+    if (max && max !== min) {
+      return `R$ ${minBRL.toLocaleString('pt-BR')} - R$ ${maxBRL.toLocaleString('pt-BR')}`;
     }
+    return `R$ ${minBRL.toLocaleString('pt-BR')}`;
+  } catch {
+    return 'A combinar';
   }
-
-  return { brl, original, sortValue: maxBRL };
 }
 
 function parseWorkanaBudgetSortValue(budgetText: string): number {
@@ -236,19 +252,37 @@ function parseWorkananBudget(budgetText: string): string {
   return 'A combinar';
 }
 
+// --- Better CORS proxy with fallback ---
+async function fetchWithProxy(url: string): Promise<any> {
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  ];
+
+  for (const proxyUrl of proxies) {
+    try {
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      const data = await res.json();
+      // allorigins wraps in {contents}, corsproxy returns directly
+      return data.contents || data;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 async function fetchWorkanaJobs(): Promise<WorkanaJob[]> {
   const allJobs: WorkanaJob[] = [];
 
   for (const url of WORKANA_URLS) {
     try {
-      const proxy = 'https://api.allorigins.win/get?url=';
-      const res = await fetch(proxy + encodeURIComponent(url));
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (!data.contents) continue;
+      const html = await fetchWithProxy(url);
+      if (!html) continue;
 
       const parser = new DOMParser();
-      const doc = parser.parseFromString(data.contents, 'text/html');
+      const doc = parser.parseFromString(html, 'text/html');
       const jobLinks = doc.querySelectorAll('h2 a[href*="/job/"]');
 
       jobLinks.forEach((jobEl) => {
@@ -271,7 +305,7 @@ async function fetchWorkanaJobs(): Promise<WorkanaJob[]> {
             bids: parseInt(bidsText) || 0,
             pubDate,
             platform: 'Workana',
-            platformColor: '#00b04f',
+            platformColor: '#29B2FE',
             url: href.startsWith('http') ? href : `https://www.workana.com${href}`,
           });
         }
@@ -291,9 +325,9 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     skills: ["Hubspot", "HTML", "CSS", "JavaScript"],
     budget: "R$ 2.850 - R$ 5.700",
     bids: 6,
-    pubDate: "39 minutos atrás",
+    pubDate: "",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#29B2FE",
     url: "https://www.workana.com/job/designer-desenvolvedor-hubspot-para-22-landing-pages-de-alta-conversao"
   },
   {
@@ -302,9 +336,9 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     skills: ["Adobe After Effects", "Adobe Premiere", "Video Editing"],
     budget: "Até R$ 285",
     bids: 1,
-    pubDate: "1 hora atrás",
+    pubDate: "",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#29B2FE",
     url: "https://www.workana.com/job/editor-de-videos-com-expertise-em-after-effects-e-premiere-para-canal-dark"
   },
   {
@@ -313,9 +347,9 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     skills: ["PHP", "MySQL", "WordPress", "WooCommerce"],
     budget: "R$ 1.425 - R$ 2.850",
     bids: 0,
-    pubDate: "Agora",
+    pubDate: "",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#29B2FE",
     url: "https://www.workana.com/job/reconstrucao-completa-de-e-commerce-com-integracao-bling-e-seguranca-avancada"
   },
   {
@@ -324,9 +358,9 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     skills: ["Social Media Marketing", "Marketing Strategy", "Advertising"],
     budget: "R$ 85 - R$ 256/hr",
     bids: 0,
-    pubDate: "Agora",
+    pubDate: "",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#29B2FE",
     url: "https://www.workana.com/job/vaga-social-media-manager-foco-em-performance-e-comprometimento"
   },
   {
@@ -335,9 +369,9 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     skills: ["Video Production", "Motion Graphics", "Adobe Premiere"],
     budget: "R$ 285 - R$ 570",
     bids: 0,
-    pubDate: "5 minutos atrás",
+    pubDate: "",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#29B2FE",
     url: "https://www.workana.com/job/criacao-de-video-promocional-para-aplicativo-de-educacao-financeira"
   },
   {
@@ -346,9 +380,9 @@ const WORKANA_FALLBACK: WorkanaJob[] = [
     skills: ["Animation", "Illustration", "Video Production"],
     budget: "R$ 570 - R$ 1.425",
     bids: 0,
-    pubDate: "Agora",
+    pubDate: "",
     platform: "Workana",
-    platformColor: "#00b04f",
+    platformColor: "#29B2FE",
     url: "https://www.workana.com/job/animador-2d-com-expertise-em-ia-para-piloto-de-desenho-animado-infantil"
   },
 ];
@@ -367,14 +401,11 @@ async function fetch99FreelasJobs(): Promise<Freelas99Job[]> {
 
   for (const url of FREELAS99_URLS) {
     try {
-      const proxy = 'https://api.allorigins.win/get?url=';
-      const res = await fetch(proxy + encodeURIComponent(url));
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (!data.contents) continue;
+      const html = await fetchWithProxy(url);
+      if (!html) continue;
 
       const parser = new DOMParser();
-      const doc = parser.parseFromString(data.contents, 'text/html');
+      const doc = parser.parseFromString(html, 'text/html');
       const items = doc.querySelectorAll('h1 a[href*="/project/"]');
 
       items.forEach((jobEl) => {
@@ -397,7 +428,7 @@ async function fetch99FreelasJobs(): Promise<Freelas99Job[]> {
             bids: parseInt(propostas) || 0,
             pubDate,
             platform: '99Freelas',
-            platformColor: '#0a7aff',
+            platformColor: '#29B2FE',
             url: href.startsWith('http') ? href : `https://www.99freelas.com.br${href}`,
           });
         }
@@ -417,9 +448,9 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     skills: ["Web Design", "WordPress"],
     budget: "A combinar",
     bids: 23,
-    pubDate: "3 horas atrás",
+    pubDate: "",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#29B2FE",
     url: "https://www.99freelas.com.br/project/melhorar-layout-e-design-do-site-wordpress-735737"
   },
   {
@@ -428,9 +459,9 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     skills: ["CapCut", "Premiere", "After Effects", "Runway"],
     budget: "A combinar",
     bids: 1,
-    pubDate: "17 minutos atrás",
+    pubDate: "",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#29B2FE",
     url: "https://www.99freelas.com.br/project/especialista-em-edicao-de-video-com-ia-para-producao-de-criativos-de-ads-em-735789"
   },
   {
@@ -439,9 +470,9 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     skills: ["CSS", "HTML5", "JavaScript", "React"],
     budget: "A combinar",
     bids: 15,
-    pubDate: "38 minutos atrás",
+    pubDate: "",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#29B2FE",
     url: "https://www.99freelas.com.br/project/desenvolvimento-de-site-para-equipe-de-motocross-735786"
   },
   {
@@ -450,9 +481,9 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     skills: ["WhatsApp API", "Typebot", "Automação"],
     budget: "A combinar",
     bids: 5,
-    pubDate: "43 minutos atrás",
+    pubDate: "",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#29B2FE",
     url: "https://www.99freelas.com.br/project/automacao-de-atendimento-whatsapp-e-gestao-de-alugueis-de-kitnets-735783"
   },
   {
@@ -461,9 +492,9 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     skills: ["Social Media", "Branding", "Instagram"],
     budget: "A combinar",
     bids: 3,
-    pubDate: "59 minutos atrás",
+    pubDate: "",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#29B2FE",
     url: "https://www.99freelas.com.br/project/branding-e-criacao-de-perfis-sem-rosto-para-instagram-e-tiktok-735776"
   },
   {
@@ -472,9 +503,9 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
     skills: ["Animação 3D", "Video Production"],
     budget: "A combinar",
     bids: 2,
-    pubDate: "1 hora atrás",
+    pubDate: "",
     platform: "99Freelas",
-    platformColor: "#0a7aff",
+    platformColor: "#29B2FE",
     url: "https://www.99freelas.com.br/project/video-institucional-com-animacao-3d-735778"
   },
 ];
@@ -482,18 +513,16 @@ const FREELAS99_FALLBACK: Freelas99Job[] = [
 // --- Converters to UnifiedJob ---
 
 function freelancerToUnified(job: FreelancerJob, tr?: { title?: string; description?: string }): UnifiedJob {
-  const budget = job.budget
-    ? formatFreelancerBudget(job.budget, job.currency)
-    : { brl: 'A definir', original: '', sortValue: 0 };
+  const budgetDisplay = formatFreelancerBudget(job);
 
   return {
     id: `fl-${job.id}`,
     title: tr?.title || job.title,
     description: tr?.description || job.preview_description || '',
     url: `https://www.freelancer.com/projects/${job.seo_url}`,
-    budgetDisplay: budget.brl,
-    budgetOriginal: budget.original,
-    budgetSortValue: budget.sortValue,
+    budgetDisplay: budgetDisplay,
+    budgetOriginal: '',
+    budgetSortValue: 0,
     bidsCount: job.bid_stats?.bid_count || 0,
     skills: (job.jobs || []).map(j => ({ name: j.name, id: j.id })),
     platform: 'Freelancer',
@@ -515,7 +544,7 @@ function workanaToUnified(job: WorkanaJob, index: number): UnifiedJob {
     bidsCount: job.bids,
     skills: job.skills.map(s => ({ name: s })),
     platform: 'Workana',
-    platformColor: '#00b04f',
+    platformColor: '#29B2FE',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };
@@ -533,7 +562,7 @@ function freelas99ToUnified(job: Freelas99Job, index: number): UnifiedJob {
     bidsCount: job.bids,
     skills: job.skills.map(s => ({ name: s })),
     platform: '99Freelas',
-    platformColor: '#0a7aff',
+    platformColor: '#29B2FE',
     timeLabel: job.pubDate,
     timestamp: parseWorkanaTimeToTimestamp(job.pubDate),
   };
@@ -585,6 +614,7 @@ interface TranslatedTexts {
 
 const Marketplace = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
 
   const initials = getUserInitials(user);
@@ -802,19 +832,7 @@ const Marketplace = () => {
 
     // Filter by tab
     if (activeFilter !== 'all') {
-      const keywords = SKILL_KEYWORDS[activeFilter];
-      const tab = filterTabs.find(t => t.key === activeFilter);
-      
-      result = result.filter(job => {
-        if (job.platform === 'Freelancer' && tab) {
-          const freelancerJob = freelancerJobs.find(fj => fj.id === parseInt(job.id.replace('fl-', '')));
-          return freelancerJob?.jobs?.some(j => tab.jobIds.includes(j.id));
-        } else if ((job.platform === 'Workana' || job.platform === '99Freelas') && keywords.length > 0) {
-          const searchText = `${job.title} ${job.description} ${job.skills.map(s => s.name).join(' ')}`.toLowerCase();
-          return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
-        }
-        return true;
-      });
+      result = result.filter(job => jobMatchesCategory(job, activeFilter));
     }
 
     // Search
@@ -862,19 +880,22 @@ const Marketplace = () => {
           </div>
 
           <nav className="flex flex-col gap-1">
-            {sidebarLinks.map((link) => (
-              <button
-                key={link.label}
-                onClick={() => link.path && navigate(link.path)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
-                }`}
-                style={link.active ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
-              >
-                <link.icon size={18} />
-                {link.label}
-              </button>
-            ))}
+            {sidebarLinks.map((link) => {
+              const isActive = link.path === location.pathname;
+              return (
+                <button
+                  key={link.label}
+                  onClick={() => link.path && navigate(link.path)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
+                    isActive ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                  }`}
+                  style={isActive ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
+                >
+                  <link.icon size={18} />
+                  {link.label}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
@@ -907,7 +928,7 @@ const Marketplace = () => {
           <div className="flex items-center gap-4">
             {lastRefreshLabel && (
               <span className="text-[11px] font-body text-[#9CA3B4] flex items-center gap-1.5 max-md:hidden">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#29B2FE] animate-pulse" />
                 {lastRefreshLabel}
               </span>
             )}

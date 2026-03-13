@@ -3,9 +3,10 @@ import {
   Home, SlidersHorizontal, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
   Settings, LogOut, Search, Bell, Mail, ChevronRight,
-  Heart, Plus, ExternalLink, Loader2, ShoppingBag
+  Heart, Plus, ExternalLink, Loader2, ShoppingBag, Megaphone, Users, MessageSquare
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -16,13 +17,16 @@ const plataformas = [
 ];
 
 const sidebarLinks = [
-  { icon: Home, label: 'Início', active: true, path: '/dashboard' },
-  { icon: ShoppingBag, label: 'Marketplace', active: false, path: '/marketplace' },
-  { icon: Globe, label: 'Criador.ia', active: false, path: null },
-  { icon: CheckCircle, label: 'Serviços Aprovados', active: false, path: null },
-  { icon: Send, label: 'Serviços Enviados', active: false, path: null },
-  { icon: PackageCheck, label: 'Serviços Entregues', active: false, path: null },
-  { icon: Wrench, label: 'Ferramentas', active: false, path: '/ferramentas' },
+  { icon: Home, label: 'Início', path: '/dashboard' },
+  { icon: ShoppingBag, label: 'Marketplace', path: '/marketplace' },
+  { icon: Megaphone, label: 'Meus Anúncios', path: '/meus-anuncios' },
+  { icon: Users, label: 'Meus Clientes', path: '/meus-clientes' },
+  { icon: MessageSquare, label: 'Mensagens', path: '/mensagens' },
+  { icon: Globe, label: 'Criador.ia', path: null },
+  { icon: CheckCircle, label: 'Serviços Aprovados', path: null },
+  { icon: Send, label: 'Serviços Enviados', path: null },
+  { icon: PackageCheck, label: 'Serviços Entregues', path: null },
+  { icon: Wrench, label: 'Ferramentas', path: '/ferramentas' },
 ];
 
 function getGreeting() {
@@ -78,6 +82,7 @@ interface UserStat {
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
 
   const [vagas, setVagas] = useState<Vaga[]>([]);
@@ -128,8 +133,10 @@ const Dashboard = () => {
   const propostasCount = propostas.length;
   const progressPercent = vagasCount > 0 ? Math.min(Math.round((propostasCount / vagasCount) * 100), 100) : 0;
 
+  const revenueData = Array.from({length: 30}, (_, i) => ({day: i + 1, value: 0}));
+
   return (
-    <div className="flex h-screen" style={{ background: '#F8F9FC' }}>
+    <div className="flex h-screen" style={{ background: '#f4f6fb' }}>
       {/* LEFT SIDEBAR */}
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
@@ -144,19 +151,22 @@ const Dashboard = () => {
           </div>
 
           <nav className="flex flex-col gap-1">
-            {sidebarLinks.map((link) => (
-              <button
-                key={link.label}
-                onClick={() => link.path && navigate(link.path)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
-                }`}
-                style={link.active ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
-              >
-                <link.icon size={18} />
-                {link.label}
-              </button>
-            ))}
+            {sidebarLinks.map((link) => {
+              const isActive = link.path === location.pathname;
+              return (
+                <button
+                  key={link.label}
+                  onClick={() => link.path && navigate(link.path)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
+                    isActive ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                  }`}
+                  style={isActive ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
+                >
+                  <link.icon size={18} />
+                  {link.label}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
@@ -172,37 +182,6 @@ const Dashboard = () => {
 
       {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* TOP BAR */}
-        <header className="flex items-center justify-between h-16 px-6 bg-white border-b border-[#E8ECF4] shrink-0">
-          <div className="flex items-center gap-3 flex-1 max-w-xl">
-            <div className="flex items-center gap-2 bg-[#F3F4F8] rounded-full px-4 py-2 flex-1">
-              <Search size={16} className="text-[#9CA3B4]" />
-              <input
-                type="text"
-                placeholder="Buscar vagas..."
-                className="bg-transparent text-sm font-body text-[#1A1D26] outline-none flex-1 placeholder:text-[#9CA3B4]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="w-9 h-9 rounded-full bg-[#F3F4F8] flex items-center justify-center text-[#6B7280] hover:text-[#1A1D26] transition-colors">
-              <Mail size={18} />
-            </button>
-            <button className="w-9 h-9 rounded-full bg-[#F3F4F8] flex items-center justify-center text-[#6B7280] hover:text-[#1A1D26] transition-colors relative">
-              <Bell size={18} />
-              {propostasCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />}
-            </button>
-            <div className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
-                {initials}
-              </div>
-              <span className="text-sm font-body font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>
-            </div>
-          </div>
-        </header>
-
         {/* SCROLLABLE BODY */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
@@ -245,6 +224,46 @@ const Dashboard = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* Receita do Mês Card */}
+                <div style={{ background: 'white', borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                  {/* Header row */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                    <div>
+                      <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Receita do Mês</p>
+                      <h2 style={{ fontSize: 32, fontWeight: 700, margin: '4px 0', color: '#111827' }}>R$ 0,00</h2>
+                      <span style={{ background: '#f0f9ff', color: '#29B2FE', fontSize: 12, padding: '2px 8px', borderRadius: 20 }}>↑ 0,00% vs período anterior</span>
+                    </div>
+                    {/* Period selector */}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {['Hoje', 'Esta semana', 'Este mês'].map(p => (
+                        <button key={p} style={{ padding: '6px 14px', borderRadius: 20, border: p === 'Este mês' ? 'none' : '1px solid #e5e7eb', background: p === 'Este mês' ? '#29B2FE' : 'white', color: p === 'Este mês' ? 'white' : '#6b7280', fontSize: 13, cursor: 'pointer' }}>
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Chart */}
+                  <ResponsiveContainer width="100%" height={220}>
+                    <AreaChart data={revenueData}>
+                      <defs>
+                        <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#29B2FE" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#29B2FE" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                      <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v}`} />
+                      <Tooltip formatter={(v) => [`R$ ${v}`, 'Receita']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      <Area type="monotone" dataKey="value" stroke="#29B2FE" strokeWidth={2} fill="url(#blueGrad)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                  {/* Bottom: Hoje badge */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                    <div style={{ border: '1px solid #29B2FE', borderRadius: 8, padding: '4px 12px', fontSize: 12, color: '#29B2FE' }}>Hoje · R$ 0,00</div>
+                  </div>
                 </div>
 
                 {/* Vagas Recentes */}
@@ -386,7 +405,7 @@ const Dashboard = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-xl p-4 text-center" style={{ background: '#F8F9FC' }}>
+                    <div className="rounded-xl p-4 text-center" style={{ background: '#f4f6fb' }}>
                       <p className="text-xs font-body text-[#9CA3B4]">Seus dados de atividade aparecerão aqui conforme você usa a plataforma.</p>
                     </div>
                   )}
@@ -412,7 +431,42 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
-                  <button className="w-full mt-4 py-2.5 rounded-xl text-sm font-body font-medium transition-colors" style={{ background: 'var(--blue)', color: 'white' }}>Ver Todas</button>
+                  <button className="w-full mt-4 py-2.5 rounded-xl text-sm font-body font-medium transition-colors" style={{ background: '#29B2FE', color: 'white' }}>Ver Todas</button>
+                </div>
+
+                {/* Métricas Rápidas */}
+                <div className="flex-1 min-w-[260px]">
+                  <h3 className="font-heading font-bold text-base text-[#1A1D26] mb-4">Métricas Rápidas</h3>
+                  <div className="flex flex-col gap-3">
+                    <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '20px' }}>💰</span>
+                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Receita Total</p>
+                      </div>
+                      <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>R$ 0,00</p>
+                    </div>
+                    <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '20px' }}>👥</span>
+                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Clientes</p>
+                      </div>
+                      <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>0</p>
+                    </div>
+                    <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '20px' }}>📋</span>
+                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Anúncios Ativos</p>
+                      </div>
+                      <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>0</p>
+                    </div>
+                    <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '20px' }}>💬</span>
+                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Mensagens</p>
+                      </div>
+                      <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>0 novas</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

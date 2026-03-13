@@ -8,10 +8,11 @@ const plans = [
   {
     id: 'mensal',
     name: 'Mensal',
-    price: 99.90,
-    priceDisplay: 'R$ 99,90',
+    price: 1.00,
+    priceDisplay: 'R$ 1,00',
     period: '/mês',
     description: 'Acesso completo à plataforma',
+    testPrice: true,
     features: [
       'Vagas ilimitadas de 4 plataformas',
       'Alertas instantâneos de vagas',
@@ -81,113 +82,261 @@ const Pricing = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: '#060912' }}>
+    <div style={{ minHeight: '100vh', background: '#f4f6fb', fontFamily: 'Inter, sans-serif' }}>
       {/* Header */}
-      <div className="container mx-auto px-4 pt-8">
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 16px' }}>
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-white/60 hover:text-white font-body text-sm transition-colors mb-12"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#6b7280',
+            background: 'transparent',
+            border: 'none',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            marginBottom: '48px',
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#111827')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
         >
           <ArrowLeft size={16} /> Voltar
         </button>
       </div>
 
-      {/* Title */}
-      <div className="container mx-auto px-4 text-center mb-12">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'hsl(var(--primary))' }}>
-            <Search size={14} className="text-white" />
+      {/* Title Section */}
+      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}>
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: '#29B2FE',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Search size={16} color="white" />
           </div>
-          <span className="font-heading font-extrabold text-xl text-white">Markfy</span>
+          <span style={{ fontSize: '20px', fontWeight: '800', color: '#111827' }}>Markfy</span>
         </div>
-        <h1 className="font-heading font-extrabold text-3xl md:text-5xl text-white mb-4">
+        <h1 style={{ fontSize: '48px', fontWeight: '800', color: '#111827', marginBottom: '16px', lineHeight: '1.2' }}>
           Escolha seu Plano
         </h1>
-        <p className="font-body text-white/50 text-base md:text-lg max-w-md mx-auto">
+        <p style={{ fontSize: '16px', color: '#6b7280', maxWidth: '448px', margin: '0 auto' }}>
           Desbloqueie acesso completo às melhores vagas de freelancer do Brasil e do mundo.
         </p>
       </div>
 
-      {/* Plans */}
-      <div className="container mx-auto px-4 pb-20">
-        <div className="flex flex-col md:flex-row gap-6 max-w-3xl mx-auto">
+      {/* Plans Container */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 80px' }}>
+        <div style={{ display: 'flex', gap: '24px', maxWidth: '896px', margin: '0 auto', flexWrap: 'wrap', justifyContent: 'center' }}>
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className="flex-1 rounded-2xl p-[1px] transition-transform hover:scale-[1.02]"
               style={{
-                background: plan.popular
-                  ? 'linear-gradient(135deg, hsl(var(--primary)), #a78bfa)'
-                  : 'rgba(255,255,255,0.06)',
+                flex: '1',
+                minWidth: '320px',
+                maxWidth: '400px',
+                borderRadius: '16px',
+                background: 'white',
+                padding: '32px',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                border: plan.popular ? '2px solid #29B2FE' : '1px solid #e5e7eb',
+                position: 'relative',
+                transition: 'transform 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.02)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              <div
-                className="rounded-2xl p-8 h-full flex flex-col"
-                style={{ background: '#0D1525' }}
-              >
-                {plan.popular && (
-                  <span
-                    className="inline-flex self-start items-center px-3 py-1 rounded-full text-[11px] font-body font-bold uppercase tracking-wider mb-4"
-                    style={{ background: 'hsl(var(--primary) / 0.15)', color: 'hsl(var(--primary))' }}
-                  >
-                    Mais popular
-                  </span>
-                )}
+              {/* Blue glow for popular card */}
+              {plan.popular && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: '-4px',
+                    borderRadius: '16px',
+                    background: 'rgba(41,178,254,0.15)',
+                    pointerEvents: 'none',
+                    zIndex: -1,
+                  }}
+                />
+              )}
 
-                <h3 className="font-heading font-bold text-xl text-white mb-1">{plan.name}</h3>
-                <p className="font-body text-sm text-white/40 mb-6">{plan.description}</p>
-
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="font-heading font-extrabold text-4xl text-white">{plan.priceDisplay}</span>
-                  <span className="font-body text-sm text-white/40">{plan.period}</span>
-                </div>
-
-                {plan.savings && (
-                  <div
-                    className="rounded-lg px-3 py-2 mb-6 text-center"
-                    style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}
-                  >
-                    <span className="font-body text-sm font-medium text-[#22C55E]">{plan.savings}</span>
-                  </div>
-                )}
-
-                <ul className="space-y-3 mb-8 flex-1">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <Check size={16} className="shrink-0 mt-0.5" style={{ color: 'hsl(var(--primary))' }} />
-                      <span className="font-body text-sm text-white/70">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => handleSelectPlan(plan)}
-                  disabled={loadingPlan === plan.id}
-                  className="w-full py-3.5 rounded-xl font-body font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  style={
-                    plan.popular
-                      ? { background: 'hsl(var(--primary))', color: '#060912' }
-                      : { background: 'rgba(255,255,255,0.06)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }
-                  }
+              {/* Popular Badge */}
+              {plan.popular && (
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '4px 12px',
+                    borderRadius: '999px',
+                    background: '#29B2FE',
+                    color: 'white',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    marginBottom: '16px',
+                  }}
                 >
-                  {loadingPlan === plan.id ? (
-                    <><Loader2 size={16} className="animate-spin" /> Processando...</>
-                  ) : (
-                    <><CreditCard size={16} /> Assinar Agora</>
-                  )}
-                </button>
+                  Mais popular
+                </div>
+              )}
+
+              {/* Plan Name */}
+              <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', marginBottom: '8px' }}>
+                {plan.name}
+              </h3>
+              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
+                {plan.description}
+              </p>
+
+              {/* Price */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
+                <span style={{ fontSize: '40px', fontWeight: '800', color: '#111827' }}>
+                  {plan.priceDisplay}
+                </span>
+                <span style={{ fontSize: '14px', color: '#6b7280' }}>{plan.period}</span>
               </div>
+
+              {/* Test Price Note */}
+              {(plan as any).testPrice && (
+                <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '24px', textAlign: 'center' }}>
+                  (Preço de teste)
+                </p>
+              )}
+
+              {/* Savings Badge */}
+              {plan.savings && (
+                <div
+                  style={{
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    marginBottom: '24px',
+                    textAlign: 'center',
+                    background: 'rgba(41,178,254,0.1)',
+                    border: '1px solid rgba(41,178,254,0.2)',
+                  }}
+                >
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#29B2FE' }}>
+                    {plan.savings}
+                  </span>
+                </div>
+              )}
+
+              {/* Features List */}
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', flex: 1 }}>
+                {plan.features.map((feature) => (
+                  <li
+                    key={feature}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '12px',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <Check size={16} color="#29B2FE" style={{ marginTop: '2px', flexShrink: 0 }} />
+                    <span style={{ fontSize: '14px', color: '#6b7280' }}>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Button */}
+              <button
+                onClick={() => handleSelectPlan(plan)}
+                disabled={loadingPlan === plan.id}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  border: plan.popular ? 'none' : '2px solid #29B2FE',
+                  background: plan.popular ? '#29B2FE' : 'white',
+                  color: plan.popular ? 'white' : '#29B2FE',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s',
+                  opacity: loadingPlan === plan.id ? 0.5 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (plan.popular) {
+                    e.currentTarget.style.background = '#1a9ee8';
+                  } else {
+                    e.currentTarget.style.background = '#f0f9ff';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (plan.popular) {
+                    e.currentTarget.style.background = '#29B2FE';
+                  } else {
+                    e.currentTarget.style.background = 'white';
+                  }
+                }}
+              >
+                {loadingPlan === plan.id ? (
+                  <>
+                    <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard size={16} />
+                    Assinar Agora
+                  </>
+                )}
+              </button>
             </div>
           ))}
         </div>
 
-        {/* Trust badges */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mt-12 text-white/30 font-body text-xs">
-          <span>🔒 Pagamento seguro via Mercado Pago</span>
-          <span>↩️ Cancele quando quiser</span>
-          <span>⚡ Acesso imediato</span>
+        {/* Trust Badges */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '24px',
+            marginTop: '48px',
+            padding: '24px',
+            background: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+          }}
+        >
+          <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ color: '#29B2FE' }}>🔒</span> Pagamento seguro via Mercado Pago
+          </span>
+          <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ color: '#29B2FE' }}>↩️</span> Cancele quando quiser
+          </span>
+          <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ color: '#29B2FE' }}>⚡</span> Acesso imediato
+          </span>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

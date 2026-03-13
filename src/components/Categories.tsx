@@ -50,7 +50,7 @@ const Categories = () => {
                 {cat.name}
               </span>
               <span className="flex items-center gap-1.5 font-body text-xs text-accent">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 pulse-dot" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#29B2FE] pulse-dot" />
                 {cat.count} serviços disponíveis
                 <span className="text-muted-foreground ml-1">ao vivo</span>
               </span>

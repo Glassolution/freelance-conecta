@@ -17,7 +17,7 @@ const PlatformStrip = () => {
                 {name}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 pulse-dot" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#29B2FE] pulse-dot" />
                 <span className="font-body text-[10px] text-accent">Conectado</span>
               </span>
             </div>

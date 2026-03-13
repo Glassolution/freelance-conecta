@@ -1009,6 +1009,21 @@ const Marketplace = () => {
         {/* SCROLLABLE BODY */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
+            {/* Tabs: Geral / Markfy */}
+            <div className="flex items-center gap-2">
+              <button onClick={() => setActiveTab('geral')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === 'geral' ? 'text-white shadow-md' : 'text-[#6B7280] bg-white border border-[#E8ECF4] hover:border-[#29B2FE]/30'}`}
+                style={activeTab === 'geral' ? { background: '#29B2FE' } : undefined}>
+                <Globe size={16} /> Geral
+              </button>
+              <button onClick={() => setActiveTab('markfy')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === 'markfy' ? 'text-white shadow-md' : 'text-[#6B7280] bg-white border border-[#E8ECF4] hover:border-[#29B2FE]/30'}`}
+                style={activeTab === 'markfy' ? { background: '#29B2FE' } : undefined}>
+                <Star size={16} /> Markfy
+              </button>
+            </div>
+
+            {activeTab === 'geral' && (<>
             {/* Banner */}
             <div className="relative rounded-2xl overflow-hidden p-8" style={{ background: 'linear-gradient(135deg, #29B2FE, #0077cc)', minHeight: '160px' }}>
               <div className="relative z-10 max-w-lg">

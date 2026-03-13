@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, Search, ArrowLeft, CreditCard, Loader2, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,6 +46,7 @@ const plans = [
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
@@ -59,6 +60,37 @@ const Pricing = () => {
     };
     checkSession();
   }, [user]);
+
+  // Handle payment callback
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    
+    if (paymentStatus === 'success') {
+      toast({
+        title: '✅ Pagamento aprovado!',
+        description: 'Bem-vindo ao seu novo plano. Você será redirecionado em breve.',
+      });
+      
+      // Update user plan in Supabase
+      if (user?.id) {
+        supabase
+          .from('profiles')
+          .update({ plan: 'mensal' })
+          .eq('id', user.id)
+          .then(() => {
+            setTimeout(() => navigate('/dashboard'), 2000);
+          });
+      }
+    }
+    
+    if (paymentStatus === 'failure') {
+      toast({
+        title: '❌ Pagamento não aprovado',
+        description: 'Tente novamente ou use outro método de pagamento.',
+        variant: 'destructive',
+      });
+    }
+  }, [searchParams, user?.id, navigate, toast]);
 
   const handleSubscribe = async (planType: string) => {
     const { data: { session } } = await supabase.auth.getSession();

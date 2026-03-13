@@ -1016,9 +1016,7 @@ const Marketplace = () => {
             >
               <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
             </button>
-            <button className="w-9 h-9 rounded-full bg-[#F3F4F8] flex items-center justify-center text-[#6B7280] hover:text-[#1A1D26] transition-colors">
-              <NotificationBell />
-            </button>
+            <NotificationBell />
             <div className="flex items-center gap-2 ml-2">
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
                 {initials}

@@ -3,7 +3,7 @@ import {
   Home, SlidersHorizontal, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
   Settings, LogOut, Search, Bell, Mail, ChevronRight,
-  Heart, Plus, ExternalLink, Loader2, ShoppingBag, Megaphone, Users, MessageSquare
+  Heart, Plus, ExternalLink, Loader2, ShoppingBag, Megaphone, Users, MessageSquare, ArrowLeft
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -121,6 +121,10 @@ const Dashboard = () => {
     navigate('/');
   };
 
+  const handleGoHome = () => {
+    navigate('/');
+  };
+
   const filteredVagas = searchQuery
     ? vagas.filter(v =>
         v.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -174,8 +178,15 @@ const Dashboard = () => {
           <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
             <Settings size={18} /> Configurações
           </button>
-          <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-red-400 hover:bg-red-500/10 transition-colors">
-            <LogOut size={18} /> Sair
+          
+          <div className="border-t border-[#E8ECF4] my-2"></div>
+          
+          <button onClick={handleGoHome} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
+            <Home size={18} /> Página Inicial
+          </button>
+          
+          <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#ef4444] hover:bg-red-500/10 transition-colors">
+            <LogOut size={18} /> Encerrar Sessão
           </button>
         </div>
       </aside>

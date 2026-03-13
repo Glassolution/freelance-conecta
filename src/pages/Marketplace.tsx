@@ -2,16 +2,33 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Home, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
-  Settings, LogOut, Search, Bell, Mail,
+  Settings, LogOut, Search, Mail,
   Clock, ExternalLink, RefreshCw, Filter,
   ArrowUpDown, Users, ShoppingBag, Megaphone, MessageSquare,
   Star, X, FileText, Eye
 } from 'lucide-react';
-import type { MarkfyAd, MarkfyProposal } from './MeusAnuncios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
+import { ensureProfile } from '@/lib/ensureProfile';
+import NotificationBell from '@/components/NotificationBell';
+
+interface MarkfyAd {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  category: string;
+  skills: string[];
+  price: number;
+  deadline_days: number;
+  status: string;
+  views: number;
+  created_at: string;
+  author_name?: string;
+}
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', path: '/dashboard' },
@@ -649,54 +666,59 @@ const Marketplace = () => {
   // Markfy tab state
   const [activeTab, setActiveTab] = useState<'geral' | 'markfy'>('geral');
   const [markfyAds, setMarkfyAds] = useState<MarkfyAd[]>([]);
+  const [markfyLoading, setMarkfyLoading] = useState(false);
   const [showProposalModal, setShowProposalModal] = useState<MarkfyAd | null>(null);
   const [proposalText, setProposalText] = useState('');
   const [proposalValue, setProposalValue] = useState<number | ''>('');
   const [proposalDeadline, setProposalDeadline] = useState<number | ''>('');
 
-  // Load Markfy ads from localStorage
-  useEffect(() => {
-    const load = () => {
-      try { setMarkfyAds(JSON.parse(localStorage.getItem('markfy_ads') || '[]')); } catch { setMarkfyAds([]); }
-    };
-    load();
-    window.addEventListener('storage', load);
-    return () => window.removeEventListener('storage', load);
+  // Load Markfy ads from Supabase
+  const fetchMarkfyAds = useCallback(async () => {
+    setMarkfyLoading(true);
+    const { data } = await supabase
+      .from('ads')
+      .select('*, author:profiles!ads_user_id_fkey(full_name)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false }) as any;
+    const ads = (data || []).map((a: any) => ({
+      ...a,
+      author_name: a.author?.full_name || 'Freelancer',
+    }));
+    setMarkfyAds(ads);
+    setMarkfyLoading(false);
   }, []);
 
-  const activeMarkfyAds = markfyAds.filter(a => a.status === 'ativo');
+  useEffect(() => {
+    if (user) { ensureProfile(); fetchMarkfyAds(); }
+  }, [user, fetchMarkfyAds]);
 
-  const handleSendProposal = () => {
-    if (!showProposalModal || !proposalText.trim() || !proposalValue || !proposalDeadline) return;
-    const proposal: MarkfyProposal = {
-      id: crypto.randomUUID(),
-      adId: showProposalModal.id,
-      freelancerName: getUserDisplayName(user),
-      text: proposalText,
-      value: Number(proposalValue),
-      deadline: Number(proposalDeadline),
-      status: 'pendente',
-      createdAt: new Date().toISOString(),
-    };
-    // Save to markfy_proposals
-    try {
-      const existing = JSON.parse(localStorage.getItem('markfy_proposals') || '[]');
-      existing.push(proposal);
-      localStorage.setItem('markfy_proposals', JSON.stringify(existing));
-    } catch {}
-    // Also add to the ad's proposals in markfy_ads
-    try {
-      const ads: MarkfyAd[] = JSON.parse(localStorage.getItem('markfy_ads') || '[]');
-      const idx = ads.findIndex(a => a.id === showProposalModal.id);
-      if (idx !== -1) {
-        ads[idx].proposals.push(proposal);
-        ads[idx].views = (ads[idx].views || 0) + 1;
-        localStorage.setItem('markfy_ads', JSON.stringify(ads));
-        setMarkfyAds(ads);
-      }
-    } catch {}
+  const handleSendProposal = async () => {
+    if (!showProposalModal || !proposalText.trim() || !proposalValue || !proposalDeadline || !user) return;
+
+    const { error } = await supabase.from('ad_proposals').insert({
+      ad_id: showProposalModal.id,
+      sender_id: user.id,
+      message: proposalText,
+      price: Number(proposalValue),
+      deadline_days: Number(proposalDeadline),
+    } as any);
+
+    if (error) { toast({ title: 'Erro ao enviar proposta', variant: 'destructive', duration: 3000 }); return; }
+
+    // Increment views
+    await supabase.rpc('increment_ad_views', { p_ad_id: showProposalModal.id } as any);
+
+    // Notify ad owner
+    await supabase.from('notifications').insert({
+      user_id: showProposalModal.user_id,
+      title: 'Nova proposta recebida!',
+      message: `${getUserDisplayName(user)} enviou uma proposta para "${showProposalModal.title}"`,
+      type: 'proposal',
+    } as any);
+
     setShowProposalModal(null); setProposalText(''); setProposalValue(''); setProposalDeadline('');
-    import('@/hooks/use-toast').then(m => m.toast({ title: 'Proposta enviada com sucesso!', duration: 3000 }));
+    toast({ title: 'Proposta enviada com sucesso!', duration: 3000 });
+    fetchMarkfyAds();
   };
 
   // Fetch Workana jobs
@@ -994,9 +1016,7 @@ const Marketplace = () => {
             >
               <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
             </button>
-            <button className="w-9 h-9 rounded-full bg-[#F3F4F8] flex items-center justify-center text-[#6B7280] hover:text-[#1A1D26] transition-colors">
-              <Bell size={18} />
-            </button>
+            <NotificationBell />
             <div className="flex items-center gap-2 ml-2">
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
                 {initials}
@@ -1291,9 +1311,22 @@ const Marketplace = () => {
                   <div className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full opacity-15 bg-white max-md:hidden" />
                 </div>
 
-                <p className="text-sm text-[#9CA3B4]">{activeMarkfyAds.length} {activeMarkfyAds.length === 1 ? 'anúncio disponível' : 'anúncios disponíveis'}</p>
+                {markfyLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {[1,2,3].map(i => (
+                      <div key={i} className="bg-white rounded-2xl border border-[#E8ECF4] p-5 space-y-3">
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-4 w-4/5" />
+                        <Skeleton className="h-10 w-full rounded-xl" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                <p className="text-sm text-[#9CA3B4]">{markfyAds.length} {markfyAds.length === 1 ? 'anúncio disponível' : 'anúncios disponíveis'}</p>
 
-                {activeMarkfyAds.length === 0 ? (
+                {markfyAds.length === 0 ? (
                   <div className="bg-white rounded-2xl border border-[#E8ECF4] p-12 text-center">
                     <div className="w-16 h-16 rounded-full bg-[#F3F4F8] flex items-center justify-center mx-auto mb-4">
                       <Megaphone size={24} className="text-[#9CA3B4]" />
@@ -1303,7 +1336,7 @@ const Marketplace = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {activeMarkfyAds.map(ad => (
+                    {markfyAds.map(ad => (
                       <div key={ad.id} className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden group hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:border-[#29B2FE]/20 flex flex-col">
                         <div className="p-5 flex flex-col flex-1">
                           <div className="flex items-center justify-between mb-3">
@@ -1312,7 +1345,7 @@ const Marketplace = () => {
                           </div>
                           <h4 className="font-bold text-[15px] text-[#1A1D26] leading-snug mb-2 line-clamp-2">{ad.title}</h4>
                           <p className="text-xs text-[#9CA3B4] mb-3 line-clamp-3 flex-1">{ad.description}</p>
-                          {ad.skills.length > 0 && (
+                          {ad.skills && ad.skills.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-4">
                               {ad.skills.slice(0, 4).map(s => (
                                 <span key={s} className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#F3F4F8] text-[#6B7280]">{s}</span>
@@ -1323,11 +1356,11 @@ const Marketplace = () => {
                             <div className="flex items-center justify-between mb-3">
                               <div>
                                 <p className="text-[10px] text-[#9CA3B4] uppercase tracking-wider mb-0.5">Orçamento</p>
-                                <p className="text-lg font-extrabold" style={{ color: '#29B2FE' }}>R$ {ad.value.toLocaleString('pt-BR')}</p>
+                                <p className="text-lg font-extrabold" style={{ color: '#29B2FE' }}>R$ {(ad.price || 0).toLocaleString('pt-BR')}</p>
                               </div>
                               <div className="text-right text-xs text-[#9CA3B4]">
-                                <span className="flex items-center gap-1"><Eye size={12} /> {ad.views}</span>
-                                <span className="flex items-center gap-1 mt-0.5"><FileText size={12} /> {ad.proposals.length}</span>
+                                <span className="flex items-center gap-1"><Eye size={12} /> {ad.views || 0}</span>
+                                <span className="text-[10px] mt-0.5">por {ad.author_name}</span>
                               </div>
                             </div>
                             <button onClick={() => { setShowProposalModal(ad); setProposalText(''); setProposalValue(''); setProposalDeadline(''); }}
@@ -1340,6 +1373,8 @@ const Marketplace = () => {
                       </div>
                     ))}
                   </div>
+                )}
+                  </>
                 )}
               </>
             )}

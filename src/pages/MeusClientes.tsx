@@ -3,10 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, ShoppingBag, Megaphone, Users, MessageSquare, Globe,
   CheckCircle, Send, PackageCheck, Wrench, Settings, LogOut,
-  Plus, Briefcase, DollarSign, X, Search, Bell, Mail
+  Plus, Briefcase, DollarSign, X, Search, Mail
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ensureProfile } from '@/lib/ensureProfile';
+import NotificationBell from '@/components/NotificationBell';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', path: '/dashboard' },
@@ -21,29 +25,17 @@ const sidebarLinks = [
   { icon: Wrench, label: 'Ferramentas', path: '/ferramentas' },
 ];
 
-export interface MarkfyClient {
+interface Client {
   id: string;
   name: string;
   email: string;
   company: string;
-  projects: MarkfyClientProject[];
-  createdAt: string;
-}
-
-export interface MarkfyClientProject {
-  id: string;
-  name: string;
-  value: number;
-  status: 'em_andamento' | 'concluido';
+  project_name: string;
+  project_value: number;
+  project_status: string;
   notes: string;
-  createdAt: string;
+  created_at: string;
 }
-
-function getClients(): MarkfyClient[] {
-  try { return JSON.parse(localStorage.getItem('markfy_clients') || '[]'); }
-  catch { return []; }
-}
-function saveClients(c: MarkfyClient[]) { localStorage.setItem('markfy_clients', JSON.stringify(c)); }
 
 function getUserInitials(user: any): string {
   const name = user?.user_metadata?.full_name;
@@ -67,41 +59,53 @@ const MeusClientes = () => {
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
 
-  const [clients, setClients] = useState<MarkfyClient[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [showProjectsModal, setShowProjectsModal] = useState<MarkfyClient | null>(null);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
   const [projectName, setProjectName] = useState('');
   const [projectValue, setProjectValue] = useState<number | ''>('');
-  const [projectStatus, setProjectStatus] = useState<'em_andamento' | 'concluido'>('em_andamento');
+  const [projectStatus, setProjectStatus] = useState<string>('in_progress');
   const [notes, setNotes] = useState('');
 
-  useEffect(() => { setClients(getClients()); }, []);
+  const fetchClients = async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }) as any;
+    if (error) toast({ title: 'Erro ao carregar clientes', variant: 'destructive', duration: 3000 });
+    else setClients(data || []);
+    setLoading(false);
+  };
 
-  const resetForm = () => { setName(''); setEmail(''); setCompany(''); setProjectName(''); setProjectValue(''); setProjectStatus('em_andamento'); setNotes(''); };
+  useEffect(() => {
+    if (user) { ensureProfile(); fetchClients(); }
+  }, [user]);
 
-  const handleSave = () => {
-    if (!name.trim() || !email.trim() || !projectName.trim() || !projectValue) return;
-    const newClient: MarkfyClient = {
-      id: crypto.randomUUID(), name, email, company,
-      projects: [{
-        id: crypto.randomUUID(), name: projectName, value: Number(projectValue),
-        status: projectStatus, notes, createdAt: new Date().toISOString(),
-      }],
-      createdAt: new Date().toISOString(),
-    };
-    const updated = [newClient, ...clients];
-    saveClients(updated); setClients(updated); setShowModal(false); resetForm();
+  const resetForm = () => { setName(''); setEmail(''); setCompany(''); setProjectName(''); setProjectValue(''); setProjectStatus('in_progress'); setNotes(''); };
+
+  const handleSave = async () => {
+    if (!name.trim() || !email.trim() || !projectName.trim() || !projectValue || !user) return;
+    const { error } = await supabase.from('clients').insert({
+      user_id: user.id, name, email, company,
+      project_name: projectName, project_value: Number(projectValue),
+      project_status: projectStatus, notes,
+    } as any);
+    if (error) { toast({ title: 'Erro ao adicionar cliente', variant: 'destructive', duration: 3000 }); return; }
+    setShowModal(false); resetForm(); fetchClients();
     toast({ title: 'Cliente adicionado com sucesso!', duration: 3000 });
   };
 
   const totalClients = clients.length;
-  const activeProjects = clients.reduce((s, c) => s + c.projects.filter(p => p.status === 'em_andamento').length, 0);
-  const completedProjects = clients.reduce((s, c) => s + c.projects.filter(p => p.status === 'concluido').length, 0);
-  const totalRevenue = clients.reduce((s, c) => s + c.projects.reduce((ps, p) => ps + p.value, 0), 0);
+  const activeProjects = clients.filter(c => c.project_status === 'in_progress').length;
+  const completedProjects = clients.filter(c => c.project_status === 'completed').length;
+  const totalRevenue = clients.reduce((s, c) => s + (c.project_value || 0), 0);
 
   const handleSignOut = async () => { await signOut(); navigate('/'); };
 
@@ -144,7 +148,7 @@ const MeusClientes = () => {
             <input type="text" placeholder="Buscar clientes..." className="bg-transparent text-sm text-[#1A1D26] outline-none flex-1 placeholder:text-[#9CA3B4]" />
           </div>
           <div className="flex items-center gap-4">
-            <button className="w-9 h-9 rounded-full bg-[#F3F4F8] flex items-center justify-center text-[#6B7280]"><Bell size={18} /></button>
+            <NotificationBell />
             <div className="flex items-center gap-2 ml-2">
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>{initials}</div>
               <span className="text-sm font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>
@@ -154,7 +158,6 @@ const MeusClientes = () => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
-            {/* Header */}
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-extrabold text-[#111827]">Meus Clientes</h1>
@@ -188,7 +191,18 @@ const MeusClientes = () => {
             </div>
 
             {/* Content */}
-            {clients.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {[1,2,3].map(i => (
+                  <div key={i} className="bg-white rounded-2xl border border-[#E8ECF4] p-5 space-y-3">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-10 w-full rounded-xl" />
+                  </div>
+                ))}
+              </div>
+            ) : clients.length === 0 ? (
               <div className="bg-white rounded-2xl border-2 border-dashed p-16 text-center" style={{ borderColor: '#29B2FE' }}>
                 <div className="text-5xl mb-4">👥</div>
                 <h2 className="text-xl font-bold text-[#111827] mb-2">Nenhum cliente ainda</h2>
@@ -201,51 +215,42 @@ const MeusClientes = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {clients.map(client => {
-                  const lastProject = client.projects[client.projects.length - 1];
-                  const totalVal = client.projects.reduce((s, p) => s + p.value, 0);
-                  return (
-                    <div key={client.id} className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden flex flex-col hover:shadow-lg hover:border-[#29B2FE]/20 transition-all">
-                      <div className="p-5 flex flex-col flex-1">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: avatarColor(client.name) }}>
-                            {nameInitials(client.name)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-bold text-[#111827] truncate">{client.name}</p>
-                            <p className="text-xs text-[#9CA3B4] truncate">{client.email}</p>
-                            {client.company && <p className="text-[10px] text-[#9CA3B4] truncate">{client.company}</p>}
-                          </div>
+                {clients.map(client => (
+                  <div key={client.id} className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden flex flex-col hover:shadow-lg hover:border-[#29B2FE]/20 transition-all">
+                    <div className="p-5 flex flex-col flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: avatarColor(client.name) }}>
+                          {nameInitials(client.name)}
                         </div>
-                        <div className="flex items-center gap-4 mb-4 text-xs text-[#6B7280]">
-                          <span className="flex items-center gap-1"><Briefcase size={12} /> {client.projects.length} projetos</span>
-                          <span className="flex items-center gap-1"><DollarSign size={12} /> R$ {totalVal.toLocaleString('pt-BR')}</span>
-                        </div>
-                        {lastProject && (
-                          <div className="bg-[#F8F9FC] rounded-xl p-3 mb-4">
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs font-medium text-[#111827] truncate flex-1">{lastProject.name}</p>
-                              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg text-white ml-2 shrink-0 ${lastProject.status === 'concluido' ? 'bg-green-500' : ''}`}
-                                style={lastProject.status === 'em_andamento' ? { background: '#29B2FE' } : undefined}>
-                                {lastProject.status === 'em_andamento' ? 'Em andamento' : 'Concluído'}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                        <div className="flex gap-2 mt-auto">
-                          <button onClick={() => setShowProjectsModal(client)}
-                            className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white hover:brightness-110" style={{ background: '#29B2FE' }}>
-                            Ver Projetos
-                          </button>
-                          <button onClick={() => navigate('/mensagens')}
-                            className="w-10 h-10 rounded-xl border border-[#E8ECF4] flex items-center justify-center text-[#6B7280] hover:text-[#29B2FE] hover:border-[#29B2FE]/30 transition-colors">
-                            <Mail size={14} />
-                          </button>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-[#111827] truncate">{client.name}</p>
+                          <p className="text-xs text-[#9CA3B4] truncate">{client.email}</p>
+                          {client.company && <p className="text-[10px] text-[#9CA3B4] truncate">{client.company}</p>}
                         </div>
                       </div>
+                      <div className="flex items-center gap-4 mb-4 text-xs text-[#6B7280]">
+                        <span className="flex items-center gap-1"><DollarSign size={12} /> R$ {(client.project_value || 0).toLocaleString('pt-BR')}</span>
+                      </div>
+                      {client.project_name && (
+                        <div className="bg-[#F8F9FC] rounded-xl p-3 mb-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-medium text-[#111827] truncate flex-1">{client.project_name}</p>
+                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg text-white ml-2 shrink-0 ${client.project_status === 'completed' ? 'bg-green-500' : ''}`}
+                              style={client.project_status === 'in_progress' ? { background: '#29B2FE' } : undefined}>
+                              {client.project_status === 'in_progress' ? 'Em andamento' : 'Concluído'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex gap-2 mt-auto">
+                        <button onClick={() => navigate('/mensagens')}
+                          className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white hover:brightness-110" style={{ background: '#29B2FE' }}>
+                          <Mail size={14} className="inline mr-1" /> Mensagem
+                        </button>
+                      </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -292,10 +297,10 @@ const MeusClientes = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-[#111827] mb-1.5 block">Status</label>
-                      <select value={projectStatus} onChange={e => setProjectStatus(e.target.value as any)}
+                      <select value={projectStatus} onChange={e => setProjectStatus(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl border border-[#E8ECF4] text-sm outline-none focus:border-[#29B2FE] bg-white">
-                        <option value="em_andamento">Em andamento</option>
-                        <option value="concluido">Concluído</option>
+                        <option value="in_progress">Em andamento</option>
+                        <option value="completed">Concluído</option>
                       </select>
                     </div>
                   </div>
@@ -310,37 +315,6 @@ const MeusClientes = () => {
             <div className="flex justify-end gap-3 p-6 border-t border-[#E8ECF4]">
               <button onClick={() => setShowModal(false)} className="px-5 py-2.5 rounded-xl text-sm font-medium text-[#6B7280] border border-[#E8ECF4] hover:bg-[#F3F4F8]">Cancelar</button>
               <button onClick={handleSave} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white hover:brightness-110" style={{ background: '#29B2FE' }}>Salvar Cliente</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL — Ver Projetos */}
-      {showProjectsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
-          <div className="bg-white rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-[#E8ECF4]">
-              <div>
-                <h3 className="text-lg font-bold text-[#111827]">Projetos</h3>
-                <p className="text-xs text-[#9CA3B4] mt-0.5">{showProjectsModal.name}</p>
-              </div>
-              <button onClick={() => setShowProjectsModal(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3B4] hover:text-[#111] hover:bg-[#F3F4F8]"><X size={18} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              {showProjectsModal.projects.map(p => (
-                <div key={p.id} className="border border-[#E8ECF4] rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-bold text-[#111827]">{p.name}</p>
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg text-white ${p.status === 'concluido' ? 'bg-green-500' : ''}`}
-                      style={p.status === 'em_andamento' ? { background: '#29B2FE' } : undefined}>
-                      {p.status === 'em_andamento' ? 'Em andamento' : 'Concluído'}
-                    </span>
-                  </div>
-                  <p className="text-lg font-extrabold mb-1" style={{ color: '#29B2FE' }}>R$ {p.value.toLocaleString('pt-BR')}</p>
-                  {p.notes && <p className="text-xs text-[#6B7280] mt-2">{p.notes}</p>}
-                  <p className="text-[10px] text-[#9CA3B4] mt-2">{new Date(p.createdAt).toLocaleDateString('pt-BR')}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>

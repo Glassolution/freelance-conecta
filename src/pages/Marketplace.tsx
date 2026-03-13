@@ -646,6 +646,59 @@ const Marketplace = () => {
   const [translating, setTranslating] = useState(false);
   const translationAbort = useRef<AbortController | null>(null);
 
+  // Markfy tab state
+  const [activeTab, setActiveTab] = useState<'geral' | 'markfy'>('geral');
+  const [markfyAds, setMarkfyAds] = useState<MarkfyAd[]>([]);
+  const [showProposalModal, setShowProposalModal] = useState<MarkfyAd | null>(null);
+  const [proposalText, setProposalText] = useState('');
+  const [proposalValue, setProposalValue] = useState<number | ''>('');
+  const [proposalDeadline, setProposalDeadline] = useState<number | ''>('');
+
+  // Load Markfy ads from localStorage
+  useEffect(() => {
+    const load = () => {
+      try { setMarkfyAds(JSON.parse(localStorage.getItem('markfy_ads') || '[]')); } catch { setMarkfyAds([]); }
+    };
+    load();
+    window.addEventListener('storage', load);
+    return () => window.removeEventListener('storage', load);
+  }, []);
+
+  const activeMarkfyAds = markfyAds.filter(a => a.status === 'ativo');
+
+  const handleSendProposal = () => {
+    if (!showProposalModal || !proposalText.trim() || !proposalValue || !proposalDeadline) return;
+    const proposal: MarkfyProposal = {
+      id: crypto.randomUUID(),
+      adId: showProposalModal.id,
+      freelancerName: getUserDisplayName(user),
+      text: proposalText,
+      value: Number(proposalValue),
+      deadline: Number(proposalDeadline),
+      status: 'pendente',
+      createdAt: new Date().toISOString(),
+    };
+    // Save to markfy_proposals
+    try {
+      const existing = JSON.parse(localStorage.getItem('markfy_proposals') || '[]');
+      existing.push(proposal);
+      localStorage.setItem('markfy_proposals', JSON.stringify(existing));
+    } catch {}
+    // Also add to the ad's proposals in markfy_ads
+    try {
+      const ads: MarkfyAd[] = JSON.parse(localStorage.getItem('markfy_ads') || '[]');
+      const idx = ads.findIndex(a => a.id === showProposalModal.id);
+      if (idx !== -1) {
+        ads[idx].proposals.push(proposal);
+        ads[idx].views = (ads[idx].views || 0) + 1;
+        localStorage.setItem('markfy_ads', JSON.stringify(ads));
+        setMarkfyAds(ads);
+      }
+    } catch {}
+    setShowProposalModal(null); setProposalText(''); setProposalValue(''); setProposalDeadline('');
+    import('@/hooks/use-toast').then(m => m.toast({ title: 'Proposta enviada com sucesso!', duration: 3000 }));
+  };
+
   // Fetch Workana jobs
   const fetchWorkanaJobsData = useCallback(async () => {
     setWorkanaLoading(true);

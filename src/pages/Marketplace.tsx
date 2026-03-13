@@ -1313,9 +1313,22 @@ const Marketplace = () => {
                   <div className="absolute right-8 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full opacity-15 bg-white max-md:hidden" />
                 </div>
 
-                <p className="text-sm text-[#9CA3B4]">{activeMarkfyAds.length} {activeMarkfyAds.length === 1 ? 'anúncio disponível' : 'anúncios disponíveis'}</p>
+                {markfyLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {[1,2,3].map(i => (
+                      <div key={i} className="bg-white rounded-2xl border border-[#E8ECF4] p-5 space-y-3">
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                        <Skeleton className="h-5 w-full" />
+                        <Skeleton className="h-4 w-4/5" />
+                        <Skeleton className="h-10 w-full rounded-xl" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                <p className="text-sm text-[#9CA3B4]">{markfyAds.length} {markfyAds.length === 1 ? 'anúncio disponível' : 'anúncios disponíveis'}</p>
 
-                {activeMarkfyAds.length === 0 ? (
+                {markfyAds.length === 0 ? (
                   <div className="bg-white rounded-2xl border border-[#E8ECF4] p-12 text-center">
                     <div className="w-16 h-16 rounded-full bg-[#F3F4F8] flex items-center justify-center mx-auto mb-4">
                       <Megaphone size={24} className="text-[#9CA3B4]" />
@@ -1325,7 +1338,7 @@ const Marketplace = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {activeMarkfyAds.map(ad => (
+                    {markfyAds.map(ad => (
                       <div key={ad.id} className="bg-white rounded-2xl border border-[#E8ECF4] overflow-hidden group hover:scale-[1.01] transition-all duration-300 hover:shadow-lg hover:border-[#29B2FE]/20 flex flex-col">
                         <div className="p-5 flex flex-col flex-1">
                           <div className="flex items-center justify-between mb-3">
@@ -1334,7 +1347,7 @@ const Marketplace = () => {
                           </div>
                           <h4 className="font-bold text-[15px] text-[#1A1D26] leading-snug mb-2 line-clamp-2">{ad.title}</h4>
                           <p className="text-xs text-[#9CA3B4] mb-3 line-clamp-3 flex-1">{ad.description}</p>
-                          {ad.skills.length > 0 && (
+                          {ad.skills && ad.skills.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-4">
                               {ad.skills.slice(0, 4).map(s => (
                                 <span key={s} className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#F3F4F8] text-[#6B7280]">{s}</span>
@@ -1345,11 +1358,11 @@ const Marketplace = () => {
                             <div className="flex items-center justify-between mb-3">
                               <div>
                                 <p className="text-[10px] text-[#9CA3B4] uppercase tracking-wider mb-0.5">Orçamento</p>
-                                <p className="text-lg font-extrabold" style={{ color: '#29B2FE' }}>R$ {ad.value.toLocaleString('pt-BR')}</p>
+                                <p className="text-lg font-extrabold" style={{ color: '#29B2FE' }}>R$ {(ad.price || 0).toLocaleString('pt-BR')}</p>
                               </div>
                               <div className="text-right text-xs text-[#9CA3B4]">
-                                <span className="flex items-center gap-1"><Eye size={12} /> {ad.views}</span>
-                                <span className="flex items-center gap-1 mt-0.5"><FileText size={12} /> {ad.proposals.length}</span>
+                                <span className="flex items-center gap-1"><Eye size={12} /> {ad.views || 0}</span>
+                                <span className="text-[10px] mt-0.5">por {ad.author_name}</span>
                               </div>
                             </div>
                             <button onClick={() => { setShowProposalModal(ad); setProposalText(''); setProposalValue(''); setProposalDeadline(''); }}
@@ -1362,6 +1375,8 @@ const Marketplace = () => {
                       </div>
                     ))}
                   </div>
+                )}
+                  </>
                 )}
               </>
             )}

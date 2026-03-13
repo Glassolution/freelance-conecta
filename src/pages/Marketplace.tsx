@@ -2,16 +2,33 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Home, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
-  Settings, LogOut, Search, Bell, Mail,
+  Settings, LogOut, Search, Mail,
   Clock, ExternalLink, RefreshCw, Filter,
   ArrowUpDown, Users, ShoppingBag, Megaphone, MessageSquare,
   Star, X, FileText, Eye
 } from 'lucide-react';
-import type { MarkfyAd, MarkfyProposal } from './MeusAnuncios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
+import { ensureProfile } from '@/lib/ensureProfile';
+import NotificationBell from '@/components/NotificationBell';
+
+interface MarkfyAd {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  category: string;
+  skills: string[];
+  price: number;
+  deadline_days: number;
+  status: string;
+  views: number;
+  created_at: string;
+  author_name?: string;
+}
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', path: '/dashboard' },

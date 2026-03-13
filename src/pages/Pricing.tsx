@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Search, ArrowLeft, CreditCard, Loader2 } from 'lucide-react';
+import { Check, Search, ArrowLeft, CreditCard, Loader2, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const plans = [
   {
@@ -46,14 +47,43 @@ const plans = [
 const Pricing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleSelectPlan = async (plan: typeof plans[0]) => {
-    if (!user) {
-      navigate('/auth');
+  // Check if user is logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    checkSession();
+  }, [user]);
+
+  const handleSubscribe = async (planType: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      // Save intended destination
+      localStorage.setItem('markfy_redirect_after_login', '/pricing');
+      // Show toast then redirect
+      toast({
+        title: '🔒 Faça login para assinar um plano',
+        description: 'Você será redirecionado para a página de login.',
+        variant: 'destructive',
+      });
+      setTimeout(() => navigate('/auth'), 1500);
       return;
     }
 
+    // User is logged in — proceed with payment
+    const plan = plans.find(p => p.id === planType);
+    if (plan) {
+      handleSelectPlan(plan);
+    }
+  };
+
+  const handleSelectPlan = async (plan: typeof plans[0]) => {
     setLoadingPlan(plan.id);
 
     try {
@@ -62,7 +92,7 @@ const Pricing = () => {
           planId: plan.id,
           planName: plan.name,
           price: plan.price,
-          userEmail: user.email,
+          userEmail: user?.email,
         },
       });
 
@@ -75,7 +105,11 @@ const Pricing = () => {
       }
     } catch (err: any) {
       console.error('Erro ao criar checkout:', err);
-      alert('Erro ao processar pagamento. Tente novamente.');
+      toast({
+        title: 'Erro ao processar pagamento',
+        description: 'Tente novamente mais tarde.',
+        variant: 'destructive',
+      });
     } finally {
       setLoadingPlan(null);
     }
@@ -254,7 +288,7 @@ const Pricing = () => {
 
               {/* Button */}
               <button
-                onClick={() => handleSelectPlan(plan)}
+                onClick={() => handleSubscribe(plan.id)}
                 disabled={loadingPlan === plan.id}
                 style={{
                   width: '100%',
@@ -293,10 +327,15 @@ const Pricing = () => {
                     <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
                     Processando...
                   </>
-                ) : (
+                ) : isLoggedIn ? (
                   <>
                     <CreditCard size={16} />
                     Assinar Agora
+                  </>
+                ) : (
+                  <>
+                    <Lock size={16} />
+                    Faça login primeiro
                   </>
                 )}
               </button>

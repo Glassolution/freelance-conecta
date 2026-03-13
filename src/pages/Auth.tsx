@@ -43,7 +43,15 @@ const Auth = () => {
         });
         if (error) throw error;
       }
-      navigate('/dashboard');
+      
+      // Check for saved redirect after login
+      const redirect = localStorage.getItem('markfy_redirect_after_login');
+      if (redirect) {
+        localStorage.removeItem('markfy_redirect_after_login');
+        navigate(redirect);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(
         err.message === 'Invalid login credentials'

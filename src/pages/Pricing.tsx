@@ -100,7 +100,7 @@ const Pricing = () => {
       localStorage.setItem('markfy_redirect_after_login', '/pricing');
       // Show toast then redirect
       toast({
-        title: '🔒 Faça login para assinar um plano',
+        title: 'Faça login para assinar um plano',
         description: 'Você será redirecionado para a página de login.',
         variant: 'destructive',
       });

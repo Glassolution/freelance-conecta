@@ -117,17 +117,17 @@ const Dashboard = () => {
       if (!user?.id) return;
 
       setLoading(true);
-      const [vagasRes, propostasRes, clientsRes, messagesCountRes] = await Promise.all([
+      const [vagasRes, propostasRes, clientsRes, messagesRes] = await Promise.all([
         supabase.from('vagas').select('*').order('created_at', { ascending: false }).limit(10),
         supabase.from('propostas').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
         supabase.from('clients').select('project_value, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('messages').select('id', { count: 'exact', head: true }).eq('sender_id', user.id),
+        supabase.from('messages').select('created_at').eq('sender_id', user.id).order('created_at', { ascending: false }),
       ]);
 
       if (vagasRes.data) setVagas(vagasRes.data);
       if (propostasRes.data) setPropostas(propostasRes.data);
       if (clientsRes.data) setClientsData(clientsRes.data as ClientMetric[]);
-      setMessagesSentCount(messagesCountRes.count ?? 0);
+      if (messagesRes.data) setMessagesData(messagesRes.data as MessageMetric[]);
 
       setLoading(false);
     };

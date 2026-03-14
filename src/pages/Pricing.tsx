@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, Search, ArrowLeft, CreditCard, Loader2, Lock } from 'lucide-react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { Check, Search, ArrowLeft, CreditCard, Loader2, Lock, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -51,6 +51,21 @@ const Pricing = () => {
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeName, setWelcomeName] = useState('');
+  const location = useLocation();
+
+  // Show welcome banner if coming from onboarding
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('onboarding_completed, full_name').eq('id', user.id).maybeSingle()
+      .then(({ data }) => {
+        if (data?.onboarding_completed && !localStorage.getItem('markfy_welcome_dismissed')) {
+          setShowWelcome(true);
+          setWelcomeName(data.full_name?.split(' ')[0] || '');
+        }
+      });
+  }, [user]);
 
   // Check if user is logged in
   useEffect(() => {
@@ -127,6 +142,28 @@ const Pricing = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f6fb', fontFamily: 'Inter, sans-serif' }}>
+      {/* Welcome Banner */}
+      {showWelcome && (
+        <div style={{
+          background: 'linear-gradient(135deg, #29B2FE, #1a9ee8)',
+          padding: '14px 16px',
+          textAlign: 'center',
+          fontSize: '14px',
+          fontWeight: '600',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          position: 'relative',
+        }}>
+          Bem-vindo à Markfy{welcomeName ? `, ${welcomeName}` : ''}! Escolha seu plano para começar.
+          <button onClick={() => { setShowWelcome(false); localStorage.setItem('markfy_welcome_dismissed', '1'); }}
+            style={{ position: 'absolute', right: 16, background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', opacity: 0.7 }}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {/* Reason Banner */}
       {reason === 'no_plan' && (
         <div style={{

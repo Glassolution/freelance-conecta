@@ -93,7 +93,6 @@ const Mensagens = () => {
     if (!user) return;
     setLoading(true);
 
-    // Get conversations where user is a participant
     const { data: convs } = await supabase
       .from('conversations')
       .select('*')
@@ -117,22 +116,8 @@ const Mensagens = () => {
         .from('profiles')
         .select('id, full_name')
         .in('id', otherIds) as any;
-      (profiles || []).forEach((p: any) => { profileMap[p.id] = p.full_name || 'Usuário'; });
+      (profiles || []).forEach((p: any) => { profileMap[p.id] = p.full_name || ''; });
     }
-
-    // Map conversation ids to client names from Meus Clientes notes
-    const { data: clientsData } = await supabase
-      .from('clients')
-      .select('name, notes')
-      .eq('user_id', user.id) as any;
-
-    const clientNameByConversationId: Record<string, string> = {};
-    (clientsData || []).forEach((client: any) => {
-      const match = typeof client.notes === 'string'
-        ? client.notes.match(/conversation_id=([0-9a-fA-F-]{36})/i)
-        : null;
-      if (match?.[1]) clientNameByConversationId[match[1]] = client.name;
-    });
 
     // Get last messages and unread counts
     const items: ConversationItem[] = await Promise.all(convs.map(async (c: any) => {
@@ -156,7 +141,7 @@ const Mensagens = () => {
         id: c.id,
         participant_1: c.participant_1,
         participant_2: c.participant_2,
-        other_name: clientNameByConversationId[c.id] || profileMap[otherId] || 'Usuário',
+        other_name: c.contact_name || profileMap[otherId] || 'Usuário',
         last_message: lastMsg?.[0]?.content,
         last_message_at: lastMsg?.[0]?.created_at,
         unread_count: count || 0,

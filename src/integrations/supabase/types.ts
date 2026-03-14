@@ -161,18 +161,21 @@ export type Database = {
       }
       conversations: {
         Row: {
+          contact_name: string | null
           created_at: string | null
           id: string
           participant_1: string | null
           participant_2: string | null
         }
         Insert: {
+          contact_name?: string | null
           created_at?: string | null
           id?: string
           participant_1?: string | null
           participant_2?: string | null
         }
         Update: {
+          contact_name?: string | null
           created_at?: string | null
           id?: string
           participant_1?: string | null

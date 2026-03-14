@@ -67,7 +67,7 @@ const Pricing = () => {
     
     if (paymentStatus === 'success') {
       toast({
-        title: '✅ Pagamento aprovado!',
+        title: 'Pagamento aprovado!',
         description: 'Bem-vindo ao seu novo plano. Você será redirecionado em breve.',
       });
       

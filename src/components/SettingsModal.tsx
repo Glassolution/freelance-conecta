@@ -304,7 +304,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
               <div style={{ border: `1px solid ${hslYellowBorder}`, background: hslYellowBg, borderRadius: '12px', padding: '20px' }}>
                 <p className="text-sm font-semibold text-[#111] flex items-center gap-2">
                   <AlertTriangle size={16} style={{ color: hslYellowBorder }} />
-                  ⚠️ Sem plano ativo
+                  Sem plano ativo
                 </p>
                 <p className="text-sm text-[#6B7280] mt-2">Assine para acessar todos os recursos da Markfy</p>
                 <button

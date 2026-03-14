@@ -289,6 +289,7 @@ export type Database = {
           onboarding_tools: string[] | null
           plan: string | null
           plan_expires_at: string | null
+          plan_started_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -303,6 +304,7 @@ export type Database = {
           onboarding_tools?: string[] | null
           plan?: string | null
           plan_expires_at?: string | null
+          plan_started_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -317,6 +319,7 @@ export type Database = {
           onboarding_tools?: string[] | null
           plan?: string | null
           plan_expires_at?: string | null
+          plan_started_at?: string | null
         }
         Relationships: []
       }
@@ -359,24 +362,30 @@ export type Database = {
       refund_requests: {
         Row: {
           created_at: string
+          days_active: number | null
           email: string | null
           id: string
+          plan: string | null
           reason: string | null
           status: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          days_active?: number | null
           email?: string | null
           id?: string
+          plan?: string | null
           reason?: string | null
           status?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          days_active?: number | null
           email?: string | null
           id?: string
+          plan?: string | null
           reason?: string | null
           status?: string
           user_id?: string

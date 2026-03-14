@@ -12,105 +12,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePlanStatus } from '@/hooks/usePlanStatus';
+import { getPlanAccentColor } from '@/lib/plan';
 import ProfileDropdown from '@/components/ProfileDropdown';
-
-const plataformas = [
-  { name: 'Workana', role: 'Plataforma de Serviços', status: 'Conectado' },
-  { name: 'GetNinjas', role: 'Plataforma de Serviços', status: 'Conectado' },
-  { name: '99Freelas', role: 'Plataforma de Serviços', status: 'Conectado' },
-];
-
-const sidebarLinks = [
-  { icon: Home, label: 'Início', path: '/dashboard' },
-  { icon: ShoppingBag, label: 'Marketplace', path: '/marketplace' },
-  { icon: Megaphone, label: 'Meus Anúncios', path: '/meus-anuncios' },
-  { icon: Users, label: 'Meus Clientes', path: '/meus-clientes' },
-  { icon: MessageSquare, label: 'Mensagens', path: '/mensagens' },
-  { icon: Globe, label: 'Criador.ia', path: null },
-  { icon: CheckCircle, label: 'Serviços Aprovados', path: null },
-  { icon: Send, label: 'Serviços Enviados', path: null },
-  { icon: PackageCheck, label: 'Serviços Entregues', path: null },
-  { icon: Wrench, label: 'Ferramentas', path: '/ferramentas' },
-];
-
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Bom dia';
-  if (h < 18) return 'Boa tarde';
-  return 'Boa noite';
-}
-
-function getUserInitials(user: any): string {
-  const name = user?.user_metadata?.full_name;
-  if (name) return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
-  return (user?.email?.[0] || 'U').toUpperCase();
-}
-
-function getUserDisplayName(user: any): string {
-  return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
-}
-
-function getUserFirstName(user: any): string {
-  const full = user?.user_metadata?.full_name;
-  if (full) return full.split(' ')[0];
-  return user?.email?.split('@')[0] || 'Usuário';
-}
-
-interface Vaga {
-  id: string;
-  title: string;
-  platform: string;
-  tag: string;
-  tag_color: string;
-  price: number;
-  author_name: string;
-  author_role: string;
-  image_url: string | null;
-  created_at: string;
-}
-
-interface Proposta {
-  id: string;
-  client_name: string;
-  client_date: string | null;
-  tag: string;
-  tag_color: string;
-  description: string;
-  status: string;
-}
-
-interface ClientMetric {
-  project_value: number | null;
-  created_at: string;
-}
-
-interface MessageMetric {
-  created_at: string;
-}
-
-const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
-const Dashboard = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedView, setSelectedView] = useState('Semanal');
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
+...
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const { isActive, planLabel, loading: planLoading } = usePlanStatus();
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const profileTriggerRef = useRef<HTMLDivElement>(null);
-
-  const [vagas, setVagas] = useState<Vaga[]>([]);
-  const [propostas, setPropostas] = useState<Proposta[]>([]);
-  const [clientsData, setClientsData] = useState<ClientMetric[]>([]);
-  const [messagesData, setMessagesData] = useState<MessageMetric[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const { plan, isActive, planLabel } = usePlanStatus();
+...
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
   const firstName = getUserFirstName(user);
+  const planAccentColor = getPlanAccentColor(plan, isActive);
 
   useEffect(() => {
     const fetchData = async () => {

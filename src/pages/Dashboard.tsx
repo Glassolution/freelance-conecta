@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePlanStatus } from '@/hooks/usePlanStatus';
+import SettingsModal from '@/components/SettingsModal';
 
 const plataformas = [
   { name: 'Workana', role: 'Plataforma de Serviços', status: 'Conectado' },

@@ -9,47 +9,68 @@ const corsHeaders = {
 
 const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 
+function ok(body: Record<string, unknown>) {
+  return new Response(JSON.stringify(body), { status: 200, headers: jsonHeaders });
+}
+
+async function verifyPayment(paymentId: string, token: string) {
+  const res = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  console.log("Payment lookup status:", res.status, "data:", JSON.stringify(data));
+  return { ok: res.ok, data };
+}
+
+async function requestRefund(paymentId: string, amount: number | null, token: string, userId: string) {
+  const body: Record<string, unknown> = {};
+  if (amount) body.amount = amount;
+
+  const res = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}/refunds`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "X-Idempotency-Key": `markfy-refund-${userId}-${paymentId}-${Date.now()}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  console.log("Refund API status:", res.status, "response:", JSON.stringify(data));
+  return { ok: res.ok, data };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Auth
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ success: false, error: "Missing auth header" }), {
-        status: 200, headers: jsonHeaders,
-      });
-    }
+    if (!authHeader) return ok({ success: false, error: "Missing auth header" });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const mpAccessToken = Deno.env.get("MERCADO_PAGO_ACCESS_TOKEN");
 
     const authClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-
     const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
-        status: 200, headers: jsonHeaders,
-      });
-    }
+    if (authError || !user) return ok({ success: false, error: "Unauthorized" });
 
     const { userId, reason } = await req.json();
-    console.log("Refund request for userId:", userId || user.id);
+    const targetUserId = userId || user.id;
+    console.log("Refund request for userId:", targetUserId);
 
     if (userId && userId !== user.id) {
-      return new Response(JSON.stringify({ success: false, error: "Unauthorized refund target" }), {
-        status: 200, headers: jsonHeaders,
-      });
+      return ok({ success: false, error: "Unauthorized refund target" });
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
-    const targetUserId = userId || user.id;
 
+    // Fetch profile
     const { data: profile, error: profileError } = await admin
       .from("profiles")
       .select("plan, plan_started_at, plan_expires_at, email, full_name, mp_payment_id")
@@ -57,21 +78,15 @@ serve(async (req) => {
       .maybeSingle();
 
     console.log("Profile:", JSON.stringify(profile));
-    console.log("Profile error:", profileError);
-
     if (profileError || !profile) {
-      return new Response(JSON.stringify({ success: false, error: `Perfil não encontrado: ${profileError?.message || "null"}` }), {
-        status: 200, headers: jsonHeaders,
-      });
+      return ok({ success: false, error: `Perfil não encontrado: ${profileError?.message || "null"}` });
     }
 
     if (!profile.plan || profile.plan === "free") {
-      return new Response(JSON.stringify({ success: false, error: "Nenhum plano ativo encontrado" }), {
-        status: 200, headers: jsonHeaders,
-      });
+      return ok({ success: false, error: "Nenhum plano ativo encontrado" });
     }
 
-    // Handle missing plan_started_at — assume eligible (1 day ago)
+    // Calculate days since plan activation
     const planStarted = profile.plan_started_at
       ? new Date(profile.plan_started_at)
       : new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -82,175 +97,203 @@ serve(async (req) => {
 
     console.log("Days diff:", daysDiff, "mp_payment_id:", profile.mp_payment_id);
 
-    // Outside 7-day window — cancel only, no refund
+    // Outside 7-day window — cancel only
     if (daysDiff > 7) {
-      await admin
-        .from("profiles")
-        .update({ plan: "free", plan_expires_at: null, plan_started_at: null, mp_payment_id: null })
-        .eq("id", targetUserId);
+      await admin.from("profiles").update({
+        plan: "free", plan_expires_at: null, plan_started_at: null, mp_payment_id: null,
+      }).eq("id", targetUserId);
 
       await admin.from("refund_requests").insert({
-        user_id: targetUserId,
-        email: profile.email,
-        plan: profile.plan,
-        days_active: daysDiff,
-        status: "denied_cancelled",
-        reason: reason || "outside_7_day_window",
+        user_id: targetUserId, email: profile.email, plan: profile.plan,
+        days_active: daysDiff, status: "denied_cancelled", reason: reason || "outside_7_day_window",
       });
 
       await admin.from("notifications").insert({
-        user_id: targetUserId,
-        title: "Assinatura cancelada",
+        user_id: targetUserId, title: "Assinatura cancelada",
         message: `Sua assinatura foi cancelada. Como seu plano estava ativo há ${daysDiff} dias, o reembolso não foi possível (prazo máximo: 7 dias).`,
         type: "cancelled",
       });
 
-      return new Response(
-        JSON.stringify({ success: false, cancelled: true, daysDiff, error: "Fora do prazo de 7 dias" }),
-        { status: 200, headers: jsonHeaders },
-      );
+      return ok({ success: false, cancelled: true, daysDiff, error: "Fora do prazo de 7 dias" });
     }
 
-    // Handle missing mp_payment_id — cancel plan, flag for manual refund
+    // No mp_payment_id → manual refund
     if (!profile.mp_payment_id) {
-      await admin
-        .from("profiles")
-        .update({ plan: "free", plan_expires_at: null, plan_started_at: null })
-        .eq("id", targetUserId);
+      await admin.from("profiles").update({
+        plan: "free", plan_expires_at: null, plan_started_at: null,
+      }).eq("id", targetUserId);
 
       await admin.from("refund_requests").insert({
-        user_id: targetUserId,
-        email: profile.email,
-        plan: profile.plan,
-        days_active: daysDiff,
-        status: "pending_manual",
-        reason: reason || "mp_payment_id_missing",
+        user_id: targetUserId, email: profile.email, plan: profile.plan,
+        days_active: daysDiff, status: "pending_manual", reason: reason || "mp_payment_id_missing",
       });
 
       await admin.from("notifications").insert({
-        user_id: targetUserId,
-        title: "Reembolso em análise",
+        user_id: targetUserId, title: "Reembolso em análise",
         message: "Não encontramos o ID do pagamento automaticamente. Nossa equipe processará seu reembolso manualmente em até 2 dias úteis.",
         type: "refund",
       });
 
-      return new Response(
-        JSON.stringify({ success: true, manual: true, message: "Reembolso será processado manualmente" }),
-        { status: 200, headers: jsonHeaders },
-      );
+      return ok({ success: true, manual: true, message: "Reembolso será processado manualmente" });
     }
 
     // Check MP access token
+    const mpAccessToken = Deno.env.get("MERCADO_PAGO_ACCESS_TOKEN");
+    console.log("MP token exists:", !!mpAccessToken, "prefix:", mpAccessToken?.substring(0, 10));
+
     if (!mpAccessToken) {
-      await admin
-        .from("profiles")
-        .update({ plan: "free", plan_expires_at: null, plan_started_at: null })
-        .eq("id", targetUserId);
+      await admin.from("profiles").update({
+        plan: "free", plan_expires_at: null, plan_started_at: null,
+      }).eq("id", targetUserId);
 
       await admin.from("refund_requests").insert({
-        user_id: targetUserId,
-        email: profile.email,
-        plan: profile.plan,
-        days_active: daysDiff,
-        status: "pending_manual",
-        reason: "mp_token_not_configured",
+        user_id: targetUserId, email: profile.email, plan: profile.plan,
+        days_active: daysDiff, status: "pending_manual", reason: "mp_token_not_configured",
       });
 
       await admin.from("notifications").insert({
-        user_id: targetUserId,
-        title: "Reembolso em análise",
+        user_id: targetUserId, title: "Reembolso em análise",
         message: "Seu plano foi cancelado. O reembolso será processado manualmente pela equipe.",
         type: "refund",
       });
 
-      return new Response(
-        JSON.stringify({ success: true, manual: true, message: "Reembolso será processado manualmente" }),
-        { status: 200, headers: jsonHeaders },
-      );
+      return ok({ success: true, manual: true, message: "Reembolso será processado manualmente" });
+    }
+
+    // Verify the payment exists and is refundable
+    const paymentCheck = await verifyPayment(profile.mp_payment_id, mpAccessToken);
+    
+    if (!paymentCheck.ok) {
+      console.error("Payment not found in MP, falling back to manual refund");
+      await admin.from("profiles").update({
+        plan: "free", plan_expires_at: null, plan_started_at: null, mp_payment_id: null,
+      }).eq("id", targetUserId);
+
+      await admin.from("refund_requests").insert({
+        user_id: targetUserId, email: profile.email, plan: profile.plan,
+        days_active: daysDiff, status: "pending_manual", reason: "payment_not_found_in_mp",
+      });
+
+      await admin.from("notifications").insert({
+        user_id: targetUserId, title: "Reembolso em análise",
+        message: "O pagamento não foi localizado no Mercado Pago. Nossa equipe processará manualmente.",
+        type: "refund",
+      });
+
+      return ok({ success: true, manual: true, message: "Reembolso será processado manualmente" });
+    }
+
+    const paymentStatus = paymentCheck.data?.status;
+    const paymentAmount = paymentCheck.data?.transaction_amount;
+    console.log("Payment status:", paymentStatus, "amount:", paymentAmount);
+
+    // If payment already refunded
+    if (paymentStatus === "refunded") {
+      await admin.from("profiles").update({
+        plan: "free", plan_expires_at: null, plan_started_at: null, mp_payment_id: null,
+      }).eq("id", targetUserId);
+
+      return ok({ success: true, message: "Pagamento já foi reembolsado anteriormente" });
+    }
+
+    // If payment not in refundable state
+    if (paymentStatus !== "approved") {
+      await admin.from("profiles").update({
+        plan: "free", plan_expires_at: null, plan_started_at: null, mp_payment_id: null,
+      }).eq("id", targetUserId);
+
+      await admin.from("refund_requests").insert({
+        user_id: targetUserId, email: profile.email, plan: profile.plan,
+        days_active: daysDiff, status: "pending_manual",
+        reason: `payment_status_${paymentStatus}`,
+      });
+
+      await admin.from("notifications").insert({
+        user_id: targetUserId, title: "Reembolso em análise",
+        message: `Seu plano foi cancelado. O status do pagamento (${paymentStatus}) não permite reembolso automático. Nossa equipe processará manualmente.`,
+        type: "refund",
+      });
+
+      return ok({ success: true, manual: true, message: "Reembolso será processado manualmente" });
     }
 
     // Process refund via Mercado Pago
     try {
-      const mpRefundRes = await fetch(`https://api.mercadopago.com/v1/payments/${profile.mp_payment_id}/refunds`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${mpAccessToken}`,
-          "Content-Type": "application/json",
-          "X-Idempotency-Key": `refund-${targetUserId}-${Date.now()}`,
-        },
-        body: JSON.stringify({}),
-      });
+      const refundResult = await requestRefund(
+        profile.mp_payment_id, paymentAmount, mpAccessToken, targetUserId
+      );
 
-      const mpRefund = await mpRefundRes.json();
-      console.log("MP refund response:", JSON.stringify(mpRefund));
+      if (!refundResult.ok || !refundResult.data?.id) {
+        const errMsg = refundResult.data?.message || refundResult.data?.error || "Erro MP desconhecido";
+        console.error("MP refund failed:", errMsg);
 
-      if (!mpRefundRes.ok || !mpRefund?.id) {
-        throw new Error(mpRefund?.message || "Erro ao processar reembolso no Mercado Pago");
+        // Fallback: cancel plan, flag for manual refund
+        await admin.from("profiles").update({
+          plan: "free", plan_expires_at: null, plan_started_at: null,
+        }).eq("id", targetUserId);
+
+        await admin.from("refund_requests").insert({
+          user_id: targetUserId, email: profile.email, plan: profile.plan,
+          days_active: daysDiff, status: "pending_manual", reason: `mp_error: ${errMsg}`,
+        });
+
+        await admin.from("notifications").insert({
+          user_id: targetUserId, title: "Reembolso em análise",
+          message: "Não foi possível processar automaticamente. Nossa equipe processará seu reembolso manualmente em até 2 dias úteis.",
+          type: "refund",
+        });
+
+        return ok({ success: true, manual: true, message: "Reembolso será processado manualmente" });
       }
 
-      const mpRefundId = String(mpRefund.id);
+      const mpRefundId = String(refundResult.data.id);
 
-      await admin
-        .from("profiles")
-        .update({ plan: "free", plan_expires_at: null, plan_started_at: null, mp_payment_id: null })
-        .eq("id", targetUserId);
+      await admin.from("profiles").update({
+        plan: "free", plan_expires_at: null, plan_started_at: null, mp_payment_id: null,
+      }).eq("id", targetUserId);
 
       await admin.from("refund_requests").insert({
-        user_id: targetUserId,
-        email: profile.email,
-        plan: profile.plan,
-        days_active: daysDiff,
-        status: "approved",
-        reason: reason || "Solicitado pelo usuário",
+        user_id: targetUserId, email: profile.email, plan: profile.plan,
+        days_active: daysDiff, status: "approved", reason: reason || "Solicitado pelo usuário",
         mp_refund_id: mpRefundId,
       });
 
       await admin.from("notifications").insert({
-        user_id: targetUserId,
-        title: "Reembolso aprovado",
+        user_id: targetUserId, title: "Reembolso aprovado",
         message: `Seu reembolso foi processado. O valor será estornado em até 5 dias úteis via Mercado Pago. ID: ${mpRefundId}`,
         type: "refund",
       });
 
-      return new Response(
-        JSON.stringify({ success: true, refundId: mpRefundId, daysDiff }),
-        { status: 200, headers: jsonHeaders },
-      );
+      return ok({ success: true, refundId: mpRefundId, daysDiff });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro ao processar reembolso";
-      console.error("MP refund error:", errorMessage);
+      const errorStack = error instanceof Error ? error.stack : "";
+      console.error("MP refund exception:", errorMessage);
+      console.error("Stack:", errorStack);
 
-      // Still cancel the plan even if MP refund fails
-      await admin
-        .from("profiles")
-        .update({ plan: "free", plan_expires_at: null, plan_started_at: null })
-        .eq("id", targetUserId);
+      // Still cancel plan, flag for manual
+      await admin.from("profiles").update({
+        plan: "free", plan_expires_at: null, plan_started_at: null,
+      }).eq("id", targetUserId);
 
       await admin.from("refund_requests").insert({
-        user_id: targetUserId,
-        email: profile.email,
-        plan: profile.plan,
-        days_active: daysDiff,
-        status: "failed",
-        reason: errorMessage,
+        user_id: targetUserId, email: profile.email, plan: profile.plan,
+        days_active: daysDiff, status: "pending_manual", reason: errorMessage,
       });
 
       await admin.from("notifications").insert({
-        user_id: targetUserId,
-        title: "Erro no reembolso",
-        message: "Não foi possível processar seu reembolso automaticamente. Nossa equipe será notificada e processará manualmente. Contato: suporte@markfy.com.br",
-        type: "error",
+        user_id: targetUserId, title: "Reembolso em análise",
+        message: "Não foi possível processar automaticamente. Nossa equipe processará seu reembolso manualmente. Contato: suporte@markfy.com.br",
+        type: "refund",
       });
 
-      return new Response(JSON.stringify({ success: false, error: errorMessage }), {
-        status: 200, headers: jsonHeaders,
-      });
+      return ok({ success: true, manual: true, error: errorMessage });
     }
   } catch (error) {
-    console.error("process-refund error:", error);
-    return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : "Erro desconhecido" }),
-      { status: 200, headers: jsonHeaders },
-    );
+    const msg = error instanceof Error ? error.message : "Erro desconhecido";
+    const stack = error instanceof Error ? error.stack : "";
+    console.error("process-refund top-level error:", msg);
+    console.error("Stack:", stack);
+    return ok({ success: false, error: msg });
   }
 });

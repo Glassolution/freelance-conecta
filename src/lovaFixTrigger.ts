@@ -1,5 +1,20 @@
-var __LOVA_FIX_TRIGGER__ = (globalThis as any).__LOVA_FIX_TRIGGER__ || function(){};
-(globalThis as any).__LOVA_FIX_TRIGGER__ = __LOVA_FIX_TRIGGER__;
-if (typeof window !== "undefined") (window as any).__LOVA_FIX_TRIGGER__ = __LOVA_FIX_TRIGGER__;
-if (typeof self !== "undefined") (self as any).__LOVA_FIX_TRIGGER__ = __LOVA_FIX_TRIGGER__;
+(function () {
+  const g = globalThis as typeof globalThis & {
+    __LOVA_FIX_TRIGGER__?: () => void;
+    window?: Window & { __LOVA_FIX_TRIGGER__?: () => void };
+    self?: typeof globalThis & { __LOVA_FIX_TRIGGER__?: () => void };
+  };
+
+  const trigger = g.__LOVA_FIX_TRIGGER__ ?? (() => {});
+  g.__LOVA_FIX_TRIGGER__ = trigger;
+
+  if (typeof window !== "undefined") {
+    (window as Window & { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ = trigger;
+  }
+
+  if (typeof self !== "undefined") {
+    (self as typeof globalThis & { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ = trigger;
+  }
+})();
+
 export {};

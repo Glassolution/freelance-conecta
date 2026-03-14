@@ -1,1 +1,7 @@
-var __LOVA_FIX_TRIGGER__=globalThis.__LOVA_FIX_TRIGGER__||function(){};globalThis.__LOVA_FIX_TRIGGER__=__LOVA_FIX_TRIGGER__;try{window.__LOVA_FIX_TRIGGER__=__LOVA_FIX_TRIGGER__;self.__LOVA_FIX_TRIGGER__=__LOVA_FIX_TRIGGER__}catch(e){}
+(function(g){
+  try {
+    g.__LOVA_FIX_TRIGGER__ = g.__LOVA_FIX_TRIGGER__ || function(){};
+    if (g.window) g.window.__LOVA_FIX_TRIGGER__ = g.__LOVA_FIX_TRIGGER__;
+    if (g.self) g.self.__LOVA_FIX_TRIGGER__ = g.__LOVA_FIX_TRIGGER__;
+  } catch (_) {}
+})(typeof globalThis !== 'undefined' ? globalThis : window);

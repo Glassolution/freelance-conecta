@@ -65,7 +65,7 @@ serve(async (req) => {
             plan: planType,
             plan_expires_at: expiresAt.toISOString(),
             plan_started_at: new Date().toISOString(),
-            mp_payment_id: String(paymentId),
+            mp_payment_id: String(payment.id),
           })
           .eq('id', userId);
 

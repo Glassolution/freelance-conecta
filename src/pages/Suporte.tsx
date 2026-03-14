@@ -301,12 +301,14 @@ const Suporte = () => {
   };
 
   const processRefund = async (reason: string, conversationId: string | null) => {
+    if (!user?.id) return;
+
     setRefundStep('processing');
     await pushAssistantMessage('🔍 Verificando sua assinatura e processando reembolso via Mercado Pago...', conversationId);
     setIsThinking(true);
 
     const { data, error } = await supabase.functions.invoke('process-refund', {
-      body: { reason },
+      body: { userId: user.id, reason },
     });
 
     setIsThinking(false);
@@ -319,23 +321,25 @@ const Suporte = () => {
 
     if (data?.success) {
       setRefundStep('done');
-      const refundIdLine = data.refundId ? `\n- ID do reembolso: ${data.refundId}` : '';
-      const manualNote = data.manualProcessing ? '\n\n⚠️ O reembolso será processado manualmente pela equipe em até 5 dias úteis.' : '';
       await pushAssistantMessage(
-        `✅ **Reembolso processado com sucesso!**\n\n📋 Detalhes:\n- Plano: ${data.planLabel}\n- Ativado em: ${data.startedFormatted}\n- Dias ativo: ${data.daysDiff}${refundIdLine}\n- Estorno: até 5 dias úteis via Mercado Pago${manualNote}\n\nSua assinatura foi cancelada. Um email de confirmação foi enviado.\n\nObrigado por usar a Markfy! 💙`,
+        `✅ Reembolso processado com sucesso!\n\nID do reembolso: ${data.refundId}\nO valor será estornado em até 5 dias úteis.\nUm email de confirmação foi enviado para ${user.email}.\n\nSua assinatura foi cancelada.`,
         conversationId
       );
       setTimeout(() => navigate('/'), 5000);
     } else if (data?.cancelled) {
       setRefundStep('done');
       await pushAssistantMessage(
-        `⚠️ **Assinatura cancelada sem reembolso**\n\n📋 Verificação:\n- Plano: ${data.planLabel}\n- Ativado em: ${data.startedFormatted}\n- Dias ativo: ${data.daysDiff}\n- Prazo para reembolso: 7 dias\n- Status: ❌ Fora do prazo\n\nSua assinatura foi cancelada. O acesso será encerrado ao fim do período pago.`,
+        `Sua assinatura foi cancelada.\nReembolso não disponível pois seu plano estava ativo há ${data.daysDiff} dias (prazo: 7 dias).\nUm email de confirmação foi enviado.`,
         conversationId
       );
+
       setTimeout(() => navigate('/'), 3000);
     } else {
       setRefundStep('idle');
-      await pushAssistantMessage(`❌ ${data?.error || 'Erro desconhecido'}\nPor favor entre em contato pelo email: suporte@markfy.com.br`, conversationId);
+      await pushAssistantMessage(
+        `❌ Erro ao processar: ${data?.error}\nPor favor tente novamente ou entre em contato pelo email: suporte@markfy.com.br`,
+        conversationId
+      );
     }
   };
 

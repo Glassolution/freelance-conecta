@@ -16,6 +16,8 @@ import MeusClientes from "./pages/MeusClientes.tsx";
 import Mensagens from "./pages/Mensagens.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Suporte from "./pages/Suporte.tsx";
+import SuporteFaq from "./pages/SuporteFaq.tsx";
+import SuporteContato from "./pages/SuporteContato.tsx";
 
 const queryClient = new QueryClient();
 
@@ -53,7 +55,8 @@ const App = () => (
             <Route path="/meus-clientes" element={<ProtectedRoute><MeusClientes /></ProtectedRoute>} />
             <Route path="/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
             <Route path="/suporte" element={<ProtectedRoute><Suporte /></ProtectedRoute>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/suporte/faq" element={<ProtectedRoute><SuporteFaq /></ProtectedRoute>} />
+            <Route path="/suporte/contato" element={<ProtectedRoute><SuporteContato /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -610,7 +610,7 @@ const Suporte = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col items-end gap-1">
-                        <div className="max-w-[75%] whitespace-pre-wrap rounded-2xl bg-[hsl(var(--support-surface))] px-4 py-2.5 text-sm text-[hsl(var(--support-text))]">
+                        <div className="max-w-[75%] whitespace-pre-wrap rounded-2xl bg-[hsl(var(--support-user-bubble))] px-4 py-2.5 text-sm text-[hsl(var(--support-primary-foreground))]">
                           {message.content}
                         </div>
                         <p className="text-xs text-[hsl(var(--support-text-faint))]">{formatTime(message.createdAt)}</p>

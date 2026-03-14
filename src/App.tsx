@@ -8,6 +8,7 @@ import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Pricing from "./pages/Pricing.tsx";
+import Checkout from "./pages/Checkout.tsx";
 import Ferramentas from "./pages/Ferramentas.tsx";
 import Marketplace from "./pages/Marketplace.tsx";
 import MeusAnuncios from "./pages/MeusAnuncios.tsx";

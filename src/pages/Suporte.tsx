@@ -415,7 +415,7 @@ const Suporte = () => {
           <button
             type="button"
             onClick={() => void createConversation()}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[hsl(var(--support-border))] bg-[hsl(var(--support-surface))] px-3 py-2 text-sm font-medium text-[hsl(var(--support-text))] transition-colors hover:bg-[hsl(var(--support-hover))]"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--support-primary))] px-3 py-2 text-sm font-medium text-[hsl(var(--support-primary-foreground))] transition-opacity hover:opacity-90"
           >
             <Plus size={16} /> Nova conversa
           </button>
@@ -482,7 +482,7 @@ const Suporte = () => {
                     onClick={() => void handleSelectConversation(conversation.id)}
                     className={`w-full rounded-xl px-3 py-2 text-left text-sm transition-colors ${
                       isActive
-                        ? 'bg-[hsl(var(--support-surface))] text-[hsl(var(--support-text))]'
+                        ? 'bg-[hsl(var(--support-active))] text-[hsl(var(--support-text))]'
                         : 'text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]'
                     }`}
                   >
@@ -602,7 +602,7 @@ const Suporte = () => {
                           M
                         </div>
                         <div className="min-w-0">
-                          <div className="prose prose-sm prose-invert max-w-none text-[hsl(var(--support-text-subtle))] [&_p]:mb-1 [&_p]:mt-0 [&_ul]:mb-1 [&_li]:mb-0 [&_strong]:text-[hsl(var(--support-text))]">
+                          <div className="prose prose-sm max-w-none text-[hsl(var(--support-text-subtle))] [&_p]:mb-1 [&_p]:mt-0 [&_ul]:mb-1 [&_li]:mb-0 [&_strong]:text-[hsl(var(--support-text))]">
                             <ReactMarkdown>{message.content}</ReactMarkdown>
                           </div>
                           <p className="mt-1 text-xs text-[hsl(var(--support-text-faint))]">{formatTime(message.createdAt)}</p>
@@ -610,7 +610,7 @@ const Suporte = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col items-end gap-1">
-                        <div className="max-w-[75%] whitespace-pre-wrap rounded-2xl bg-[hsl(var(--support-surface))] px-4 py-2.5 text-sm text-[hsl(var(--support-text))]">
+                        <div className="max-w-[75%] whitespace-pre-wrap rounded-2xl bg-[hsl(var(--support-user-bubble))] px-4 py-2.5 text-sm text-[hsl(var(--support-primary-foreground))]">
                           {message.content}
                         </div>
                         <p className="text-xs text-[hsl(var(--support-text-faint))]">{formatTime(message.createdAt)}</p>

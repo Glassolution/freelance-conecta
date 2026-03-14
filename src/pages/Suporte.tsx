@@ -85,24 +85,17 @@ const Suporte = () => {
   };
 
   const saveRefundRequest = async (reason: string, email: string) => {
-    if (!user?.id) return;
-
-    const { error } = await supabase
-      .from('refund_requests')
-      .insert({
-        user_id: user.id,
-        reason,
-        email,
-      } as any);
+    const { error } = await supabase.functions.invoke('support-refund-request', {
+      body: { reason, email },
+    });
 
     if (error) {
       toast({ title: 'Erro ao registrar reembolso', description: error.message, variant: 'destructive' });
       return;
     }
 
-    // Notification record for request tracking
     await supabase.from('notifications').insert({
-      user_id: user.id,
+      user_id: user?.id,
       title: 'Solicitação de reembolso registrada',
       message: 'Recebemos sua solicitação. Nossa equipe vai analisar em até 5 dias úteis.',
       type: 'refund',

@@ -290,7 +290,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
               <div style={{ border: `1px solid ${hslGreenBorder}`, background: hslGreenBg, borderRadius: '12px', padding: '20px' }}>
                 <p className="text-sm font-semibold text-[#111] flex items-center gap-2">
                   <CheckCircle2 size={16} style={{ color: hslGreenBorder }} />
-                  ✅ Plano {planLabel} — Ativo
+                  Plano {planLabel} — Ativo
                 </p>
                 <p className="text-sm text-[#374151] mt-2">Válido até: {formattedExpiry}</p>
                 <div className="mt-3">

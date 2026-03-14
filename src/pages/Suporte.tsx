@@ -99,6 +99,8 @@ const Suporte = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [menuConversationId, setMenuConversationId] = useState<string | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [refundStep, setRefundStep] = useState<RefundStep>('idle');
+  const [refundReason, setRefundReason] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);

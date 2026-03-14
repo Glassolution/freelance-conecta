@@ -16,7 +16,7 @@ serve(async (req) => {
       throw new Error('MERCADO_PAGO_ACCESS_TOKEN not configured');
     }
 
-    const { planId, planName, price, userEmail } = await req.json();
+    const { planId, planName, price, userId, userEmail } = await req.json();
 
     if (!planId || !planName || !price) {
       throw new Error('Missing required fields: planId, planName, price');

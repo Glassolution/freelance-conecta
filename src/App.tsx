@@ -15,7 +15,7 @@ import MeusAnuncios from "./pages/MeusAnuncios.tsx";
 import MeusClientes from "./pages/MeusClientes.tsx";
 import Mensagens from "./pages/Mensagens.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import Configuracoes from "./pages/Configuracoes.tsx";
+import Suporte from "./pages/Suporte.tsx";
 
 const queryClient = new QueryClient();
 

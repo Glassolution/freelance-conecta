@@ -249,7 +249,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                 onChange: handleToggleDarkMode,
               },
               {
-                icon: <Bell size={16} />, title: '🔔 Notificações',
+                icon: <Bell size={16} />, title: 'Notificações',
                 description: 'Receber alertas de novas vagas e propostas',
                 value: notificationsEnabled,
                 onChange: handleToggleNotifications,

@@ -16,6 +16,8 @@ import MeusClientes from "./pages/MeusClientes.tsx";
 import Mensagens from "./pages/Mensagens.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Suporte from "./pages/Suporte.tsx";
+import SuporteFaq from "./pages/SuporteFaq.tsx";
+import SuporteContato from "./pages/SuporteContato.tsx";
 
 const queryClient = new QueryClient();
 

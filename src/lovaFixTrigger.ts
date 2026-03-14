@@ -10,18 +10,29 @@ const scope = globalThis as typeof globalThis & {
   __LOVA_FIX_TRIGGER__?: () => void;
 };
 
-const noop = () => {};
+const noop = () => undefined;
 
 if (typeof scope.__LOVA_FIX_TRIGGER__ !== "function") {
   scope.__LOVA_FIX_TRIGGER__ = noop;
 }
 
-try {
-  // Ensure a true global var binding also exists for environments that access
-  // __LOVA_FIX_TRIGGER__ as a bare identifier before app code runs.
-  (0, eval)("var __LOVA_FIX_TRIGGER__ = globalThis.__LOVA_FIX_TRIGGER__;");
-} catch {
-  // no-op
-}
+const ensureGlobalVarBinding = () => {
+  try {
+    // eslint-disable-next-line no-eval
+    (0, eval)("void __LOVA_FIX_TRIGGER__;");
+    return;
+  } catch {
+    // continue to script injection fallback
+  }
+
+  if (typeof document === "undefined") return;
+
+  const script = document.createElement("script");
+  script.text = "window.__LOVA_FIX_TRIGGER__ = window.__LOVA_FIX_TRIGGER__ || function(){}; var __LOVA_FIX_TRIGGER__ = window.__LOVA_FIX_TRIGGER__;";
+  (document.head || document.documentElement).prepend(script);
+  script.remove();
+};
+
+ensureGlobalVarBinding();
 
 export {};

@@ -1,276 +1,703 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Loader2, Paperclip, SendHorizontal, X } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  ArrowLeft,
+  Bookmark,
+  FolderOpen,
+  Loader2,
+  Menu,
+  MessageSquare,
+  MoreHorizontal,
+  Paperclip,
+  Plus,
+  Search,
+  SendHorizontal,
+  X,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-interface ChatMessage {
+interface SupportConversation {
+  id: string;
+  user_id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface SupportMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   createdAt: string;
-  buttons?: { label: string; value: string }[];
 }
 
-type RefundStep =
-  | 'idle'
-  | 'asked_confirmation'
-  | 'checking'
-  | 'eligible_awaiting_email'
-  | 'not_eligible_choice'
-  | 'submitted';
+const TOPICS = ['Marketplace', 'Planos e Pagamento', 'Problemas Técnicos', 'Minha Conta', 'Reembolso'];
 
-interface RefundCheckResult {
-  eligible: boolean;
-  reason: string;
-  daysDiff?: number;
-  plan?: string;
-  planLabel?: string;
-  startedFormatted?: string;
-  profileEmail?: string;
-  message: string;
-}
+const formatTime = (isoDate: string) => {
+  const date = new Date(isoDate);
+  return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+};
 
-const topics = ['Marketplace', 'Planos e Pagamento', 'Problemas Técnicos', 'Minha Conta', 'Reembolso'];
+const makeConversationTitle = (firstMessage: string) => {
+  const trimmed = firstMessage.trim();
+  if (!trimmed) return 'Nova conversa';
+  return trimmed.slice(0, 40) + (trimmed.length > 40 ? '...' : '');
+};
 
-const isRefundIntent = (text: string) => /reembolso|refund|estorno|cancelar/i.test(text);
+const toInitials = (name: string) =>
+  name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+const toPlanLabel = (plan: string | null | undefined) => {
+  if (!plan || plan === 'free') return 'Plano Gratuito';
+  if (plan === 'mensal') return 'Plano Mensal';
+  if (plan === 'trimestral') return 'Plano Trimestral';
+  return `Plano ${plan}`;
+};
+
+const sortConversations = (items: SupportConversation[]) =>
+  [...items].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
 const Suporte = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const isMobile = useIsMobile();
 
-  const userName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuário';
+  const db = supabase as any;
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
+  const userEmail = user?.email || 'sem-email';
+  const userInitials = toInitials(userName);
+
+  const [userPlan, setUserPlan] = useState('Plano Gratuito');
+
+  const [conversations, setConversations] = useState<SupportConversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<SupportMessage[]>([]);
+
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [attachment, setAttachment] = useState<File | null>(null);
 
-  const [refundStep, setRefundStep] = useState<RefundStep>('idle');
-  const [refundCheckResult, setRefundCheckResult] = useState<RefundCheckResult | null>(null);
-  const [refundReason, setRefundReason] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [menuConversationId, setMenuConversationId] = useState<string | null>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const autoStartedRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const pushMessage = (role: 'user' | 'assistant', content: string, buttons?: { label: string; value: string }[]) => {
-    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role, content, createdAt: new Date().toISOString(), buttons }]);
-  };
+  const loadMessages = async (conversationId: string) => {
+    setIsLoadingMessages(true);
 
-  const askAI = async (conversation: ChatMessage[]) => {
-    setIsLoading(true);
-    const formatted = conversation.map((m) => ({ role: m.role, content: m.content }));
-    const { data, error } = await supabase.functions.invoke('support-chat', { body: { messages: formatted } });
-    setIsLoading(false);
-    if (error) { toast({ title: 'Erro no suporte IA', description: error.message, variant: 'destructive' }); return; }
-    pushMessage('assistant', data?.reply || 'Não consegui responder agora.');
-  };
+    const { data, error } = await db
+      .from('support_messages')
+      .select('id, role, content, created_at')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
 
-  const startRefundFlow = () => {
-    setRefundStep('asked_confirmation');
-    pushMessage('assistant', 'Você gostaria de solicitar um reembolso do seu plano atual?\nVou verificar sua elegibilidade automaticamente.', [
-      { label: 'Sim, quero reembolso', value: 'refund_yes' },
-      { label: 'Não, só tinha uma dúvida', value: 'refund_no' },
-    ]);
-  };
+    setIsLoadingMessages(false);
 
-  const runRefundCheck = async () => {
-    setRefundStep('checking');
-    pushMessage('assistant', '🔍 Verificando sua assinatura...');
-    setIsLoading(true);
-    const { data, error } = await supabase.functions.invoke('smart-refund', { body: { action: 'check' } });
-    setIsLoading(false);
-    if (error) { pushMessage('assistant', 'Erro ao verificar elegibilidade. Tente novamente.'); setRefundStep('idle'); return; }
-    const result = data as RefundCheckResult;
-    setRefundCheckResult(result);
-    if (result.reason === 'no_plan') { pushMessage('assistant', `⚠️ ${result.message}`); setRefundStep('idle'); return; }
-    if (result.eligible) {
-      setRefundStep('eligible_awaiting_email');
-      pushMessage('assistant', `✅ Boa notícia! Verificamos que você ativou seu plano há ${result.daysDiff} dias e está dentro do prazo de reembolso.\n\n📋 **Resumo:**\n- Plano: ${result.planLabel}\n- Ativado em: ${result.startedFormatted}\n- Dias desde ativação: ${result.daysDiff} dias\n- Status: ✅ Elegível para reembolso\n\nPara confirmar o reembolso, **confirme seu email cadastrado**:`);
-    } else {
-      setRefundStep('not_eligible_choice');
-      pushMessage('assistant', `⚠️ Infelizmente seu pedido de reembolso não pode ser processado.\n\n📋 **Verificação:**\n- Plano: ${result.planLabel}\n- Ativado em: ${result.startedFormatted}\n- Dias desde ativação: ${result.daysDiff} dias\n- Prazo para reembolso: 7 dias\n- Status: ❌ Fora do prazo\n\nNossa política permite reembolso apenas nos primeiros 7 dias após a contratação.\n\nPosso oferecer duas opções:`, [
-        { label: '❌ Cancelar assinatura', value: 'cancel_sub' },
-        { label: '✅ Manter meu plano', value: 'keep_plan' },
-      ]);
+    if (error) {
+      toast({ title: 'Erro ao carregar mensagens', description: error.message, variant: 'destructive' });
+      return;
     }
+
+    const mapped: SupportMessage[] = (data || []).map((row: any) => ({
+      id: row.id,
+      role: row.role,
+      content: row.content,
+      createdAt: row.created_at,
+    }));
+
+    setMessages(mapped);
   };
 
-  const processApprovedRefund = async (emailInput: string) => {
-    if (!emailInput.includes('@')) { pushMessage('assistant', 'Por favor, informe um email válido.'); return; }
-    if (refundCheckResult?.profileEmail && emailInput.trim().toLowerCase() !== refundCheckResult.profileEmail.toLowerCase()) {
-      pushMessage('assistant', 'O email informado não corresponde ao email cadastrado na sua conta. Tente novamente.'); return;
+  const loadConversations = async (preferredConversationId?: string | null) => {
+    if (!user?.id) return;
+
+    setIsLoadingConversations(true);
+
+    const { data, error } = await db
+      .from('support_conversations')
+      .select('id, user_id, title, created_at, updated_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    setIsLoadingConversations(false);
+
+    if (error) {
+      toast({ title: 'Erro ao carregar conversas', description: error.message, variant: 'destructive' });
+      return;
     }
-    setIsLoading(true);
-    const { error } = await supabase.functions.invoke('smart-refund', { body: { action: 'approve', reason: refundReason || 'Solicitado pelo usuário', email: emailInput } });
-    setIsLoading(false);
-    if (error) { pushMessage('assistant', 'Erro ao processar reembolso. Tente novamente.'); return; }
-    setRefundStep('submitted');
-    pushMessage('assistant', '✅ **Reembolso aprovado e assinatura cancelada!**\n\n💰 O valor será estornado em até 5 dias úteis via Mercado Pago para o método de pagamento original.\n\nSeu acesso ao dashboard será encerrado agora.\nObrigado por usar a Markfy!');
-    setTimeout(() => navigate('/'), 3000);
+
+    const list: SupportConversation[] = data || [];
+    setConversations(sortConversations(list));
+
+    if (list.length === 0) {
+      setActiveConversationId(null);
+      setMessages([]);
+      return;
+    }
+
+    const targetId = preferredConversationId && list.some((item) => item.id === preferredConversationId)
+      ? preferredConversationId
+      : activeConversationId && list.some((item) => item.id === activeConversationId)
+        ? activeConversationId
+        : list[0].id;
+
+    if (!targetId) {
+      setActiveConversationId(null);
+      setMessages([]);
+      return;
+    }
+
+    setActiveConversationId(targetId);
+    await loadMessages(targetId);
   };
 
-  const processCancelOnly = async () => {
-    setIsLoading(true);
-    const { error } = await supabase.functions.invoke('smart-refund', { body: { action: 'cancel_only', reason: 'outside_7_day_window' } });
-    setIsLoading(false);
-    if (error) { pushMessage('assistant', 'Erro ao cancelar assinatura. Tente novamente.'); return; }
-    setRefundStep('submitted');
-    pushMessage('assistant', 'Assinatura cancelada. Você terá acesso até o fim do período já pago.\nApós isso, seu plano volta para Gratuito.');
-  };
+  const loadUserPlan = async () => {
+    if (!user?.id) return;
 
-  const handleButtonClick = async (value: string) => {
-    if (value === 'refund_yes') { pushMessage('user', 'Sim, quero reembolso'); await runRefundCheck(); }
-    else if (value === 'refund_no') { pushMessage('user', 'Não, só tinha uma dúvida'); setRefundStep('idle'); pushMessage('assistant', 'Entendido! Em que mais posso ajudar? 😊'); }
-    else if (value === 'cancel_sub') { pushMessage('user', 'Cancelar assinatura'); await processCancelOnly(); }
-    else if (value === 'keep_plan') { pushMessage('user', 'Manter meu plano'); setRefundStep('idle'); pushMessage('assistant', 'Ótima escolha! Seu plano continua ativo.\nSe precisar de mais ajuda, estou aqui! 😊'); }
-  };
+    const { data } = await db
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .maybeSingle();
 
-  const processMessage = async (rawText: string) => {
-    const text = rawText.trim();
-    if (!text) return;
-    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: text, createdAt: new Date().toISOString() };
-    setMessages((prev) => [...prev, userMsg]);
-    if (refundStep === 'eligible_awaiting_email') { await processApprovedRefund(text); return; }
-    if (refundStep === 'idle' && isRefundIntent(text)) { setRefundReason(text); startRefundFlow(); return; }
-    await askAI([...messages, userMsg]);
+    setUserPlan(toPlanLabel(data?.plan));
   };
-
-  const handleSend = async () => { await processMessage(input); setInput(''); setAttachment(null); };
 
   useEffect(() => {
-    if (searchParams.get('type') !== 'refund' || autoStartedRef.current) return;
-    autoStartedRef.current = true;
-    setRefundReason('Solicitado via link de reembolso');
-    setTimeout(() => { pushMessage('user', 'Olá! Gostaria de solicitar um reembolso.'); startRefundFlow(); }, 200);
+    if (!user?.id) return;
+    void Promise.all([loadConversations(), loadUserPlan()]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [user?.id]);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isLoading]);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isThinking]);
 
-  const grouped = useMemo(() => messages, [messages]);
-  const hasMessages = grouped.length > 0;
+  const filteredConversations = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return conversations;
+    return conversations.filter((item) => item.title.toLowerCase().includes(term));
+  }, [conversations, searchTerm]);
+
+  const createConversation = async () => {
+    if (!user?.id) return null;
+
+    const { data, error } = await db
+      .from('support_conversations')
+      .insert({ user_id: user.id, title: 'Nova conversa' })
+      .select('id, user_id, title, created_at, updated_at')
+      .single();
+
+    if (error || !data) {
+      toast({ title: 'Erro ao criar conversa', description: error?.message || 'Tente novamente.', variant: 'destructive' });
+      return null;
+    }
+
+    const newConversation = data as SupportConversation;
+    setConversations((prev) => sortConversations([newConversation, ...prev]));
+    setActiveConversationId(newConversation.id);
+    setMessages([]);
+    setSearchOpen(false);
+    setSearchTerm('');
+    setMenuConversationId(null);
+    if (isMobile) setMobileSidebarOpen(false);
+
+    return newConversation.id;
+  };
+
+  const handleRenameConversation = async (conversation: SupportConversation) => {
+    const newTitle = window.prompt('Renomear conversa', conversation.title)?.trim();
+    if (!newTitle || !user?.id) return;
+
+    const { error } = await db
+      .from('support_conversations')
+      .update({ title: newTitle })
+      .eq('id', conversation.id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({ title: 'Erro ao renomear conversa', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    setConversations((prev) =>
+      sortConversations(
+        prev.map((item) =>
+          item.id === conversation.id
+            ? { ...item, title: newTitle, updated_at: new Date().toISOString() }
+            : item,
+        ),
+      ),
+    );
+    setMenuConversationId(null);
+  };
+
+  const handleDeleteConversation = async (conversationId: string) => {
+    if (!user?.id) return;
+    if (!window.confirm('Deseja realmente excluir esta conversa?')) return;
+
+    const { error } = await db
+      .from('support_conversations')
+      .delete()
+      .eq('id', conversationId)
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({ title: 'Erro ao excluir conversa', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    const nextConversations = conversations.filter((conversation) => conversation.id !== conversationId);
+    setConversations(nextConversations);
+    setMenuConversationId(null);
+
+    if (activeConversationId === conversationId) {
+      const nextId = nextConversations[0]?.id ?? null;
+      setActiveConversationId(nextId);
+      if (nextId) {
+        await loadMessages(nextId);
+      } else {
+        setMessages([]);
+      }
+    }
+  };
+
+  const handleSelectConversation = async (conversationId: string) => {
+    setActiveConversationId(conversationId);
+    setMenuConversationId(null);
+    await loadMessages(conversationId);
+    if (isMobile) setMobileSidebarOpen(false);
+  };
+
+  const handleSend = async (rawInput?: string) => {
+    const text = (rawInput ?? input).trim();
+    if (!text && !attachment) return;
+    if (!user?.id) return;
+
+    let conversationId = activeConversationId;
+    if (!conversationId) {
+      conversationId = await createConversation();
+      if (!conversationId) return;
+    }
+
+    const userContent = text || `📎 Screenshot anexado: ${attachment?.name}`;
+    const userMessage: SupportMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: userContent,
+      createdAt: new Date().toISOString(),
+    };
+
+    const isFirstUserMessage = messages.length === 0;
+    const history = [...messages.map((item) => ({ role: item.role, content: item.content })), { role: 'user', content: userContent }];
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setAttachment(null);
+
+    const { error: userInsertError } = await db
+      .from('support_messages')
+      .insert({
+        conversation_id: conversationId,
+        role: 'user',
+        content: userContent,
+      });
+
+    if (userInsertError) {
+      toast({ title: 'Erro ao salvar mensagem', description: userInsertError.message, variant: 'destructive' });
+    }
+
+    if (isFirstUserMessage && text) {
+      const title = makeConversationTitle(text);
+      const { error: titleError } = await db
+        .from('support_conversations')
+        .update({ title })
+        .eq('id', conversationId)
+        .eq('user_id', user.id);
+
+      if (!titleError) {
+        setConversations((prev) =>
+          sortConversations(
+            prev.map((item) =>
+              item.id === conversationId
+                ? { ...item, title, updated_at: new Date().toISOString() }
+                : item,
+            ),
+          ),
+        );
+      }
+    }
+
+    setIsThinking(true);
+
+    const { data, error } = await supabase.functions.invoke('support-chat', {
+      body: { messages: history },
+    });
+
+    setIsThinking(false);
+
+    if (error) {
+      toast({ title: 'Erro no suporte IA', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    const assistantContent = data?.reply || 'Não consegui responder agora.';
+    const assistantMessage: SupportMessage = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: assistantContent,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    const { error: assistantInsertError } = await db
+      .from('support_messages')
+      .insert({
+        conversation_id: conversationId,
+        role: 'assistant',
+        content: assistantContent,
+      });
+
+    if (assistantInsertError) {
+      toast({ title: 'Erro ao salvar resposta', description: assistantInsertError.message, variant: 'destructive' });
+    }
+
+    setConversations((prev) =>
+      sortConversations(
+        prev.map((item) =>
+          item.id === conversationId
+            ? { ...item, updated_at: new Date().toISOString() }
+            : item,
+        ),
+      ),
+    );
+  };
+
+  const hasMessages = messages.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#1a1a1a', fontFamily: 'Inter, sans-serif' }}>
-      {/* Top bar */}
-      <header className="h-14 shrink-0 flex items-center px-6">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm font-medium transition-colors" style={{ color: '#888' }}>
-          <ArrowLeft size={16} /> Voltar
-        </button>
-      </header>
+    <div className="flex h-screen bg-[hsl(var(--support-bg))] text-[hsl(var(--support-text))]">
+      {isMobile && mobileSidebarOpen && (
+        <button
+          type="button"
+          aria-label="Fechar menu lateral"
+          onClick={() => setMobileSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-[hsl(var(--support-backdrop)/0.55)]"
+        />
+      )}
 
-      {/* Messages / Empty state */}
-      <div className="flex-1 overflow-y-auto pb-28">
-        {!hasMessages ? (
-          <div className="flex flex-col items-center justify-center" style={{ minHeight: '70vh', gap: 24 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: '#29B2FE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, color: 'white', fontWeight: 800 }}>M</div>
-            <h1 style={{ fontSize: 28, fontWeight: 600, color: 'white', textAlign: 'center' }}>Como posso te ajudar, {userName}?</h1>
-            <div className="flex flex-wrap justify-center gap-2">
-              {topics.map((topic) => (
-                <button
-                  key={topic}
-                  onClick={() => processMessage(topic)}
-                  className="transition-colors"
-                  style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid #333', background: 'transparent', color: '#ccc', fontSize: 13, cursor: 'pointer' }}
-                  onMouseOver={(e) => { (e.target as HTMLElement).style.borderColor = '#29B2FE'; }}
-                  onMouseOut={(e) => { (e.target as HTMLElement).style.borderColor = '#333'; }}
+      <aside
+        className={`z-40 flex h-screen w-[260px] flex-col border-r border-[hsl(var(--support-border))] bg-[hsl(var(--support-bg))] p-4 ${
+          isMobile
+            ? `fixed left-0 top-0 transition-transform duration-200 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`
+            : 'relative shrink-0'
+        }`}
+      >
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => void createConversation()}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[hsl(var(--support-border))] bg-[hsl(var(--support-surface))] px-3 py-2 text-sm font-medium text-[hsl(var(--support-text))] transition-colors hover:bg-[hsl(var(--support-hover))]"
+          >
+            <Plus size={16} /> Nova conversa
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSearchOpen((prev) => !prev)}
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-[hsl(var(--support-text-muted))] transition-colors hover:bg-[hsl(var(--support-hover))]"
+          >
+            <Search size={16} /> Procurar
+          </button>
+
+          {searchOpen && (
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar conversa..."
+              className="w-full rounded-xl border border-[hsl(var(--support-border))] bg-transparent px-3 py-2 text-sm text-[hsl(var(--support-text))] outline-none placeholder:text-[hsl(var(--support-text-faint))]"
+            />
+          )}
+        </div>
+
+        <div className="my-4 h-px bg-[hsl(var(--support-border))]" />
+
+        <div className="space-y-1">
+          <button type="button" className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]">
+            <MessageSquare size={16} /> Conversas
+          </button>
+          <button type="button" className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]">
+            <FolderOpen size={16} /> Projetos
+          </button>
+          <button type="button" className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]">
+            <Bookmark size={16} /> Salvos
+          </button>
+        </div>
+
+        <div className="my-4 h-px bg-[hsl(var(--support-border))]" />
+
+        <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[hsl(var(--support-text-faint))]">Recentes</p>
+
+        <div className="mt-2 flex-1 overflow-y-auto space-y-1 pr-1">
+          {isLoadingConversations ? (
+            <div className="flex items-center gap-2 px-3 py-2 text-xs text-[hsl(var(--support-text-muted))]">
+              <Loader2 size={14} className="animate-spin" /> Carregando...
+            </div>
+          ) : filteredConversations.length === 0 ? (
+            <p className="px-3 py-2 text-xs text-[hsl(var(--support-text-faint))]">Nenhuma conversa encontrada.</p>
+          ) : (
+            filteredConversations.map((conversation) => {
+              const isActive = activeConversationId === conversation.id;
+              const showMenu = menuConversationId === conversation.id;
+
+              return (
+                <div
+                  key={conversation.id}
+                  className="group relative"
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    setMenuConversationId(conversation.id);
+                  }}
                 >
-                  {topic}
-                </button>
-              ))}
+                  <button
+                    type="button"
+                    onClick={() => void handleSelectConversation(conversation.id)}
+                    className={`w-full rounded-xl px-3 py-2 text-left text-sm transition-colors ${
+                      isActive
+                        ? 'bg-[hsl(var(--support-surface))] text-[hsl(var(--support-text))]'
+                        : 'text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]'
+                    }`}
+                  >
+                    <span className="block truncate pr-8">{conversation.title.slice(0, 35)}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    aria-label="Ações da conversa"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setMenuConversationId((prev) => (prev === conversation.id ? null : conversation.id));
+                    }}
+                    className="absolute right-2 top-2 rounded-md p-1 text-[hsl(var(--support-text-faint))] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[hsl(var(--support-hover))] hover:text-[hsl(var(--support-text-muted))]"
+                  >
+                    <MoreHorizontal size={14} />
+                  </button>
+
+                  {showMenu && (
+                    <div
+                      className="absolute right-2 top-9 z-50 min-w-[130px] rounded-lg border border-[hsl(var(--support-border))] bg-[hsl(var(--support-surface))] p-1 shadow-lg"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => void handleRenameConversation(conversation)}
+                        className="w-full rounded-md px-2 py-1.5 text-left text-xs text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]"
+                      >
+                        Renomear
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleDeleteConversation(conversation.id)}
+                        className="w-full rounded-md px-2 py-1.5 text-left text-xs text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <div className="mt-4 rounded-xl border border-[hsl(var(--support-border))] bg-[hsl(var(--support-surface))] p-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(var(--support-primary))] text-xs font-bold text-[hsl(var(--support-primary-foreground))]">
+              {userInitials}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[hsl(var(--support-text))]">{userName}</p>
+              <p className="truncate text-xs text-[hsl(var(--support-text-faint))]">{userPlan}</p>
+              <p className="truncate text-[11px] text-[hsl(var(--support-text-faint))]">{userEmail}</p>
             </div>
           </div>
-        ) : (
-          <div className="mx-auto space-y-6 px-4 py-6" style={{ maxWidth: 680 }}>
-            {grouped.map((msg) => (
-              <div key={msg.id}>
-                {msg.role === 'assistant' ? (
-                  <div className="flex items-start gap-3">
-                    <div className="h-7 w-7 rounded-lg shrink-0 mt-0.5 flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>M</div>
-                    <div className="min-w-0">
-                      <div className="prose prose-sm prose-invert max-w-none [&_p]:mb-1 [&_p]:mt-0 [&_ul]:mb-1 [&_li]:mb-0 [&_strong]:text-white" style={{ color: '#e5e5e5' }}>
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                      </div>
-                      {msg.buttons && msg.buttons.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {msg.buttons.map((btn) => (
-                            <button
-                              key={btn.value}
-                              onClick={() => handleButtonClick(btn.value)}
-                              className="rounded-full px-4 py-1.5 text-xs font-semibold transition-colors"
-                              style={{ border: '1px solid #444', color: '#ccc', background: 'transparent' }}
-                              onMouseOver={(e) => { (e.target as HTMLElement).style.borderColor = '#29B2FE'; (e.target as HTMLElement).style.color = '#29B2FE'; }}
-                              onMouseOut={(e) => { (e.target as HTMLElement).style.borderColor = '#444'; (e.target as HTMLElement).style.color = '#ccc'; }}
-                            >
-                              {btn.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex justify-end">
-                    <div className="rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap" style={{ background: '#2a2a2a', color: 'white', maxWidth: '75%' }}>
-                      {msg.content}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+        </div>
+      </aside>
 
-            {isLoading && (
-              <div className="flex items-start gap-3">
-                <div className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>M</div>
-                <div className="flex items-center gap-2 text-sm" style={{ color: '#888' }}>
-                  <Loader2 size={14} className="animate-spin" /> Pensando...
+      <main className="flex h-screen min-w-0 flex-1 flex-col bg-[hsl(var(--support-bg))]">
+        <header className="flex h-14 shrink-0 items-center gap-2 px-4 md:px-6">
+          {isMobile && (
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="rounded-md p-1.5 text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]"
+              aria-label="Abrir menu lateral"
+            >
+              <Menu size={18} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--support-text-muted))] transition-colors hover:text-[hsl(var(--support-text))]"
+          >
+            <ArrowLeft size={16} /> Voltar
+          </button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto pb-36">
+          {!hasMessages ? (
+            <div className="flex min-h-[70vh] flex-col items-center justify-center gap-6 px-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(var(--support-primary))] text-2xl font-extrabold text-[hsl(var(--support-primary-foreground))]">
+                M
+              </div>
+
+              <h1 className="text-center text-[28px] font-semibold text-[hsl(var(--support-text))]">
+                Como posso te ajudar, {userName}?
+              </h1>
+
+              <div className="flex flex-wrap justify-center gap-2">
+                {TOPICS.map((topic) => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => void handleSend(topic)}
+                    className="rounded-full border border-[hsl(var(--support-border))] bg-transparent px-3.5 py-1.5 text-[13px] text-[hsl(var(--support-text-muted))] transition-colors hover:border-[hsl(var(--support-primary))] hover:text-[hsl(var(--support-primary))]"
+                  >
+                    {topic}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mx-auto max-w-[680px] space-y-6 px-4 py-6">
+              {isLoadingMessages ? (
+                <div className="flex items-center gap-2 text-sm text-[hsl(var(--support-text-muted))]">
+                  <Loader2 size={14} className="animate-spin" /> Carregando mensagens...
                 </div>
+              ) : (
+                messages.map((message) => (
+                  <div key={message.id}>
+                    {message.role === 'assistant' ? (
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[hsl(var(--support-primary))] text-xs font-bold text-[hsl(var(--support-primary-foreground))]">
+                          M
+                        </div>
+                        <div className="min-w-0">
+                          <div className="prose prose-sm prose-invert max-w-none text-[hsl(var(--support-text-subtle))] [&_p]:mb-1 [&_p]:mt-0 [&_ul]:mb-1 [&_li]:mb-0 [&_strong]:text-[hsl(var(--support-text))]">
+                            <ReactMarkdown>{message.content}</ReactMarkdown>
+                          </div>
+                          <p className="mt-1 text-xs text-[hsl(var(--support-text-faint))]">{formatTime(message.createdAt)}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="max-w-[75%] whitespace-pre-wrap rounded-2xl bg-[hsl(var(--support-surface))] px-4 py-2.5 text-sm text-[hsl(var(--support-text))]">
+                          {message.content}
+                        </div>
+                        <p className="text-xs text-[hsl(var(--support-text-faint))]">{formatTime(message.createdAt)}</p>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+
+              {isThinking && (
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[hsl(var(--support-primary))] text-xs font-bold text-[hsl(var(--support-primary-foreground))]">
+                    M
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[hsl(var(--support-text-muted))]">
+                    <Loader2 size={14} className="animate-spin" /> Pensando...
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        <div className="sticky bottom-6 z-20 px-4">
+          <div className="mx-auto max-w-[680px] rounded-2xl border border-[hsl(var(--support-border))] bg-[hsl(var(--support-surface))] p-3 shadow-sm">
+            {attachment && (
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--support-border))] bg-[hsl(var(--support-hover))] px-3 py-1 text-xs text-[hsl(var(--support-text-muted))]">
+                📎 {attachment.name}
+                <button
+                  type="button"
+                  onClick={() => setAttachment(null)}
+                  className="rounded p-0.5 text-[hsl(var(--support-text-faint))] hover:bg-[hsl(var(--support-surface))] hover:text-[hsl(var(--support-text))]"
+                >
+                  <X size={12} />
+                </button>
               </div>
             )}
 
-            <div ref={messagesEndRef} />
-          </div>
-        )}
-      </div>
+            <div className="flex items-end gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => setAttachment(event.target.files?.[0] || null)}
+              />
 
-      {/* Fixed input bar */}
-      <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 680, padding: '0 16px', zIndex: 50 }}>
-        <div style={{ background: '#2a2a2a', borderRadius: 16, border: '1px solid #333', padding: '12px 16px' }}>
-          {attachment && (
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ background: '#333', color: '#aaa' }}>
-              📎 {attachment.name}
-              <button type="button" onClick={() => setAttachment(null)}><X size={12} /></button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="rounded-md p-2 text-[hsl(var(--support-text-faint))] transition-colors hover:bg-[hsl(var(--support-hover))] hover:text-[hsl(var(--support-text-muted))]"
+                aria-label="Anexar screenshot"
+              >
+                <Paperclip size={16} />
+              </button>
+
+              <textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                placeholder="Como posso ajudar você hoje?"
+                rows={1}
+                className="max-h-40 min-h-9 flex-1 resize-none bg-transparent px-1 py-2 text-sm text-[hsl(var(--support-text))] outline-none placeholder:text-[hsl(var(--support-text-faint))]"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    void handleSend();
+                  }
+                }}
+              />
+
+              <span className="hidden pb-2 text-xs text-[hsl(var(--support-text-faint))] sm:block">Markfy AI</span>
+
+              <button
+                type="button"
+                onClick={() => void handleSend()}
+                disabled={(!input.trim() && !attachment) || isThinking}
+                className="rounded-lg bg-[hsl(var(--support-primary))] p-2 text-[hsl(var(--support-primary-foreground))] transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Enviar mensagem"
+              >
+                <SendHorizontal size={16} />
+              </button>
             </div>
-          )}
-          <div className="flex items-center gap-2">
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => setAttachment(e.target.files?.[0] || null)} />
-            <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: 'transparent', border: 'none', color: '#666', cursor: 'pointer', fontSize: 18 }} title="Anexar">📎</button>
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Como posso ajudar você hoje?"
-              className="flex-1 bg-transparent border-none text-white outline-none"
-              style={{ fontSize: 15 }}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            />
-            <span style={{ color: '#666', fontSize: 12, whiteSpace: 'nowrap' }}>Markfy AI</span>
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={(!input.trim() && !attachment) || isLoading}
-              style={{ background: '#29B2FE', border: 'none', borderRadius: 8, padding: '6px 12px', color: 'white', cursor: 'pointer', opacity: (!input.trim() && !attachment) || isLoading ? 0.5 : 1 }}
-            >
-              <SendHorizontal size={16} />
-            </button>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

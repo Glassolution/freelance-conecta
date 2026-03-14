@@ -557,29 +557,35 @@ const Dashboard = () => {
                       </button>
                     </div>
                   </div>
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart data={chartData} barGap={2} barCategoryGap="20%">
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                      <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(value) => `R$ ${Math.round(value / 1000)}k`} />
-                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                      <Tooltip
-                        formatter={(value: number, name: string) =>
-                          name === 'faturamento'
-                            ? [formatCurrency(Number(value)), 'Faturamento']
-                            : [Number(value), 'Clientes']
-                        }
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: 'none',
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                          fontSize: 12,
-                        }}
-                      />
-                      <Bar yAxisId="left" dataKey="faturamento" fill="#29B2FE" radius={[4, 4, 0, 0]} name="faturamento" />
-                      <Bar yAxisId="right" dataKey="clientes" fill="#10b981" radius={[4, 4, 0, 0]} name="clientes" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {isAnnualUnavailable ? (
+                    <div className="h-[260px] flex items-center justify-center text-sm text-[#9CA3B4]">
+                      Anual indisponível no 1º mês. Requer 12 meses de histórico.
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <BarChart data={chartData} barGap={2} barCategoryGap="20%">
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                        <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(value) => `R$ ${Math.round(value / 1000)}k`} />
+                        <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                        <Tooltip
+                          formatter={(value: number, name: string) =>
+                            name === 'faturamento'
+                              ? [formatCurrency(Number(value)), 'Faturamento']
+                              : [Number(value), 'Clientes']
+                          }
+                          contentStyle={{
+                            borderRadius: 12,
+                            border: 'none',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                            fontSize: 12,
+                          }}
+                        />
+                        <Bar yAxisId="left" dataKey="faturamento" fill="#29B2FE" radius={[4, 4, 0, 0]} name="faturamento" />
+                        <Bar yAxisId="right" dataKey="clientes" fill="#10b981" radius={[4, 4, 0, 0]} name="clientes" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
                 {/* Plataformas Card */}

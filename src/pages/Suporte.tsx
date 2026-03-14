@@ -18,7 +18,7 @@ const suggestedQuestions = [
   'Como funciona o marketplace?',
   'Como cancelar meu plano?',
   'Não consigo acessar o dashboard',
-  'Quero solicitar reembolso',
+  '💰 Solicitar reembolso',
 ];
 
 const Suporte = () => {
@@ -132,13 +132,13 @@ const Suporte = () => {
 
       await saveRefundRequest(refundReason, trimmed);
       setRefundStep('submitted');
-      pushMessage('assistant', 'Vou registrar sua solicitação. O reembolso será processado em até 5 dias úteis via Mercado Pago.');
+      pushMessage('assistant', '✅ Solicitação registrada! Seu reembolso será processado em até 5 dias úteis via Mercado Pago.');
       return;
     }
 
     if (isRefundIntent(trimmed)) {
       setRefundStep('awaiting_reason');
-      pushMessage('assistant', 'Claro! Qual o motivo do reembolso?');
+      pushMessage('assistant', 'Entendido! Para solicitar seu reembolso, preciso de algumas informações:\n1️⃣ Qual o motivo do reembolso?');
       return;
     }
 
@@ -159,7 +159,7 @@ const Suporte = () => {
       {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Claro! Qual o motivo do reembolso?',
+        content: 'Entendido! Para solicitar seu reembolso, preciso de algumas informações:\n1️⃣ Qual o motivo do reembolso?',
         createdAt: new Date().toISOString(),
       },
     ]);

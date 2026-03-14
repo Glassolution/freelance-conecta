@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { X, Moon, Bell, Mail, MessageCircle, Receipt, RotateCcw, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { X, Moon, Bell, Mail, MessageCircle, RotateCcw, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -322,30 +322,16 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
           <section className="space-y-4">
             <h3 className="text-sm font-bold tracking-wide text-[#111] uppercase">Suporte</h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="rounded-xl border border-[#E8ECF4] p-4">
-                <p className="text-sm font-semibold text-[#111]">💬 Suporte IA</p>
-                <p className="text-xs text-[#6B7280] mt-1">Tire suas dúvidas com nossa IA</p>
-                <button
-                  onClick={() => { onClose(); navigate('/suporte'); }}
-                  className="mt-3 text-sm font-semibold"
-                  style={{ color: hslBlue }}
-                >
-                  Abrir Chat →
-                </button>
-              </div>
-
-              <div className="rounded-xl border border-[#E8ECF4] p-4">
-                <p className="text-sm font-semibold text-[#111]">💰 Reembolso</p>
-                <p className="text-xs text-[#6B7280] mt-1">Solicitar reembolso</p>
-                <button
-                  onClick={() => { onClose(); navigate('/suporte?type=refund'); }}
-                  className="mt-3 text-sm font-semibold"
-                  style={{ color: hslBlue }}
-                >
-                  Solicitar →
-                </button>
-              </div>
+            <div className="rounded-xl border border-[#E8ECF4] p-4">
+              <p className="text-sm font-semibold text-[#111]">💬 Suporte IA</p>
+              <p className="text-xs text-[#6B7280] mt-1">Tire suas dúvidas com nossa IA</p>
+              <button
+                onClick={() => { onClose(); navigate('/suporte'); }}
+                className="mt-3 text-sm font-semibold"
+                style={{ color: hslBlue }}
+              >
+                Abrir Chat →
+              </button>
             </div>
           </section>
 

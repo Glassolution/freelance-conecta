@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Home, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
@@ -79,7 +79,11 @@ interface Proposta {
   status: string;
 }
 
-// Monthly chart data
+interface ClientMetric {
+  project_value: number | null;
+  created_at: string;
+}
+
 const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const Dashboard = () => {
@@ -109,6 +113,8 @@ const Dashboard = () => {
 
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [propostas, setPropostas] = useState<Proposta[]>([]);
+  const [clientsData, setClientsData] = useState<ClientMetric[]>([]);
+  const [messagesSentCount, setMessagesSentCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const initials = getUserInitials(user);
@@ -117,17 +123,26 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user?.id) return;
+
       setLoading(true);
-      const [vagasRes, propostasRes] = await Promise.all([
+      const [vagasRes, propostasRes, clientsRes, messagesCountRes] = await Promise.all([
         supabase.from('vagas').select('*').order('created_at', { ascending: false }).limit(10),
-        supabase.from('propostas').select('*').order('created_at', { ascending: false }).limit(10),
+        supabase.from('propostas').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
+        supabase.from('clients').select('project_value, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
+        supabase.from('messages').select('id', { count: 'exact', head: true }).eq('sender_id', user.id),
       ]);
+
       if (vagasRes.data) setVagas(vagasRes.data);
       if (propostasRes.data) setPropostas(propostasRes.data);
+      if (clientsRes.data) setClientsData(clientsRes.data as ClientMetric[]);
+      setMessagesSentCount(messagesCountRes.count ?? 0);
+
       setLoading(false);
     };
+
     fetchData();
-  }, []);
+  }, [user?.id]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -148,14 +163,39 @@ const Dashboard = () => {
 
   const vagasCount = vagas.length;
   const propostasCount = propostas.length;
+  const clientesAtivos = clientsData.length;
 
-  // Generate chart data
-  const chartData = monthLabels.map((label, i) => ({
-    name: label,
-    pendente: Math.floor(Math.random() * 5),
-    enviada: Math.floor(Math.random() * 8),
-    recusada: Math.floor(Math.random() * 2),
-  }));
+  const receitaMesAtual = useMemo(() => {
+    const now = new Date();
+    return clientsData.reduce((acc, client) => {
+      if (!client.created_at) return acc;
+      const date = new Date(client.created_at);
+      if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+        return acc + Number(client.project_value || 0);
+      }
+      return acc;
+    }, 0);
+  }, [clientsData]);
+
+  const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const chartData = useMemo(() => {
+    const data = monthLabels.map((label, idx) => ({
+      name: label,
+      faturamento: 0,
+      clientes: 0,
+      monthIndex: idx,
+    }));
+
+    clientsData.forEach((client) => {
+      const d = new Date(client.created_at);
+      const month = d.getMonth();
+      data[month].faturamento += Number(client.project_value || 0);
+      data[month].clientes += 1;
+    });
+
+    return data;
+  }, [clientsData]);
 
   const views = ['Últimas 24h', 'Semanal', 'Mensal', 'Anual'];
 
@@ -170,29 +210,29 @@ const Dashboard = () => {
       iconBg: 'hsl(200, 95%, 57%)',
     },
     {
-      label: 'Propostas Enviadas',
-      value: propostasCount.toString(),
-      change: '+4.2%',
+      label: 'Mensagens Enviadas',
+      value: messagesSentCount.toString(),
+      change: '+18%',
       positive: true,
       subtitle: 'vs últimos 7 dias',
       icon: Send,
       iconBg: 'hsl(142, 71%, 45%)',
     },
     {
-      label: 'Receita Total',
-      value: 'R$ 0,00',
-      change: '0%',
+      label: 'Lucro Total (Mês)',
+      value: formatCurrency(receitaMesAtual),
+      change: '+24%',
       positive: true,
-      subtitle: 'vs últimos 7 dias',
+      subtitle: 'dados reais do mês',
       icon: DollarSign,
       iconBg: 'hsl(200, 95%, 57%)',
     },
     {
       label: 'Clientes Ativos',
-      value: '0',
-      change: '0%',
+      value: clientesAtivos.toString(),
+      change: '+11%',
       positive: true,
-      subtitle: 'vs últimos 7 dias',
+      subtitle: 'base real de clientes',
       icon: UserCheck,
       iconBg: 'hsl(262, 83%, 68%)',
     },
@@ -380,13 +420,12 @@ const Dashboard = () => {
                 {/* Bar Chart - Desempenho */}
                 <div className="xl:col-span-2 bg-white rounded-2xl border border-[#edf0f7] p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-heading font-bold text-base text-[#111]">Desempenho de Propostas</h3>
+                    <h3 className="font-heading font-bold text-base text-[#111]">Faturamento e Clientes (dados reais)</h3>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-6">
                         {[
-                          { label: 'Pendente', color: '#e5e7eb' },
-                          { label: 'Enviada', color: '#29B2FE' },
-                          { label: 'Recusada', color: '#111' },
+                          { label: 'Faturamento', color: '#29B2FE' },
+                          { label: 'Clientes', color: '#10b981' },
                         ].map((item) => (
                           <div key={item.label} className="flex items-center gap-1.5">
                             <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
@@ -403,8 +442,14 @@ const Dashboard = () => {
                     <BarChart data={chartData} barGap={2} barCategoryGap="20%">
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                       <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(value) => `R$ ${Math.round(value / 1000)}k`} />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                       <Tooltip
+                        formatter={(value: number, name: string) =>
+                          name === 'faturamento'
+                            ? [formatCurrency(Number(value)), 'Faturamento']
+                            : [Number(value), 'Clientes']
+                        }
                         contentStyle={{
                           borderRadius: 12,
                           border: 'none',
@@ -412,9 +457,8 @@ const Dashboard = () => {
                           fontSize: 12,
                         }}
                       />
-                      <Bar dataKey="pendente" fill="#e5e7eb" radius={[4, 4, 0, 0]} name="Pendente" />
-                      <Bar dataKey="enviada" fill="#29B2FE" radius={[4, 4, 0, 0]} name="Enviada" />
-                      <Bar dataKey="recusada" fill="#111827" radius={[4, 4, 0, 0]} name="Recusada" />
+                      <Bar yAxisId="left" dataKey="faturamento" fill="#29B2FE" radius={[4, 4, 0, 0]} name="faturamento" />
+                      <Bar yAxisId="right" dataKey="clientes" fill="#10b981" radius={[4, 4, 0, 0]} name="clientes" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -444,9 +488,9 @@ const Dashboard = () => {
                   {/* Métricas inline */}
                   <div className="mt-6 pt-5 border-t border-[#edf0f7] space-y-3">
                     {[
-                      { label: 'Receita Total', value: 'R$ 0,00', iconComponent: DollarSign },
-                      { label: 'Clientes', value: '0', iconComponent: UserCheck },
-                      { label: 'Anúncios Ativos', value: '0', iconComponent: FileText },
+                      { label: 'Lucro Total (Mês)', value: formatCurrency(receitaMesAtual), iconComponent: DollarSign },
+                      { label: 'Clientes', value: clientesAtivos.toString(), iconComponent: UserCheck },
+                      { label: 'Mensagens Enviadas', value: messagesSentCount.toString(), iconComponent: MessageSquare },
                     ].map((m) => (
                       <div key={m.label} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">

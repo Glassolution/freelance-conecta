@@ -163,6 +163,25 @@ const Dashboard = () => {
     return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
   }, [selectedView]);
 
+  const firstClientDate = useMemo(() => {
+    if (clientsData.length === 0) return null;
+    return clientsData.reduce((min, client) => {
+      const current = new Date(client.created_at);
+      return current < min ? current : min;
+    }, new Date(clientsData[0].created_at));
+  }, [clientsData]);
+
+  const annualCalculable = useMemo(() => {
+    if (selectedView !== 'Anual') return true;
+    if (!firstClientDate) return false;
+
+    const now = new Date();
+    const monthsDiff = (now.getFullYear() - firstClientDate.getFullYear()) * 12 + (now.getMonth() - firstClientDate.getMonth());
+    return monthsDiff >= 11;
+  }, [selectedView, firstClientDate]);
+
+  const isAnnualUnavailable = selectedView === 'Anual' && !annualCalculable;
+
   const clientsInRange = useMemo(
     () => clientsData.filter((client) => new Date(client.created_at) >= rangeStart),
     [clientsData, rangeStart]
@@ -183,6 +202,14 @@ const Dashboard = () => {
   const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const chartData = useMemo(() => {
+    if (isAnnualUnavailable) {
+      return monthLabels.map((label) => ({
+        name: label,
+        faturamento: 0,
+        clientes: 0,
+      }));
+    }
+
     const now = new Date();
 
     if (selectedView === 'Mensal') {
@@ -272,7 +299,7 @@ const Dashboard = () => {
     });
 
     return data;
-  }, [clientsData, selectedView, rangeStart]);
+  }, [clientsData, selectedView, rangeStart, isAnnualUnavailable]);
 
   const views = ['Últimas 24h', 'Semanal', 'Mensal', 'Anual'];
 
@@ -283,6 +310,13 @@ const Dashboard = () => {
       : selectedView === 'Mensal'
         ? 'mês atual'
         : 'últimos 12 meses';
+
+  const annualDisplayValue = 'Não calculável';
+  const metricsUnavailable = isAnnualUnavailable;
+
+  const mensagensDisplay = metricsUnavailable ? annualDisplayValue : messagesSentCount.toString();
+  const lucroDisplay = metricsUnavailable ? annualDisplayValue : formatCurrency(receitaSelecionada);
+  const clientesDisplay = metricsUnavailable ? annualDisplayValue : clientesAtivos.toString();
 
   const kpiCards = [
     {
@@ -296,28 +330,28 @@ const Dashboard = () => {
     },
     {
       label: `Mensagens (${selectedView})`,
-      value: messagesSentCount.toString(),
+      value: mensagensDisplay,
       change: '+18%',
       positive: true,
-      subtitle: periodoLabel,
+      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: Send,
       iconBg: 'hsl(142, 71%, 45%)',
     },
     {
       label: `Lucro (${selectedView})`,
-      value: formatCurrency(receitaSelecionada),
+      value: lucroDisplay,
       change: '+24%',
       positive: true,
-      subtitle: periodoLabel,
+      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: DollarSign,
       iconBg: 'hsl(200, 95%, 57%)',
     },
     {
       label: `Clientes (${selectedView})`,
-      value: clientesAtivos.toString(),
+      value: clientesDisplay,
       change: '+11%',
       positive: true,
-      subtitle: periodoLabel,
+      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: UserCheck,
       iconBg: 'hsl(262, 83%, 68%)',
     },
@@ -523,29 +557,35 @@ const Dashboard = () => {
                       </button>
                     </div>
                   </div>
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart data={chartData} barGap={2} barCategoryGap="20%">
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                      <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(value) => `R$ ${Math.round(value / 1000)}k`} />
-                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                      <Tooltip
-                        formatter={(value: number, name: string) =>
-                          name === 'faturamento'
-                            ? [formatCurrency(Number(value)), 'Faturamento']
-                            : [Number(value), 'Clientes']
-                        }
-                        contentStyle={{
-                          borderRadius: 12,
-                          border: 'none',
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                          fontSize: 12,
-                        }}
-                      />
-                      <Bar yAxisId="left" dataKey="faturamento" fill="#29B2FE" radius={[4, 4, 0, 0]} name="faturamento" />
-                      <Bar yAxisId="right" dataKey="clientes" fill="#10b981" radius={[4, 4, 0, 0]} name="clientes" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {isAnnualUnavailable ? (
+                    <div className="h-[260px] flex items-center justify-center text-sm text-[#9CA3B4]">
+                      Anual indisponível no 1º mês. Requer 12 meses de histórico.
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={260}>
+                      <BarChart data={chartData} barGap={2} barCategoryGap="20%">
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                        <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(value) => `R$ ${Math.round(value / 1000)}k`} />
+                        <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                        <Tooltip
+                          formatter={(value: number, name: string) =>
+                            name === 'faturamento'
+                              ? [formatCurrency(Number(value)), 'Faturamento']
+                              : [Number(value), 'Clientes']
+                          }
+                          contentStyle={{
+                            borderRadius: 12,
+                            border: 'none',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                            fontSize: 12,
+                          }}
+                        />
+                        <Bar yAxisId="left" dataKey="faturamento" fill="#29B2FE" radius={[4, 4, 0, 0]} name="faturamento" />
+                        <Bar yAxisId="right" dataKey="clientes" fill="#10b981" radius={[4, 4, 0, 0]} name="clientes" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
                 {/* Plataformas Card */}
@@ -573,9 +613,9 @@ const Dashboard = () => {
                   {/* Métricas inline */}
                   <div className="mt-6 pt-5 border-t border-[#edf0f7] space-y-3">
                     {[
-                      { label: `Lucro (${selectedView})`, value: formatCurrency(receitaSelecionada), iconComponent: DollarSign },
-                      { label: `Clientes (${selectedView})`, value: clientesAtivos.toString(), iconComponent: UserCheck },
-                      { label: `Mensagens (${selectedView})`, value: messagesSentCount.toString(), iconComponent: MessageSquare },
+                      { label: `Lucro (${selectedView})`, value: lucroDisplay, iconComponent: DollarSign },
+                      { label: `Clientes (${selectedView})`, value: clientesDisplay, iconComponent: UserCheck },
+                      { label: `Mensagens (${selectedView})`, value: mensagensDisplay, iconComponent: MessageSquare },
                     ].map((m) => (
                       <div key={m.label} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">

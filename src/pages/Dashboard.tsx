@@ -154,41 +154,135 @@ const Dashboard = () => {
 
   const vagasCount = vagas.length;
   const propostasCount = propostas.length;
-  const clientesAtivos = clientsData.length;
 
-  const receitaMesAtual = useMemo(() => {
+  const rangeStart = useMemo(() => {
     const now = new Date();
-    return clientsData.reduce((acc, client) => {
-      if (!client.created_at) return acc;
-      const date = new Date(client.created_at);
-      if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
-        return acc + Number(client.project_value || 0);
-      }
-      return acc;
-    }, 0);
-  }, [clientsData]);
+    if (selectedView === 'Últimas 24h') return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    if (selectedView === 'Semanal') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    if (selectedView === 'Mensal') return new Date(now.getFullYear(), now.getMonth(), 1);
+    return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  }, [selectedView]);
+
+  const clientsInRange = useMemo(
+    () => clientsData.filter((client) => new Date(client.created_at) >= rangeStart),
+    [clientsData, rangeStart]
+  );
+
+  const receitaSelecionada = useMemo(
+    () => clientsInRange.reduce((acc, client) => acc + Number(client.project_value || 0), 0),
+    [clientsInRange]
+  );
+
+  const clientesAtivos = clientsInRange.length;
+
+  const messagesSentCount = useMemo(
+    () => messagesData.filter((msg) => new Date(msg.created_at) >= rangeStart).length,
+    [messagesData, rangeStart]
+  );
 
   const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const chartData = useMemo(() => {
+    const now = new Date();
+
+    if (selectedView === 'Mensal') {
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const data = Array.from({ length: daysInMonth }, (_, i) => ({
+        name: `${i + 1}`,
+        faturamento: 0,
+        clientes: 0,
+      }));
+
+      clientsData.forEach((client) => {
+        const d = new Date(client.created_at);
+        if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+          const dayIndex = d.getDate() - 1;
+          data[dayIndex].faturamento += Number(client.project_value || 0);
+          data[dayIndex].clientes += 1;
+        }
+      });
+
+      return data;
+    }
+
+    if (selectedView === 'Semanal') {
+      const data = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(now);
+        d.setDate(now.getDate() - 6 + i);
+        return {
+          name: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
+          key: d.toDateString(),
+          faturamento: 0,
+          clientes: 0,
+        };
+      });
+
+      clientsData.forEach((client) => {
+        const d = new Date(client.created_at);
+        const key = d.toDateString();
+        const bucket = data.find((item) => item.key === key);
+        if (bucket) {
+          bucket.faturamento += Number(client.project_value || 0);
+          bucket.clientes += 1;
+        }
+      });
+
+      return data;
+    }
+
+    if (selectedView === 'Últimas 24h') {
+      const data = Array.from({ length: 6 }, (_, i) => {
+        const end = new Date(now.getTime() - (5 - i) * 4 * 60 * 60 * 1000);
+        const start = new Date(end.getTime() - 4 * 60 * 60 * 1000);
+        return {
+          name: `${end.getHours().toString().padStart(2, '0')}h`,
+          start,
+          end,
+          faturamento: 0,
+          clientes: 0,
+        };
+      });
+
+      clientsData.forEach((client) => {
+        const d = new Date(client.created_at);
+        const bucket = data.find((item) => d > item.start && d <= item.end);
+        if (bucket) {
+          bucket.faturamento += Number(client.project_value || 0);
+          bucket.clientes += 1;
+        }
+      });
+
+      return data;
+    }
+
     const data = monthLabels.map((label, idx) => ({
       name: label,
+      monthIndex: idx,
       faturamento: 0,
       clientes: 0,
-      monthIndex: idx,
     }));
 
     clientsData.forEach((client) => {
       const d = new Date(client.created_at);
-      const month = d.getMonth();
-      data[month].faturamento += Number(client.project_value || 0);
-      data[month].clientes += 1;
+      if (d >= rangeStart) {
+        const month = d.getMonth();
+        data[month].faturamento += Number(client.project_value || 0);
+        data[month].clientes += 1;
+      }
     });
 
     return data;
-  }, [clientsData]);
+  }, [clientsData, selectedView, rangeStart]);
 
   const views = ['Últimas 24h', 'Semanal', 'Mensal', 'Anual'];
+
+  const periodoLabel = selectedView === 'Últimas 24h'
+    ? 'últimas 24h'
+    : selectedView === 'Semanal'
+      ? 'últimos 7 dias'
+      : selectedView === 'Mensal'
+        ? 'mês atual'
+        : 'últimos 12 meses';
 
   const kpiCards = [
     {
@@ -196,34 +290,34 @@ const Dashboard = () => {
       value: vagasCount.toString(),
       change: '+12%',
       positive: true,
-      subtitle: 'vs últimos 7 dias',
+      subtitle: 'base total',
       icon: Briefcase,
       iconBg: 'hsl(200, 95%, 57%)',
     },
     {
-      label: 'Mensagens Enviadas',
+      label: `Mensagens (${selectedView})`,
       value: messagesSentCount.toString(),
       change: '+18%',
       positive: true,
-      subtitle: 'vs últimos 7 dias',
+      subtitle: periodoLabel,
       icon: Send,
       iconBg: 'hsl(142, 71%, 45%)',
     },
     {
-      label: 'Lucro Total (Mês)',
-      value: formatCurrency(receitaMesAtual),
+      label: `Lucro (${selectedView})`,
+      value: formatCurrency(receitaSelecionada),
       change: '+24%',
       positive: true,
-      subtitle: 'dados reais do mês',
+      subtitle: periodoLabel,
       icon: DollarSign,
       iconBg: 'hsl(200, 95%, 57%)',
     },
     {
-      label: 'Clientes Ativos',
+      label: `Clientes (${selectedView})`,
       value: clientesAtivos.toString(),
       change: '+11%',
       positive: true,
-      subtitle: 'base real de clientes',
+      subtitle: periodoLabel,
       icon: UserCheck,
       iconBg: 'hsl(262, 83%, 68%)',
     },

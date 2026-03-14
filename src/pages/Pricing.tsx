@@ -142,6 +142,28 @@ const Pricing = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f6fb', fontFamily: 'Inter, sans-serif' }}>
+      {/* Welcome Banner */}
+      {showWelcome && (
+        <div style={{
+          background: 'linear-gradient(135deg, #29B2FE, #1a9ee8)',
+          padding: '14px 16px',
+          textAlign: 'center',
+          fontSize: '14px',
+          fontWeight: '600',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          position: 'relative',
+        }}>
+          Bem-vindo à Markfy{welcomeName ? `, ${welcomeName}` : ''}! Escolha seu plano para começar.
+          <button onClick={() => { setShowWelcome(false); localStorage.setItem('markfy_welcome_dismissed', '1'); }}
+            style={{ position: 'absolute', right: 16, background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', opacity: 0.7 }}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {/* Reason Banner */}
       {reason === 'no_plan' && (
         <div style={{

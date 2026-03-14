@@ -35,6 +35,15 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        
+        // Check for saved redirect after login
+        const redirect = localStorage.getItem('markfy_redirect_after_login');
+        if (redirect) {
+          localStorage.removeItem('markfy_redirect_after_login');
+          navigate(redirect);
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -42,15 +51,8 @@ const Auth = () => {
           options: { data: { full_name: name } },
         });
         if (error) throw error;
-      }
-      
-      // Check for saved redirect after login
-      const redirect = localStorage.getItem('markfy_redirect_after_login');
-      if (redirect) {
-        localStorage.removeItem('markfy_redirect_after_login');
-        navigate(redirect);
-      } else {
-        navigate('/dashboard');
+        // New signups go to onboarding
+        navigate('/onboarding');
       }
     } catch (err: any) {
       setError(

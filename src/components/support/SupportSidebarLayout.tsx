@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, HelpCircle, Mail } from 'lucide-react';
+import { MessageSquare, HelpCircle, Mail, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 type SupportSection = 'suporte' | 'faq' | 'contato';
@@ -42,6 +42,28 @@ const SupportSidebarLayout = ({ active, children }: SupportSidebarLayoutProps) =
               <text x="50%" y="54%" dominantBaseline="central" textAnchor="middle" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="22" fill="white">M</text>
             </svg>
             <span className="text-lg font-bold text-[#111827]">Markfy</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/dashboard')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 12px',
+              marginBottom: 16,
+              background: 'transparent',
+              border: '1px solid #e5e7eb',
+              borderRadius: 8,
+              color: '#6b7280',
+              fontSize: 13,
+              cursor: 'pointer',
+              width: '100%'
+            }}
+            type="button"
+          >
+            <ArrowLeft size={14} />
+            Voltar ao Dashboard
           </button>
 
           <div className="space-y-1">

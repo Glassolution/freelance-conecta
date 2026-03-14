@@ -1,21 +1,17 @@
-declare global {
-  // eslint-disable-next-line no-var
-  var __LOVA_FIX_TRIGGER__: (() => void) | undefined;
-
-  interface Window {
-    __LOVA_FIX_TRIGGER__?: () => void;
+// Ensure __LOVA_FIX_TRIGGER__ exists everywhere – defensive no-op fallback
+try {
+  const noop = () => {};
+  if (typeof globalThis !== "undefined" && !globalThis.__LOVA_FIX_TRIGGER__) {
+    (globalThis as any).__LOVA_FIX_TRIGGER__ = noop;
   }
-}
-
-const trigger = globalThis.__LOVA_FIX_TRIGGER__ ?? (() => {});
-globalThis.__LOVA_FIX_TRIGGER__ = trigger;
-
-if (typeof window !== "undefined") {
-  window.__LOVA_FIX_TRIGGER__ = trigger;
-}
-
-if (typeof self !== "undefined") {
-  (self as typeof globalThis & { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ = trigger;
+  if (typeof window !== "undefined" && !(window as any).__LOVA_FIX_TRIGGER__) {
+    (window as any).__LOVA_FIX_TRIGGER__ = noop;
+  }
+  if (typeof self !== "undefined" && !(self as any).__LOVA_FIX_TRIGGER__) {
+    (self as any).__LOVA_FIX_TRIGGER__ = noop;
+  }
+} catch (_) {
+  // silently ignore in restricted contexts
 }
 
 export {};

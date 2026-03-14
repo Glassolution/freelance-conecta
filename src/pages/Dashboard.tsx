@@ -346,7 +346,7 @@ const Dashboard = () => {
       value: clientesDisplay,
       change: '+11%',
       positive: true,
-      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
+      subtitle: isAnnualUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: UserCheck,
       iconBg: 'hsl(262, 83%, 68%)',
     },

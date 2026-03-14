@@ -8,7 +8,7 @@ import MarkfyLogo from '@/components/MarkfyLogo';
 
 const PLANS: Record<string, { name: string; price: number; priceDisplay: string; period: string; description: string }> = {
   mensal: { name: 'Pro', price: 99.90, priceDisplay: 'R$ 99,90', period: '/mês', description: 'Acesso completo à plataforma' },
-  trimestral: { name: 'Trimestral', price: 149.90, priceDisplay: 'R$ 149,90', period: '/trimestre', description: 'Economize 50% comparado ao mensal' },
+  trimestral: { name: 'Max', price: 149.90, priceDisplay: 'R$ 149,90', period: '/trimestre', description: 'Economize 50% comparado ao mensal' },
 };
 
 type PaymentTab = 'pix' | 'card' | 'boleto';

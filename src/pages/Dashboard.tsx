@@ -311,6 +311,13 @@ const Dashboard = () => {
         ? 'mês atual'
         : 'últimos 12 meses';
 
+  const annualDisplayValue = 'Não calculável';
+  const metricsUnavailable = isAnnualUnavailable;
+
+  const mensagensDisplay = metricsUnavailable ? annualDisplayValue : messagesSentCount.toString();
+  const lucroDisplay = metricsUnavailable ? annualDisplayValue : formatCurrency(receitaSelecionada);
+  const clientesDisplay = metricsUnavailable ? annualDisplayValue : clientesAtivos.toString();
+
   const kpiCards = [
     {
       label: 'Vagas Disponíveis',
@@ -323,28 +330,28 @@ const Dashboard = () => {
     },
     {
       label: `Mensagens (${selectedView})`,
-      value: messagesSentCount.toString(),
+      value: mensagensDisplay,
       change: '+18%',
       positive: true,
-      subtitle: periodoLabel,
+      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: Send,
       iconBg: 'hsl(142, 71%, 45%)',
     },
     {
       label: `Lucro (${selectedView})`,
-      value: formatCurrency(receitaSelecionada),
+      value: lucroDisplay,
       change: '+24%',
       positive: true,
-      subtitle: periodoLabel,
+      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: DollarSign,
       iconBg: 'hsl(200, 95%, 57%)',
     },
     {
       label: `Clientes (${selectedView})`,
-      value: clientesAtivos.toString(),
+      value: clientesDisplay,
       change: '+11%',
       positive: true,
-      subtitle: periodoLabel,
+      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: UserCheck,
       iconBg: 'hsl(262, 83%, 68%)',
     },

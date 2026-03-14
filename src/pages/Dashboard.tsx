@@ -7,9 +7,10 @@ import {
   TrendingUp, TrendingDown, ExternalLink, Eye, FileText, DollarSign, UserCheck
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const plataformas = [
   { name: 'Workana', role: 'Plataforma de Serviços', status: 'Conectado' },

@@ -488,9 +488,9 @@ const Dashboard = () => {
                   {/* Métricas inline */}
                   <div className="mt-6 pt-5 border-t border-[#edf0f7] space-y-3">
                     {[
-                      { label: 'Receita Total', value: 'R$ 0,00', iconComponent: DollarSign },
-                      { label: 'Clientes', value: '0', iconComponent: UserCheck },
-                      { label: 'Anúncios Ativos', value: '0', iconComponent: FileText },
+                      { label: 'Lucro Total (Mês)', value: formatCurrency(receitaMesAtual), iconComponent: DollarSign },
+                      { label: 'Clientes', value: clientesAtivos.toString(), iconComponent: UserCheck },
+                      { label: 'Mensagens Enviadas', value: messagesSentCount.toString(), iconComponent: MessageSquare },
                     ].map((m) => (
                       <div key={m.label} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">

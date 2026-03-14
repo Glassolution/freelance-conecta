@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   Home, ShoppingBag, Megaphone, Users, MessageSquare, Globe,
   CheckCircle, Send, PackageCheck, Wrench, Settings, LogOut,

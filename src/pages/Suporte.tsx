@@ -97,7 +97,7 @@ const Suporte = () => {
     }
 
     await supabase.from('notifications').insert({
-      user_id: user?.id,
+      user_id: user.id,
       title: 'Solicitação de reembolso registrada',
       message: 'Recebemos sua solicitação. Nossa equipe vai analisar em até 5 dias úteis.',
       type: 'refund',

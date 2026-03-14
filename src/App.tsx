@@ -15,6 +15,7 @@ import MeusAnuncios from "./pages/MeusAnuncios.tsx";
 import MeusClientes from "./pages/MeusClientes.tsx";
 import Mensagens from "./pages/Mensagens.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Configuracoes from "./pages/Configuracoes.tsx";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: '#060912' }}><div className="text-white font-body">Carregando...</div></div>;
   if (!user) return <Navigate to="/auth" replace />;
+  return <>{children}</>;
+};
+
+const PlanProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{ background: '#060912' }}><div className="text-white font-body">Carregando...</div></div>;
+  if (!user) return <Navigate to="/auth" replace />;
+  // Plan check happens inside Dashboard via usePlanStatus hook
   return <>{children}</>;
 };
 
@@ -43,6 +52,7 @@ const App = () => (
             <Route path="/meus-anuncios" element={<ProtectedRoute><MeusAnuncios /></ProtectedRoute>} />
             <Route path="/meus-clientes" element={<ProtectedRoute><MeusClientes /></ProtectedRoute>} />
             <Route path="/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
+            <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

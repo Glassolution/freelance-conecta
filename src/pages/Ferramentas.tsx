@@ -2,7 +2,8 @@ import { useState } from 'react';
 import {
   Home, SlidersHorizontal, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
-  Settings, LogOut, Search, Bell, Mail, ExternalLink, ShoppingBag
+  Settings, LogOut, Search, Bell, Mail, ExternalLink, ShoppingBag,
+  Palette, Code, Video, BarChart3, Rocket, type LucideIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';

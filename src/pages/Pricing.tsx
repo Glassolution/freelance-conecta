@@ -67,7 +67,7 @@ const Pricing = () => {
     
     if (paymentStatus === 'success') {
       toast({
-        title: '✅ Pagamento aprovado!',
+        title: 'Pagamento aprovado!',
         description: 'Bem-vindo ao seu novo plano. Você será redirecionado em breve.',
       });
       
@@ -85,7 +85,7 @@ const Pricing = () => {
     
     if (paymentStatus === 'failure') {
       toast({
-        title: '❌ Pagamento não aprovado',
+        title: 'Pagamento não aprovado',
         description: 'Tente novamente ou use outro método de pagamento.',
         variant: 'destructive',
       });
@@ -100,7 +100,7 @@ const Pricing = () => {
       localStorage.setItem('markfy_redirect_after_login', '/pricing');
       // Show toast then redirect
       toast({
-        title: '🔒 Faça login para assinar um plano',
+        title: 'Faça login para assinar um plano',
         description: 'Você será redirecionado para a página de login.',
         variant: 'destructive',
       });
@@ -138,7 +138,7 @@ const Pricing = () => {
           fontWeight: '500',
           color: '#92400e',
         }}>
-          🔒 Assine um plano para acessar o dashboard
+          Assine um plano para acessar o dashboard
         </div>
       )}
       {reason === 'expired' && (
@@ -151,7 +151,7 @@ const Pricing = () => {
           fontWeight: '500',
           color: '#991b1b',
         }}>
-          ⏰ Seu plano expirou. Renove para continuar acessando o dashboard.
+          Seu plano expirou. Renove para continuar acessando o dashboard.
         </div>
       )}
 
@@ -397,13 +397,13 @@ const Pricing = () => {
           }}
         >
           <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#29B2FE' }}>🔒</span> Pagamento seguro via Mercado Pago
+            Pagamento seguro via Mercado Pago
           </span>
           <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#29B2FE' }}>↩️</span> Cancele quando quiser
+            Cancele quando quiser
           </span>
           <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#29B2FE' }}>⚡</span> Acesso imediato
+            Acesso imediato
           </span>
         </div>
       </div>

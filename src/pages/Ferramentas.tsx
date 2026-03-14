@@ -2,7 +2,8 @@ import { useState } from 'react';
 import {
   Home, SlidersHorizontal, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
-  Settings, LogOut, Search, Bell, Mail, ExternalLink, ShoppingBag
+  Settings, LogOut, Search, Bell, Mail, ExternalLink, ShoppingBag,
+  Palette, Code, Video, BarChart3, Rocket, type LucideIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,60 +32,59 @@ function getUserDisplayName(user: any): string {
 interface Tool {
   name: string;
   desc: string;
-  icon: string;
   url: string;
 }
 
 interface ToolCategory {
   title: string;
-  emoji: string;
+  icon: LucideIcon;
   tools: Tool[];
 }
 
 const toolCategories: ToolCategory[] = [
   {
     title: 'Design',
-    emoji: '🎨',
+    icon: Palette,
     tools: [
-      { name: 'Figma', desc: 'Design de interfaces e prototipagem', icon: '🎯', url: 'https://figma.com' },
-      { name: 'Canva', desc: 'Design gráfico e templates', icon: '🖼️', url: 'https://canva.com' },
-      { name: 'Adobe Photoshop', desc: 'Edição de imagens profissional', icon: '📸', url: 'https://www.adobe.com/products/photoshop.html' },
+      { name: 'Figma', desc: 'Design de interfaces e prototipagem', url: 'https://figma.com' },
+      { name: 'Canva', desc: 'Design gráfico e templates', url: 'https://canva.com' },
+      { name: 'Adobe Photoshop', desc: 'Edição de imagens profissional', url: 'https://www.adobe.com/products/photoshop.html' },
     ],
   },
   {
     title: 'Desenvolvimento',
-    emoji: '💻',
+    icon: Code,
     tools: [
-      { name: 'VS Code', desc: 'Editor de código', icon: '⌨️', url: 'https://code.visualstudio.com' },
-      { name: 'GitHub', desc: 'Repositório e versionamento', icon: '🐙', url: 'https://github.com' },
-      { name: 'Lovable', desc: 'Crie sites com IA', icon: '💜', url: 'https://lovable.dev' },
+      { name: 'VS Code', desc: 'Editor de código', url: 'https://code.visualstudio.com' },
+      { name: 'GitHub', desc: 'Repositório e versionamento', url: 'https://github.com' },
+      { name: 'Lovable', desc: 'Crie sites com IA', url: 'https://lovable.dev' },
     ],
   },
   {
     title: 'Vídeo & Edição',
-    emoji: '🎬',
+    icon: Video,
     tools: [
-      { name: 'Adobe Premiere', desc: 'Edição de vídeo profissional', icon: '🎞️', url: 'https://www.adobe.com/products/premiere.html' },
-      { name: 'CapCut', desc: 'Edição de vídeo gratuita', icon: '✂️', url: 'https://www.capcut.com' },
-      { name: 'DaVinci Resolve', desc: 'Edição e coloração', icon: '🎥', url: 'https://www.blackmagicdesign.com/products/davinciresolve' },
+      { name: 'Adobe Premiere', desc: 'Edição de vídeo profissional', url: 'https://www.adobe.com/products/premiere.html' },
+      { name: 'CapCut', desc: 'Edição de vídeo gratuita', url: 'https://www.capcut.com' },
+      { name: 'DaVinci Resolve', desc: 'Edição e coloração', url: 'https://www.blackmagicdesign.com/products/davinciresolve' },
     ],
   },
   {
     title: 'Marketing',
-    emoji: '📈',
+    icon: BarChart3,
     tools: [
-      { name: 'Google Ads', desc: 'Anúncios pagos', icon: '📢', url: 'https://ads.google.com' },
-      { name: 'Meta Business', desc: 'Anúncios no Instagram/Facebook', icon: '📱', url: 'https://business.facebook.com' },
-      { name: 'Mailchimp', desc: 'Email marketing', icon: '📧', url: 'https://mailchimp.com' },
+      { name: 'Google Ads', desc: 'Anúncios pagos', url: 'https://ads.google.com' },
+      { name: 'Meta Business', desc: 'Anúncios no Instagram/Facebook', url: 'https://business.facebook.com' },
+      { name: 'Mailchimp', desc: 'Email marketing', url: 'https://mailchimp.com' },
     ],
   },
   {
     title: 'No-Code & Sites',
-    emoji: '🚀',
+    icon: Rocket,
     tools: [
-      { name: 'Lovable', desc: 'Crie sites com IA', icon: '💜', url: 'https://lovable.dev' },
-      { name: 'WordPress', desc: 'CMS e blogs', icon: '📝', url: 'https://wordpress.com' },
-      { name: 'Shopify', desc: 'Loja virtual', icon: '🛒', url: 'https://shopify.com' },
+      { name: 'Lovable', desc: 'Crie sites com IA', url: 'https://lovable.dev' },
+      { name: 'WordPress', desc: 'CMS e blogs', url: 'https://wordpress.com' },
+      { name: 'Shopify', desc: 'Loja virtual', url: 'https://shopify.com' },
     ],
   },
 ];
@@ -186,7 +186,7 @@ const Ferramentas = () => {
           {toolCategories.map((category) => (
             <div key={category.title}>
               <h2 className="font-heading font-bold text-lg text-[#1A1D26] mb-4 flex items-center gap-2">
-                <span>{category.emoji}</span>
+                <category.icon size={20} color="#29B2FE" />
                 {category.title}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -196,8 +196,8 @@ const Ferramentas = () => {
                     className="bg-white rounded-2xl border border-[#E8ECF4] p-5 hover:shadow-lg transition-shadow group"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl" style={{ background: 'rgba(37,99,235,0.08)' }}>
-                        {tool.icon}
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'rgba(41,178,254,0.08)' }}>
+                        <category.icon size={20} color="#29B2FE" />
                       </div>
                       <a
                         href={tool.url}

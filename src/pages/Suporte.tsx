@@ -304,7 +304,7 @@ const Suporte = () => {
     if (!user?.id) return;
 
     setRefundStep('processing');
-    await pushAssistantMessage('🔍 Verificando sua assinatura e processando reembolso via Mercado Pago...', conversationId);
+    await pushAssistantMessage('Verificando sua assinatura e processando reembolso via Mercado Pago...', conversationId);
     setIsThinking(true);
 
     const { data, error } = await supabase.functions.invoke('process-refund', {
@@ -314,7 +314,7 @@ const Suporte = () => {
     setIsThinking(false);
 
     if (error) {
-      await pushAssistantMessage(`❌ Erro ao processar: ${error.message}\nPor favor tente novamente ou entre em contato pelo email: suporte@markfy.com.br`, conversationId);
+      await pushAssistantMessage(`Erro ao processar: ${error.message}\nPor favor tente novamente ou entre em contato pelo email: suporte@markfy.com.br`, conversationId);
       setRefundStep('idle');
       return;
     }
@@ -322,7 +322,7 @@ const Suporte = () => {
     if (data?.success) {
       setRefundStep('done');
       await pushAssistantMessage(
-        `✅ Reembolso processado com sucesso!\n\nID do reembolso: ${data.refundId}\nO valor será estornado em até 5 dias úteis.\nUm email de confirmação foi enviado para ${user.email}.\n\nSua assinatura foi cancelada.`,
+        `Reembolso processado com sucesso!\n\nID do reembolso: ${data.refundId}\nO valor será estornado em até 5 dias úteis.\nUm email de confirmação foi enviado para ${user.email}.\n\nSua assinatura foi cancelada.`,
         conversationId
       );
       setTimeout(() => navigate('/'), 5000);
@@ -337,7 +337,7 @@ const Suporte = () => {
     } else {
       setRefundStep('idle');
       await pushAssistantMessage(
-        `❌ Erro ao processar: ${data?.error}\nPor favor tente novamente ou entre em contato pelo email: suporte@markfy.com.br`,
+        `Erro ao processar: ${data?.error}\nPor favor tente novamente ou entre em contato pelo email: suporte@markfy.com.br`,
         conversationId
       );
     }
@@ -354,7 +354,7 @@ const Suporte = () => {
       if (!conversationId) return;
     }
 
-    const userContent = text || `📎 Screenshot anexado: ${attachment?.name}`;
+    const userContent = text || `Screenshot anexado: ${attachment?.name}`;
     const userMessage: SupportMessage = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -387,7 +387,7 @@ const Suporte = () => {
         return;
       } else {
         setRefundStep('idle');
-        await pushAssistantMessage('Entendido! Em que mais posso ajudar? 😊', conversationId);
+        await pushAssistantMessage('Entendido! Em que mais posso ajudar?', conversationId);
         return;
       }
     }
@@ -673,7 +673,7 @@ const Suporte = () => {
           <div className="mx-auto max-w-[680px] rounded-2xl border border-[hsl(var(--support-border))] bg-[hsl(var(--support-surface))] p-3 shadow-sm">
             {attachment && (
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--support-border))] bg-[hsl(var(--support-hover))] px-3 py-1 text-xs text-[hsl(var(--support-text-muted))]">
-                📎 {attachment.name}
+                <Paperclip size={12} /> {attachment.name}
                 <button
                   type="button"
                   onClick={() => setAttachment(null)}

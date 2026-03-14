@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MessageSquare, HelpCircle, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 type SupportSection = 'suporte' | 'faq' | 'contato';
@@ -23,8 +24,8 @@ const SupportSidebarLayout = ({ active, children }: SupportSidebarLayoutProps) =
     .toUpperCase();
 
   const navItems = [
-    { key: 'faq' as const, label: '❓ Perguntas Frequentes', path: '/suporte/faq' },
-    { key: 'contato' as const, label: '✉️ Fale Conosco', path: '/suporte/contato' },
+    { key: 'faq' as const, label: 'Perguntas Frequentes', icon: HelpCircle, path: '/suporte/faq' },
+    { key: 'contato' as const, label: 'Fale Conosco', icon: Mail, path: '/suporte/contato' },
   ];
 
   return (
@@ -47,10 +48,10 @@ const SupportSidebarLayout = ({ active, children }: SupportSidebarLayoutProps) =
             <button
               onClick={() => navigate('/suporte')}
               type="button"
-              className="w-full text-left rounded-xl px-3 py-2 text-sm font-medium border transition-colors"
+              className="w-full text-left rounded-xl px-3 py-2 text-sm font-medium border transition-colors flex items-center gap-2"
               style={active === 'suporte' ? { color: '#29B2FE', background: '#ECF8FF', borderColor: '#BFEAFF' } : { color: '#4B5563', borderColor: 'transparent' }}
             >
-              💬 Suporte
+              <MessageSquare size={15} /> Suporte
             </button>
           </div>
 
@@ -61,16 +62,17 @@ const SupportSidebarLayout = ({ active, children }: SupportSidebarLayoutProps) =
           <div className="space-y-1">
             {navItems.map((item) => {
               const isActive = active === item.key;
+              const Icon = item.icon;
 
               return (
                 <button
                   key={item.key}
                   onClick={() => navigate(item.path)}
                   type="button"
-                  className="w-full text-left rounded-xl px-3 py-2 text-sm font-medium border transition-colors"
+                  className="w-full text-left rounded-xl px-3 py-2 text-sm font-medium border transition-colors flex items-center gap-2"
                   style={isActive ? { color: '#29B2FE', background: '#ECF8FF', borderColor: '#BFEAFF' } : { color: '#4B5563', borderColor: 'transparent' }}
                 >
-                  {item.label}
+                  <Icon size={15} /> {item.label}
                 </button>
               );
             })}

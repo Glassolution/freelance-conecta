@@ -183,16 +183,16 @@ const Index = () => {
                       <div className="nav-profile-divider" />
 
                       <button className="nav-profile-item" onClick={() => { setProfileMenuOpen(false); navigate('/pricing'); }}>
-                        👤 Minha Conta
+                        Minha Conta
                       </button>
                       <button className="nav-profile-item" onClick={() => { setProfileMenuOpen(false); navigate('/pricing'); }}>
-                        ⭐ Fazer Upgrade
+                        Fazer Upgrade
                       </button>
 
                       <div className="nav-profile-divider" />
 
                       <button className="nav-profile-item nav-profile-item-danger" onClick={handleSignOut}>
-                        ↩️ Sair da conta
+                        Sair da conta
                       </button>
                     </div>
                   )}

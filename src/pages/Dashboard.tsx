@@ -96,7 +96,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') {
-      toast({ title: '🎉 Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
+      toast({ title: 'Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
     }
   }, [searchParams, toast]);
 
@@ -444,13 +444,13 @@ const Dashboard = () => {
                   {/* Métricas inline */}
                   <div className="mt-6 pt-5 border-t border-[#edf0f7] space-y-3">
                     {[
-                      { icon: '💰', label: 'Receita Total', value: 'R$ 0,00' },
-                      { icon: '👥', label: 'Clientes', value: '0' },
-                      { icon: '📋', label: 'Anúncios Ativos', value: '0' },
+                      { label: 'Receita Total', value: 'R$ 0,00', iconComponent: DollarSign },
+                      { label: 'Clientes', value: '0', iconComponent: UserCheck },
+                      { label: 'Anúncios Ativos', value: '0', iconComponent: FileText },
                     ].map((m) => (
                       <div key={m.label} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-base">{m.icon}</span>
+                          <m.iconComponent size={16} className="text-[#9CA3B4]" />
                           <span className="text-xs font-body text-[#6B7280]">{m.label}</span>
                         </div>
                         <span className="text-sm font-heading font-bold text-[#111]">{m.value}</span>

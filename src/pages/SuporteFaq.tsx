@@ -1,14 +1,11 @@
+import { useState } from 'react';
+import { ShoppingBag, CreditCard, Wrench, User, ChevronDown } from 'lucide-react';
 import SupportSidebarLayout from '@/components/support/SupportSidebarLayout';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 
 const faqCategories = [
   {
-    title: '🛒 Marketplace',
+    title: 'Marketplace',
+    icon: ShoppingBag,
     items: [
       {
         question: 'Como funciona o marketplace?',
@@ -25,7 +22,8 @@ const faqCategories = [
     ],
   },
   {
-    title: '💳 Planos e Pagamento',
+    title: 'Planos e Pagamento',
+    icon: CreditCard,
     items: [
       {
         question: 'Quais planos estão disponíveis?',
@@ -42,7 +40,8 @@ const faqCategories = [
     ],
   },
   {
-    title: '🔧 Problemas Técnicos',
+    title: 'Problemas Técnicos',
+    icon: Wrench,
     items: [
       {
         question: 'Não consigo acessar o dashboard',
@@ -59,7 +58,8 @@ const faqCategories = [
     ],
   },
   {
-    title: '👤 Minha Conta',
+    title: 'Minha Conta',
+    icon: User,
     items: [
       {
         question: 'Como editar meu perfil?',
@@ -77,32 +77,74 @@ const faqCategories = [
   },
 ];
 
+const AccordionItem = ({ question, answer }: { question: string; answer: string }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="border-t border-[#E5E7EB] first:border-t-0">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between py-3.5 text-left text-sm font-medium text-[#111827] hover:text-[#29B2FE] transition-colors"
+      >
+        <span>{question}</span>
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-[#9CA3AF] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      <div
+        className="overflow-hidden transition-all duration-200"
+        style={{ maxHeight: open ? '200px' : '0', opacity: open ? 1 : 0 }}
+      >
+        <p className="pb-4 text-sm text-[#6b7280] leading-relaxed">{answer}</p>
+      </div>
+    </div>
+  );
+};
+
 const SuporteFaq = () => {
   return (
     <SupportSidebarLayout active="faq">
       <div className="h-screen overflow-y-auto px-6 py-8" style={{ background: '#f8fafc' }}>
-        <div className="max-w-4xl mx-auto space-y-5">
-          <div>
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+          <div className="mb-6">
             <h1 className="text-2xl font-bold text-[#111827]">Perguntas Frequentes</h1>
-            <p className="text-sm text-[#6B7280] mt-1">Encontre respostas rápidas para as dúvidas mais comuns.</p>
+            <p className="text-sm text-[#6b7280] mt-1">Encontre respostas rápidas para as dúvidas mais comuns.</p>
           </div>
 
-          {faqCategories.map((category) => (
-            <section key={category.title} className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm p-4">
-              <h2 className="text-base font-semibold text-[#111827] mb-3">{category.title}</h2>
+          <div className="space-y-5">
+            {faqCategories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <section
+                  key={category.title}
+                  style={{
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    padding: '24px',
+                  }}
+                >
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ background: 'rgba(41,178,254,0.1)' }}
+                    >
+                      <Icon size={16} color="#29B2FE" />
+                    </div>
+                    <h2 className="text-base font-bold text-[#111827]">{category.title}</h2>
+                  </div>
 
-              <Accordion type="single" collapsible className="w-full">
-                {category.items.map((item) => (
-                  <AccordionItem key={item.question} value={item.question}>
-                    <AccordionTrigger className="text-left text-sm text-[#111827]">{item.question}</AccordionTrigger>
-                    <AccordionContent className="text-sm text-[#4B5563]">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </section>
-          ))}
+                  <div>
+                    {category.items.map((item) => (
+                      <AccordionItem key={item.question} question={item.question} answer={item.answer} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
         </div>
       </div>
     </SupportSidebarLayout>

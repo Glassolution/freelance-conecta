@@ -243,19 +243,19 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
 
             {[
               {
-                icon: <Moon size={16} />, title: '🌙 Modo Noturno',
+                icon: <Moon size={16} />, title: 'Modo Noturno',
                 description: 'Ativar tema escuro na plataforma',
                 value: darkMode,
                 onChange: handleToggleDarkMode,
               },
               {
-                icon: <Bell size={16} />, title: '🔔 Notificações',
+                icon: <Bell size={16} />, title: 'Notificações',
                 description: 'Receber alertas de novas vagas e propostas',
                 value: notificationsEnabled,
                 onChange: handleToggleNotifications,
               },
               {
-                icon: <Mail size={16} />, title: '📧 Emails de atualização',
+                icon: <Mail size={16} />, title: 'Emails de atualização',
                 description: 'Receber novidades da Markfy por email',
                 value: updatesByEmail,
                 onChange: handleToggleUpdatesByEmail,
@@ -290,7 +290,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
               <div style={{ border: `1px solid ${hslGreenBorder}`, background: hslGreenBg, borderRadius: '12px', padding: '20px' }}>
                 <p className="text-sm font-semibold text-[#111] flex items-center gap-2">
                   <CheckCircle2 size={16} style={{ color: hslGreenBorder }} />
-                  ✅ Plano {planLabel} — Ativo
+                  Plano {planLabel} — Ativo
                 </p>
                 <p className="text-sm text-[#374151] mt-2">Válido até: {formattedExpiry}</p>
                 <div className="mt-3">
@@ -304,7 +304,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
               <div style={{ border: `1px solid ${hslYellowBorder}`, background: hslYellowBg, borderRadius: '12px', padding: '20px' }}>
                 <p className="text-sm font-semibold text-[#111] flex items-center gap-2">
                   <AlertTriangle size={16} style={{ color: hslYellowBorder }} />
-                  ⚠️ Sem plano ativo
+                  Sem plano ativo
                 </p>
                 <p className="text-sm text-[#6B7280] mt-2">Assine para acessar todos os recursos da Markfy</p>
                 <button
@@ -323,7 +323,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
             <h3 className="text-sm font-bold tracking-wide text-[#111] uppercase">Suporte</h3>
 
             <div className="rounded-xl border border-[#E8ECF4] p-4">
-              <p className="text-sm font-semibold text-[#111]">💬 Suporte IA</p>
+              <p className="text-sm font-semibold text-[#111]">Suporte IA</p>
               <p className="text-xs text-[#6B7280] mt-1">Tire suas dúvidas com nossa IA</p>
               <button
                 onClick={() => { onClose(); navigate('/suporte'); }}

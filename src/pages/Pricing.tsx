@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, CreditCard, Loader2, Lock } from 'lucide-react';
+import { ArrowLeft, Check, CreditCard, Loader2, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -160,6 +160,17 @@ const Pricing = () => {
       )}
 
       <main className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft size={16} />
+            Voltar para a página inicial
+          </button>
+        </div>
+
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Planos que crescem com você</h1>
           <div className="mt-6">

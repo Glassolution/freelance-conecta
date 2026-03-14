@@ -44,6 +44,18 @@
     --sidebar-accent-foreground: 0 0% 7%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 17 80% 53%;
+
+    --support-bg: 0 0% 10%;
+    --support-surface: 0 0% 16%;
+    --support-hover: 0 0% 14%;
+    --support-border: 0 0% 22%;
+    --support-text: 0 0% 98%;
+    --support-text-subtle: 0 0% 90%;
+    --support-text-muted: 0 0% 62%;
+    --support-text-faint: 0 0% 45%;
+    --support-primary: 200 99% 58%;
+    --support-primary-foreground: 0 0% 100%;
+    --support-backdrop: 0 0% 0%;
   }
 }
 

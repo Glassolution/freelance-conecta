@@ -328,7 +328,7 @@ const Dashboard = () => {
       value: mensagensDisplay,
       change: '+18%',
       positive: true,
-      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
+      subtitle: isAnnualUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: Send,
       iconBg: 'hsl(142, 71%, 45%)',
     },

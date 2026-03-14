@@ -116,35 +116,7 @@ const Pricing = () => {
   };
 
   const handleSelectPlan = async (plan: typeof plans[0]) => {
-    setLoadingPlan(plan.id);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('mercadopago-checkout', {
-        body: {
-          planId: plan.id,
-          planName: plan.name,
-          price: plan.price,
-          userEmail: user?.email,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.init_point) {
-        window.location.href = data.init_point;
-      } else if (data?.error) {
-        throw new Error(data.error);
-      }
-    } catch (err: any) {
-      console.error('Erro ao criar checkout:', err);
-      toast({
-        title: 'Erro ao processar pagamento',
-        description: 'Tente novamente mais tarde.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoadingPlan(null);
-    }
+    navigate(`/checkout?plan=${plan.id}`);
   };
 
   return (

@@ -47,7 +47,8 @@ serve(async (req) => {
         installments: 1,
       },
       statement_descriptor: 'MARKFY',
-      external_reference: `markfy_${planId}_${Date.now()}`,
+      notification_url: `${Deno.env.get('SUPABASE_URL') || req.headers.get('origin')}/functions/v1/mp-webhook`,
+      external_reference: `markfy_${planId}_${userId || 'unknown'}_${Date.now()}`,
     };
 
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {

@@ -163,6 +163,25 @@ const Dashboard = () => {
     return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
   }, [selectedView]);
 
+  const firstClientDate = useMemo(() => {
+    if (clientsData.length === 0) return null;
+    return clientsData.reduce((min, client) => {
+      const current = new Date(client.created_at);
+      return current < min ? current : min;
+    }, new Date(clientsData[0].created_at));
+  }, [clientsData]);
+
+  const annualCalculable = useMemo(() => {
+    if (selectedView !== 'Anual') return true;
+    if (!firstClientDate) return false;
+
+    const now = new Date();
+    const monthsDiff = (now.getFullYear() - firstClientDate.getFullYear()) * 12 + (now.getMonth() - firstClientDate.getMonth());
+    return monthsDiff >= 11;
+  }, [selectedView, firstClientDate]);
+
+  const isAnnualUnavailable = selectedView === 'Anual' && !annualCalculable;
+
   const clientsInRange = useMemo(
     () => clientsData.filter((client) => new Date(client.created_at) >= rangeStart),
     [clientsData, rangeStart]

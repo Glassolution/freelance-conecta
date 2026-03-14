@@ -37,6 +37,10 @@ interface SupportMessage {
 
 const TOPICS = ['Marketplace', 'Planos e Pagamento', 'Problemas Técnicos', 'Minha Conta', 'Reembolso'];
 
+const isRefundIntent = (text: string) => /reembolso|refund|estorno|cancelar assinatura|cancelar plano/i.test(text);
+
+type RefundStep = 'idle' | 'asked_confirmation' | 'processing' | 'awaiting_email' | 'done';
+
 const formatTime = (isoDate: string) => {
   const date = new Date(isoDate);
   return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });

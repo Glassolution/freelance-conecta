@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { getPlanLabel } from '@/lib/plan';
 
 interface SettingsModalProps {
   open: boolean;
@@ -77,7 +78,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
     return new Date(planExpiresAt) > new Date();
   }, [plan, planExpiresAt]);
 
-  const planLabel = plan === 'mensal' ? 'Mensal' : plan === 'trimestral' ? 'Trimestral' : 'Gratuito';
+  const planLabel = getPlanLabel(plan);
 
   const daysRemaining = useMemo(() => {
     if (!hasActivePlan || !planExpiresAt) return 0;
@@ -87,7 +88,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
 
   const progress = useMemo(() => {
     if (!hasActivePlan) return 0;
-    const cycleDays = plan === 'trimestral' ? 90 : 30;
+    const cycleDays = plan === 'anual' ? 365 : plan === 'trimestral' ? 90 : 30;
     return Math.min(100, Math.max(6, Math.round((daysRemaining / cycleDays) * 100)));
   }, [hasActivePlan, plan, daysRemaining]);
 

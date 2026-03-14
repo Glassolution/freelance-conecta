@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { getPlanLabel } from '@/lib/plan';
 
 interface PlanStatus {
   plan: string | null;
@@ -33,7 +34,6 @@ export const usePlanStatus = (): PlanStatus => {
       setPlanExpiresAt(profile?.plan_expires_at ?? null);
       setLoading(false);
 
-      // Auto-expire plan if past date
       if (
         profile?.plan &&
         profile.plan !== 'free' &&
@@ -53,10 +53,7 @@ export const usePlanStatus = (): PlanStatus => {
   }, [user?.id]);
 
   const isActive = !!(plan && plan !== 'free' && planExpiresAt && new Date(planExpiresAt) > new Date());
-
-  const planLabel = isActive
-    ? (plan === 'mensal' ? 'Plano Mensal' : plan === 'trimestral' ? 'Plano Trimestral' : plan === 'anual' ? 'Plano Anual' : 'Gratuito')
-    : 'Gratuito';
+  const planLabel = isActive ? getPlanLabel(plan) : 'Gratuito';
 
   return { plan, planExpiresAt, isActive, loading, planLabel };
 };

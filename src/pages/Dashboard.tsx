@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePlanStatus } from '@/hooks/usePlanStatus';
+import { getPlanAccentColor } from '@/lib/plan';
 import ProfileDropdown from '@/components/ProfileDropdown';
 
 const plataformas = [
@@ -98,7 +99,7 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const { isActive, planLabel, loading: planLoading } = usePlanStatus();
+  const { plan, isActive, planLabel } = usePlanStatus();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileTriggerRef = useRef<HTMLDivElement>(null);
 
@@ -111,6 +112,7 @@ const Dashboard = () => {
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
   const firstName = getUserFirstName(user);
+  const planAccentColor = getPlanAccentColor(plan, isActive);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -465,8 +467,8 @@ const Dashboard = () => {
               </div>
               <div className="hidden md:block">
                 <p className="text-sm font-body font-medium text-[#111] leading-tight">{firstName}</p>
-                <p className="text-[10px] font-body font-semibold" style={{ color: isActive ? '#29B2FE' : planLabel === 'Expirado' ? '#ef4444' : '#9ca3af' }}>
-                  {isActive ? `• ${planLabel}` : planLabel === 'Expirado' ? '• Expirado' : '• Gratuito'}
+                <p className="text-[10px] font-body font-semibold" style={{ color: planAccentColor }}>
+                  • {planLabel}
                 </p>
               </div>
               <ChevronDown size={14} className="text-[#9CA3B4] hidden md:block" />

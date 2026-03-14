@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, ShoppingBag, Megaphone, Users, MessageSquare, Globe,
@@ -7,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlanStatus } from '@/hooks/usePlanStatus';
+import { getPlanBadgeStyle } from '@/lib/plan';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', path: '/dashboard' },
@@ -39,6 +39,7 @@ const Configuracoes = () => {
 
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
+  const planBadgeStyle = getPlanBadgeStyle(plan, isActive);
 
   const formattedExpiry = planExpiresAt
     ? new Date(planExpiresAt).toLocaleDateString('pt-BR')
@@ -64,8 +65,8 @@ const Configuracoes = () => {
                 <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
               </div>
               <span
-                className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white ml-1"
-                style={{ background: isActive ? '#29B2FE' : '#9ca3af' }}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
+                style={planBadgeStyle}
               >
                 {planLabel}
               </span>

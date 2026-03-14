@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { getPlanLabel } from '@/lib/plan';
 
 interface CompactSettingsModalProps {
   open: boolean;
@@ -67,7 +68,7 @@ const CompactSettingsModal = ({ open, onClose }: CompactSettingsModalProps) => {
     return new Date(planExpiresAt) > new Date();
   }, [plan, planExpiresAt]);
 
-  const planLabel = plan === 'mensal' ? 'Mensal' : plan === 'trimestral' ? 'Trimestral' : plan === 'anual' ? 'Anual' : 'Gratuito';
+  const planLabel = getPlanLabel(plan);
 
   const daysRemaining = useMemo(() => {
     if (!hasActivePlan || !planExpiresAt) return 0;

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { getPlanLabel } from '@/lib/plan';
 import './landing.css';
 
 const LogoSvg = () => (
@@ -25,7 +26,6 @@ const Index = () => {
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // Count-up animation for stats
     const targets = [12400];
     statRefs.current.forEach((el, i) => {
       if (!el || i >= targets.length) return;
@@ -47,8 +47,7 @@ const Index = () => {
       observer.observe(el);
     });
 
-    // Fade-in on scroll for feature cards
-    featRefs.current.forEach((el, i) => {
+    featRefs.current.forEach((el) => {
       if (!el) return;
       el.style.opacity = '0';
       el.style.transform = 'translateY(16px)';
@@ -59,33 +58,57 @@ const Index = () => {
             el.style.transition = 'opacity .4s ease, transform .4s ease';
             el.style.opacity = '1';
             el.style.transform = 'translateY(0)';
-          }, i * 60);
+          }, 80);
           observer.disconnect();
         },
-        { threshold: 0.1 }
+        { threshold: 0.2 }
       );
       observer.observe(el);
     });
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
-        setUser(null);
+    const bootstrap = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        const { data: p } = await supabase
+          .from('profiles')
+          .select('full_name, plan')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+
+        if (p) {
+          setProfile({ full_name: p.full_name, plan: p.plan });
+        }
+      }
+    };
+
+    bootstrap();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (!currentUser) {
         setProfile(null);
         return;
       }
 
-      setUser(session.user);
-
-      const { data } = await supabase
+      const { data: p } = await supabase
         .from('profiles')
         .select('full_name, plan')
-        .eq('id', session.user.id)
-        .single();
+        .eq('id', currentUser.id)
+        .maybeSingle();
 
-      setProfile(data ?? null);
+      if (p) {
+        setProfile({ full_name: p.full_name, plan: p.plan });
+      }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -112,7 +135,7 @@ const Index = () => {
     return source.slice(0, 2).toUpperCase();
   })();
 
-  const planLabel = profile?.plan && profile.plan !== 'free' ? profile.plan : 'Gratuito';
+  const planLabel = getPlanLabel(profile?.plan);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();

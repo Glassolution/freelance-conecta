@@ -1,92 +1,75 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Check, Search, ArrowLeft, CreditCard, Loader2, Lock, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Check, CreditCard, Loader2, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
-const plans = [
-  {
-    id: 'mensal',
-    name: 'Mensal',
-    price: 1.00,
-    priceDisplay: 'R$ 1,00',
-    period: '/mês',
-    description: 'Acesso completo à plataforma',
-    testPrice: true,
-    features: [
-      'Vagas ilimitadas de 4 plataformas',
-      'Alertas instantâneos de vagas',
-      'Filtros avançados',
-      'Compare oportunidades side-by-side',
-      'Vagas nacionais e internacionais',
-      'Suporte por email',
-    ],
-    popular: false,
-  },
-  {
-    id: 'trimestral',
-    name: 'Trimestral',
-    price: 149.90,
-    priceDisplay: 'R$ 149,90',
-    period: '/trimestre',
-    description: 'Economize 50% comparado ao mensal',
-    savings: 'Economize R$ 149,80',
-    features: [
-      'Tudo do plano Mensal',
-      'Perfil único em todas as plataformas',
-      'Prioridade nos alertas',
-      'Relatório mensal de mercado',
-      'Suporte prioritário',
-      'Acesso antecipado a novos recursos',
-    ],
-    popular: true,
-  },
+type BillingCycle = 'mensal' | 'anual';
+type PaidPlan = 'mensal' | 'trimestral';
+
+const freeFeatures = [
+  'Acesso ao marketplace geral',
+  'Veja vagas de 4 plataformas',
+  'Filtros básicos',
+  'Perfil de freelancer',
+  'Suporte por chat',
 ];
+
+const proFeatures = [
+  'Tudo do Free e:',
+  'Marketplace Markfy completo',
+  'Meus Anúncios ilimitados',
+  'Envio de propostas ilimitado',
+  'Meus Clientes',
+  'Mensagens com clientes',
+  'Suporte prioritário com IA',
+  'Relatório mensal de vagas',
+];
+
+const maxFeatures = [
+  'Tudo do Pro, mais:',
+  '3x mais visibilidade nos anúncios',
+  'Badge "Verificado" no perfil',
+  'Acesso antecipado a novos recursos',
+  'Suporte prioritário com resposta em 2h',
+  'Relatórios avançados de mercado',
+  'Destaque no marketplace Markfy',
+];
+
+const PlantIcon = ({ level = 1 }: { level?: 1 | 2 | 3 }) => {
+  const bloom = level === 1 ? 'h-3 w-3' : level === 2 ? 'h-4 w-4' : 'h-5 w-5';
+
+  return (
+    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[hsl(var(--pricing-border))] text-[hsl(var(--pricing-text))]">
+      <svg viewBox="0 0 48 48" className="h-8 w-8" fill="none" aria-hidden="true">
+        <path d="M24 40V23" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M24 28c-6 0-11-4-11-10 6 0 11 4 11 10Z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+        <path d="M24 28c6 0 11-4 11-10-6 0-11 4-11 10Z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+        <circle cx="24" cy="14" r="2" className={bloom} fill="currentColor" />
+      </svg>
+    </div>
+  );
+};
 
 const Pricing = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [welcomeName, setWelcomeName] = useState('');
-  const location = useLocation();
 
-  // Show welcome banner if coming from onboarding
-  useEffect(() => {
-    if (!user) return;
-    supabase.from('profiles').select('onboarding_completed, full_name').eq('id', user.id).maybeSingle()
-      .then(({ data }) => {
-        if (data?.onboarding_completed && !localStorage.getItem('markfy_welcome_dismissed')) {
-          setShowWelcome(true);
-          setWelcomeName(data.full_name?.split(' ')[0] || '');
-        }
-      });
-  }, [user]);
+  const [loadingPlan, setLoadingPlan] = useState<PaidPlan | null>(null);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('mensal');
 
-  // Check if user is logged in
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsLoggedIn(!!session);
-    };
-    checkSession();
-  }, [user]);
-
-  // Handle payment callback
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
-    
+
     if (paymentStatus === 'success') {
       toast({
         title: 'Pagamento aprovado!',
         description: 'Bem-vindo ao seu novo plano. Você será redirecionado em breve.',
       });
-      
-      // Update user plan in Supabase
+
       if (user?.id) {
         supabase
           .from('profiles')
@@ -97,7 +80,7 @@ const Pricing = () => {
           });
       }
     }
-    
+
     if (paymentStatus === 'failure') {
       toast({
         title: 'Pagamento não aprovado',
@@ -107,350 +90,204 @@ const Pricing = () => {
     }
   }, [searchParams, user?.id, navigate, toast]);
 
-  const handleSubscribe = async (planType: string) => {
+  const handleSubscribe = async (planType: PaidPlan) => {
+    setLoadingPlan(planType);
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
-      // Save intended destination
       localStorage.setItem('markfy_redirect_after_login', '/pricing');
-      // Show toast then redirect
       toast({
         title: 'Faça login para assinar um plano',
         description: 'Você será redirecionado para a página de login.',
         variant: 'destructive',
       });
-      setTimeout(() => navigate('/auth'), 1500);
+      setTimeout(() => navigate('/auth'), 1000);
+      setLoadingPlan(null);
       return;
     }
 
-    // User is logged in — proceed with payment
-    const plan = plans.find(p => p.id === planType);
-    if (plan) {
-      handleSelectPlan(plan);
+    navigate(`/checkout?plan=${planType}`);
+    setLoadingPlan(null);
+  };
+
+  const handleFreeStart = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      navigate('/dashboard');
+      return;
     }
-  };
-
-  const handleSelectPlan = async (plan: typeof plans[0]) => {
-    navigate(`/checkout?plan=${plan.id}`);
-  };
-
-  const handleBack = () => {
-    navigate('/', { replace: true });
+    navigate('/auth');
   };
 
   const reason = searchParams.get('reason');
 
+  const proPrice = useMemo(() => {
+    if (billingCycle === 'anual') {
+      return {
+        value: 'R$ 83,25 BRL/mês',
+        detail: 'cobrado anualmente',
+      };
+    }
+
+    return {
+      value: 'R$ 99,90 BRL/mês',
+      detail: '',
+    };
+  }, [billingCycle]);
+
+  const billingToggle = (
+    <div className="inline-flex rounded-full border border-[hsl(var(--pricing-border))] bg-[hsl(var(--pricing-card))] p-1">
+      <button
+        type="button"
+        onClick={() => setBillingCycle('mensal')}
+        className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+          billingCycle === 'mensal'
+            ? 'bg-[hsl(var(--pricing-text))] text-[hsl(var(--pricing-button-text))]'
+            : 'text-[hsl(var(--pricing-muted))]'
+        }`}
+      >
+        Mensal
+      </button>
+      <button
+        type="button"
+        onClick={() => setBillingCycle('anual')}
+        className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+          billingCycle === 'anual'
+            ? 'bg-[hsl(var(--pricing-text))] text-[hsl(var(--pricing-button-text))]'
+            : 'text-[hsl(var(--pricing-muted))]'
+        }`}
+      >
+        Anual — Economize 17%
+      </button>
+    </div>
+  );
+
+  const subscribeButtonContent = (plan: PaidPlan) => {
+    if (loadingPlan === plan) {
+      return (
+        <>
+          <Loader2 size={16} className="animate-spin" />
+          Processando...
+        </>
+      );
+    }
+
+    if (user) {
+      return (
+        <>
+          <CreditCard size={16} />
+          {plan === 'mensal' ? 'Obter plano Pro' : 'Obter plano Max'}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Lock size={16} />
+        {plan === 'mensal' ? 'Obter plano Pro' : 'Obter plano Max'}
+      </>
+    );
+  };
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f4f6fb', fontFamily: 'Inter, sans-serif' }}>
-      {/* Welcome Banner */}
-      {showWelcome && (
-        <div style={{
-          background: 'linear-gradient(135deg, #29B2FE, #1a9ee8)',
-          padding: '14px 16px',
-          textAlign: 'center',
-          fontSize: '14px',
-          fontWeight: '600',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          position: 'relative',
-        }}>
-          Bem-vindo à Markfy{welcomeName ? `, ${welcomeName}` : ''}! Escolha seu plano para começar.
-          <button onClick={() => { setShowWelcome(false); localStorage.setItem('markfy_welcome_dismissed', '1'); }}
-            style={{ position: 'absolute', right: 16, background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', opacity: 0.7 }}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
-      {/* Reason Banner */}
-      {reason === 'no_plan' && (
-        <div style={{
-          background: '#fffbeb',
-          borderBottom: '1px solid #f59e0b',
-          padding: '12px 16px',
-          textAlign: 'center',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: '#92400e',
-        }}>
-          Assine um plano para acessar o dashboard
-        </div>
-      )}
-      {reason === 'expired' && (
-        <div style={{
-          background: '#fef2f2',
-          borderBottom: '1px solid #ef4444',
-          padding: '12px 16px',
-          textAlign: 'center',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: '#991b1b',
-        }}>
-          Seu plano expirou. Renove para continuar acessando o dashboard.
+    <div className="min-h-screen bg-[hsl(var(--pricing-bg))] text-[hsl(var(--pricing-text))]">
+      {(reason === 'no_plan' || reason === 'expired') && (
+        <div className="border-b border-[hsl(var(--pricing-border))] bg-[hsl(var(--pricing-card))] px-4 py-3 text-center text-sm text-[hsl(var(--pricing-muted))]">
+          {reason === 'no_plan'
+            ? 'Assine um plano para acessar o dashboard'
+            : 'Seu plano expirou. Renove para continuar acessando o dashboard.'}
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 16px' }}>
-        <button
-          onClick={() => void handleBack()}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: '#6b7280',
-            background: 'transparent',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            marginBottom: '48px',
-            transition: 'color 0.2s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#111827')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
-        >
-          <ArrowLeft size={16} /> Voltar
-        </button>
-      </div>
-
-      {/* Title Section */}
-      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}>
-          <div
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: '#29B2FE',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Search size={16} color="white" />
-          </div>
-          <span style={{ fontSize: '20px', fontWeight: '800', color: '#111827' }}>Markfy</span>
+      <main className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Planos que crescem com você</h1>
+          <div className="mt-6">{billingToggle}</div>
         </div>
-        <h1 style={{ fontSize: '48px', fontWeight: '800', color: '#111827', marginBottom: '16px', lineHeight: '1.2' }}>
-          Escolha seu Plano
-        </h1>
-        <p style={{ fontSize: '16px', color: '#6b7280', maxWidth: '448px', margin: '0 auto' }}>
-          Desbloqueie acesso completo às melhores vagas de freelancer do Brasil e do mundo.
-        </p>
-      </div>
 
-      {/* Plans Container */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 80px' }}>
-        <div style={{ display: 'flex', gap: '24px', maxWidth: '896px', margin: '0 auto', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              style={{
-                flex: '1',
-                minWidth: '320px',
-                maxWidth: '400px',
-                borderRadius: '16px',
-                background: 'white',
-                padding: '32px',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-                border: plan.popular ? '2px solid #29B2FE' : '1px solid #e5e7eb',
-                position: 'relative',
-                transition: 'transform 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.02)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <article className="flex flex-col rounded-2xl border border-[hsl(var(--pricing-border))] bg-[hsl(var(--pricing-card))] p-8">
+            <PlantIcon level={1} />
+            <h2 className="mt-6 text-2xl font-semibold">Free</h2>
+            <p className="mt-1 text-sm text-[hsl(var(--pricing-muted))]">Conheça a Markfy</p>
+            <p className="mt-6 text-4xl font-bold">R$ 0</p>
+
+            <button
+              type="button"
+              onClick={handleFreeStart}
+              className="mt-6 rounded-xl border border-[hsl(var(--pricing-text))] bg-transparent px-4 py-3 text-sm font-semibold text-[hsl(var(--pricing-text))] transition-opacity hover:opacity-90"
             >
-              {/* Blue glow for popular card */}
-              {plan.popular && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: '-4px',
-                    borderRadius: '16px',
-                    background: 'rgba(41,178,254,0.15)',
-                    pointerEvents: 'none',
-                    zIndex: -1,
-                  }}
-                />
-              )}
+              Use a Markfy gratuitamente
+            </button>
 
-              {/* Popular Badge */}
-              {plan.popular && (
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    padding: '4px 12px',
-                    borderRadius: '999px',
-                    background: '#29B2FE',
-                    color: 'white',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    marginBottom: '16px',
-                  }}
-                >
-                  Mais popular
-                </div>
-              )}
+            <ul className="mt-7 space-y-3 text-sm text-[hsl(var(--pricing-soft))]">
+              {freeFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-2.5">
+                  <Check size={16} className="mt-0.5 text-[hsl(var(--pricing-text))]" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
 
-              {/* Plan Name */}
-              <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', marginBottom: '8px' }}>
-                {plan.name}
-              </h3>
-              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
-                {plan.description}
-              </p>
+          <article className="flex flex-col rounded-2xl border border-[hsl(var(--pricing-border-strong))] bg-[hsl(var(--pricing-card))] p-8">
+            <PlantIcon level={2} />
+            <div className="mt-4">{billingToggle}</div>
+            <h2 className="mt-4 text-2xl font-semibold">Pro</h2>
+            <p className="mt-1 text-sm text-[hsl(var(--pricing-muted))]">Trabalhe e cresça como freelancer</p>
+            <p className="mt-6 text-4xl font-bold">{proPrice.value}</p>
+            {proPrice.detail && <p className="mt-1 text-xs text-[hsl(var(--pricing-muted))]">{proPrice.detail}</p>}
 
-              {/* Price */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
-                <span style={{ fontSize: '40px', fontWeight: '800', color: '#111827' }}>
-                  {plan.priceDisplay}
-                </span>
-                <span style={{ fontSize: '14px', color: '#6b7280' }}>{plan.period}</span>
-              </div>
+            <button
+              type="button"
+              onClick={() => handleSubscribe('mensal')}
+              disabled={loadingPlan === 'mensal'}
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-[hsl(var(--pricing-text))] px-4 py-3 text-sm font-semibold text-[hsl(var(--pricing-button-text))] transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {subscribeButtonContent('mensal')}
+            </button>
 
-              {/* Test Price Note */}
-              {(plan as any).testPrice && (
-                <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '24px', textAlign: 'center' }}>
-                  (Preço de teste)
-                </p>
-              )}
+            <ul className="mt-7 space-y-3 text-sm text-[hsl(var(--pricing-soft))]">
+              {proFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-2.5">
+                  <Check size={16} className="mt-0.5 text-[hsl(var(--pricing-text))]" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
 
-              {/* Savings Badge */}
-              {plan.savings && (
-                <div
-                  style={{
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    marginBottom: '24px',
-                    textAlign: 'center',
-                    background: 'rgba(41,178,254,0.1)',
-                    border: '1px solid rgba(41,178,254,0.2)',
-                  }}
-                >
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#29B2FE' }}>
-                    {plan.savings}
-                  </span>
-                </div>
-              )}
+          <article className="flex flex-col rounded-2xl border border-[hsl(var(--pricing-border))] bg-[hsl(var(--pricing-card))] p-8">
+            <PlantIcon level={3} />
+            <h2 className="mt-6 text-2xl font-semibold">Max</h2>
+            <p className="mt-1 text-sm text-[hsl(var(--pricing-muted))]">Limites maiores, acesso prioritário</p>
+            <p className="mt-6 text-4xl font-bold">A partir de R$ 149,90</p>
+            <p className="mt-1 text-xs text-[hsl(var(--pricing-muted))]">BRL/mês cobrado trimestralmente</p>
 
-              {/* Features List */}
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', flex: 1 }}>
-                {plan.features.map((feature) => (
-                  <li
-                    key={feature}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '12px',
-                      marginBottom: '12px',
-                    }}
-                  >
-                    <Check size={16} color="#29B2FE" style={{ marginTop: '2px', flexShrink: 0 }} />
-                    <span style={{ fontSize: '14px', color: '#6b7280' }}>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+            <button
+              type="button"
+              onClick={() => handleSubscribe('trimestral')}
+              disabled={loadingPlan === 'trimestral'}
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-[hsl(var(--pricing-text))] px-4 py-3 text-sm font-semibold text-[hsl(var(--pricing-button-text))] transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {subscribeButtonContent('trimestral')}
+            </button>
 
-              {/* Button */}
-              <button
-                onClick={() => handleSubscribe(plan.id)}
-                disabled={loadingPlan === plan.id}
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  border: plan.popular ? 'none' : '2px solid #29B2FE',
-                  background: plan.popular ? '#29B2FE' : 'white',
-                  color: plan.popular ? 'white' : '#29B2FE',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  transition: 'all 0.2s',
-                  opacity: loadingPlan === plan.id ? 0.5 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (plan.popular) {
-                    e.currentTarget.style.background = '#1a9ee8';
-                  } else {
-                    e.currentTarget.style.background = '#f0f9ff';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (plan.popular) {
-                    e.currentTarget.style.background = '#29B2FE';
-                  } else {
-                    e.currentTarget.style.background = 'white';
-                  }
-                }}
-              >
-                {loadingPlan === plan.id ? (
-                  <>
-                    <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                    Processando...
-                  </>
-                ) : isLoggedIn ? (
-                  <>
-                    <CreditCard size={16} />
-                    Assinar Agora
-                  </>
-                ) : (
-                  <>
-                    <Lock size={16} />
-                    Faça login primeiro
-                  </>
-                )}
-              </button>
-            </div>
-          ))}
-        </div>
+            <ul className="mt-7 space-y-3 text-sm text-[hsl(var(--pricing-soft))]">
+              {maxFeatures.map((feature) => (
+                <li key={feature} className="flex items-start gap-2.5">
+                  <Check size={16} className="mt-0.5 text-[hsl(var(--pricing-text))]" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
 
-        {/* Trust Badges */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '24px',
-            marginTop: '48px',
-            padding: '24px',
-            background: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-          }}
-        >
-          <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            Pagamento seguro via Mercado Pago
-          </span>
-          <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            Cancele quando quiser
-          </span>
-          <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            Acesso imediato
-          </span>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+        <p className="mt-8 text-center text-xs text-[hsl(var(--pricing-muted))]">
+          *Limites de uso se aplicam. Os preços exibidos não incluem impostos aplicáveis.
+        </p>
+      </main>
     </div>
   );
 };

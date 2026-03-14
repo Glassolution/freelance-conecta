@@ -10,9 +10,7 @@
   if (typeof self !== "undefined") {
     if (!(self as any).__LOVA_FIX_TRIGGER__) (self as any).__LOVA_FIX_TRIGGER__ = (globalThis as any).__LOVA_FIX_TRIGGER__;
   }
-  try {
-    (0, eval)("if(typeof __LOVA_FIX_TRIGGER__==='undefined'){var __LOVA_FIX_TRIGGER__=globalThis.__LOVA_FIX_TRIGGER__}");
-  } catch (_) {}
+  // No eval needed; global bindings above are enough for all runtimes.
 })();
 
 export {};

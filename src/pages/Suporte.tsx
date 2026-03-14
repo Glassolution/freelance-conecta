@@ -337,7 +337,7 @@ const Suporte = () => {
     } else {
       setRefundStep('idle');
       await pushAssistantMessage(
-        `❌ Erro ao processar: ${data?.error}\nPor favor tente novamente ou entre em contato pelo email: suporte@markfy.com.br`,
+        `Erro ao processar: ${data?.error}\nPor favor tente novamente ou entre em contato pelo email: suporte@markfy.com.br`,
         conversationId
       );
     }

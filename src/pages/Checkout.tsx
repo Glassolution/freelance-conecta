@@ -7,8 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import MarkfyLogo from '@/components/MarkfyLogo';
 
 const PLANS: Record<string, { name: string; price: number; priceDisplay: string; period: string; description: string }> = {
-  mensal: { name: 'Mensal', price: 1.00, priceDisplay: 'R$ 1,00', period: '/mês', description: 'Acesso completo à plataforma' },
-  trimestral: { name: 'Trimestral', price: 149.90, priceDisplay: 'R$ 149,90', period: '/trimestre', description: 'Economize 50% comparado ao mensal' },
+  mensal: { name: 'Pro', price: 99.90, priceDisplay: 'R$ 99,90', period: '/mês', description: 'Acesso completo à plataforma' },
+  trimestral: { name: 'Max', price: 149.90, priceDisplay: 'R$ 149,90', period: '/trimestre', description: 'Economize 50% comparado ao mensal' },
 };
 
 type PaymentTab = 'pix' | 'card' | 'boleto';

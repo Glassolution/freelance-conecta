@@ -14,6 +14,312 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_proposals: {
+        Row: {
+          ad_id: string
+          created_at: string | null
+          deadline_days: number | null
+          id: string
+          message: string | null
+          price: number | null
+          sender_id: string
+          status: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string | null
+          deadline_days?: number | null
+          id?: string
+          message?: string | null
+          price?: number | null
+          sender_id: string
+          status?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string | null
+          deadline_days?: number | null
+          id?: string
+          message?: string | null
+          price?: number | null
+          sender_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_proposals_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_proposals_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          deadline_days: number | null
+          description: string | null
+          id: string
+          price: number | null
+          skills: string[] | null
+          status: string | null
+          title: string
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          deadline_days?: number | null
+          description?: string | null
+          id?: string
+          price?: number | null
+          skills?: string[] | null
+          status?: string | null
+          title: string
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          deadline_days?: number | null
+          description?: string | null
+          id?: string
+          price?: number | null
+          skills?: string[] | null
+          status?: string | null
+          title?: string
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          company: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          project_name: string | null
+          project_status: string | null
+          project_value: number | null
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          project_name?: string | null
+          project_status?: string | null
+          project_value?: number | null
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          project_name?: string | null
+          project_status?: string | null
+          project_value?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          participant_1: string | null
+          participant_2: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          participant_1?: string | null
+          participant_2?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          participant_1?: string | null
+          participant_2?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_participant_1_fkey"
+            columns: ["participant_1"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_participant_2_fkey"
+            columns: ["participant_2"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          read: boolean | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          read?: boolean | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          read?: boolean | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          read: boolean | null
+          title: string | null
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          read?: boolean | null
+          title?: string | null
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          read?: boolean | null
+          title?: string | null
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          onboarding_budget: string | null
+          onboarding_completed: boolean | null
+          onboarding_goal: string | null
+          onboarding_profile: string | null
+          onboarding_tools: string[] | null
+          plan: string | null
+          plan_expires_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          onboarding_budget?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_goal?: string | null
+          onboarding_profile?: string | null
+          onboarding_tools?: string[] | null
+          plan?: string | null
+          plan_expires_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          onboarding_budget?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_goal?: string | null
+          onboarding_profile?: string | null
+          onboarding_tools?: string[] | null
+          plan?: string | null
+          plan_expires_at?: string | null
+        }
+        Relationships: []
+      }
       propostas: {
         Row: {
           client_date: string | null
@@ -92,6 +398,7 @@ export type Database = {
           tag: string
           tag_color: string
           title: string
+          url: string | null
         }
         Insert: {
           author_name: string
@@ -104,6 +411,7 @@ export type Database = {
           tag: string
           tag_color?: string
           title: string
+          url?: string | null
         }
         Update: {
           author_name?: string
@@ -116,6 +424,7 @@ export type Database = {
           tag?: string
           tag_color?: string
           title?: string
+          url?: string | null
         }
         Relationships: []
       }
@@ -124,7 +433,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_ad_views: { Args: { p_ad_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

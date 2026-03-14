@@ -1,14 +1,14 @@
 import {
   Home, SlidersHorizontal, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
-  Settings, LogOut, Search, Bell, Mail, ExternalLink
+  Settings, LogOut, Search, Bell, Mail, ExternalLink, ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', active: false, path: '/dashboard' },
-  { icon: Briefcase, label: 'Explorar', active: false, path: '/explorar' },
+  { icon: ShoppingBag, label: 'Marketplace', active: false, path: '/marketplace' },
   { icon: Globe, label: 'Criador.ia', active: false, path: null },
   { icon: CheckCircle, label: 'Serviços Aprovados', active: false, path: null },
   { icon: Send, label: 'Serviços Enviados', active: false, path: null },
@@ -105,7 +105,7 @@ const Ferramentas = () => {
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#E8ECF4]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#e85d26' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
               {initials}
             </div>
             <div>
@@ -120,9 +120,9 @@ const Ferramentas = () => {
                 key={link.label}
                 onClick={() => link.path && navigate(link.path)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium transition-colors ${
-                  link.active ? 'text-[#e85d26]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
+                  link.active ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6]'
                 }`}
-                style={link.active ? { background: 'rgba(232,93,38,0.08)', border: '1px solid rgba(232,93,38,0.2)' } : undefined}
+                style={link.active ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}
               >
                 <link.icon size={18} />
                 {link.label}
@@ -163,7 +163,7 @@ const Ferramentas = () => {
               <Bell size={18} />
             </button>
             <div className="flex items-center gap-2 ml-2">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#e85d26' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
                 {initials}
               </div>
               <span className="text-sm font-body font-medium text-[#1A1D26] max-md:hidden">{displayName}</span>
@@ -193,7 +193,7 @@ const Ferramentas = () => {
                     className="bg-white rounded-2xl border border-[#E8ECF4] p-5 hover:shadow-lg transition-shadow group"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl" style={{ background: 'rgba(232,93,38,0.08)' }}>
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl" style={{ background: 'rgba(37,99,235,0.08)' }}>
                         {tool.icon}
                       </div>
                       <a
@@ -201,7 +201,7 @@ const Ferramentas = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                        style={{ background: '#e85d26' }}
+                        style={{ background: '#29B2FE' }}
                       >
                         <ExternalLink size={14} />
                       </a>
@@ -213,7 +213,7 @@ const Ferramentas = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs font-body font-semibold px-4 py-2 rounded-full transition-colors"
-                      style={{ color: '#e85d26', background: 'rgba(232,93,38,0.08)' }}
+                      style={{ color: '#29B2FE', background: 'rgba(41,178,254,0.08)' }}
                     >
                       Acessar <ExternalLink size={12} />
                     </a>

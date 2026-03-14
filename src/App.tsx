@@ -9,7 +9,10 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Pricing from "./pages/Pricing.tsx";
 import Ferramentas from "./pages/Ferramentas.tsx";
-import Explorar from "./pages/Explorar.tsx";
+import Marketplace from "./pages/Marketplace.tsx";
+import MeusAnuncios from "./pages/MeusAnuncios.tsx";
+import MeusClientes from "./pages/MeusClientes.tsx";
+import Mensagens from "./pages/Mensagens.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -34,7 +37,10 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/ferramentas" element={<ProtectedRoute><Ferramentas /></ProtectedRoute>} />
-            <Route path="/explorar" element={<ProtectedRoute><Explorar /></ProtectedRoute>} />
+            <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+            <Route path="/meus-anuncios" element={<ProtectedRoute><MeusAnuncios /></ProtectedRoute>} />
+            <Route path="/meus-clientes" element={<ProtectedRoute><MeusClientes /></ProtectedRoute>} />
+            <Route path="/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

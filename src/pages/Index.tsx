@@ -4,9 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import './landing.css';
 
 const LogoSvg = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="7.5" cy="7.5" r="5" stroke="white" strokeWidth="2.2" fill="none" />
-    <line x1="11.5" y1="11.5" x2="16" y2="16" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+  <svg width="18" height="18" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <rect width="40" height="40" rx="9" fill="#29B2FE"/>
+    <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="22" fill="white">M</text>
   </svg>
 );
 
@@ -99,7 +99,7 @@ const Index = () => {
         <nav className="landing-nav">
           <a href="#" className="logo">
             <div className="logo-icon"><LogoSvg /></div>
-            <span className="logo-name">ikas</span>
+            <span className="logo-name">Markfy</span>
           </a>
           <ul className="nav-links">
             <li><a href="#" className="active">In&#237;cio</a></li>
@@ -221,7 +221,7 @@ const Index = () => {
               <div className="chat-speed-badge">&#9889; Vagas em tempo real</div>
               <div className="chat-window">
                 <div className="chat-topbar">
-                  <span className="chat-agent-label">Ikas Search</span>
+                  <span className="chat-agent-label">Markfy Search</span>
                   <span className="chat-close">&times;</span>
                 </div>
                 <div className="chat-body">
@@ -230,13 +230,13 @@ const Index = () => {
                     <div className="chat-msg chat-msg-user">Sou designer, quero projetos de logo para come&#231;ar</div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <div className="chat-agent-name" style={{ textAlign: 'right' }}>Ikas</div>
-                    <div className="chat-msg chat-msg-ai">Encontrei 4.120 projetos de design dispon&#237;veis. GetNinjas a partir de R$ 80, Workana a partir de R$ 150.</div>
+                    <div className="chat-agent-name" style={{ textAlign: 'right' }}>Markfy</div>
+                    <div className="chat-msg chat-msg-ai">Encontrei 4.120 projetos de design dispon&#237;veis. GetNinjas a partir de <span style={{ color: '#29B2FE', fontWeight: 'bold' }}>R$ 80</span>, Workana a partir de <span style={{ color: '#29B2FE', fontWeight: 'bold' }}>R$ 150</span>.</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div className="chat-avatar">IK</div>
-                    <div style={{ height: '8px', width: '100%', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: '60%', background: '#e5e7eb', animation: 'load 1.5s ease-in-out infinite' }}></div>
+                    <div className="chat-avatar">MK</div>
+                    <div style={{ height: '8px', width: '100%', background: '#29B2FE', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: '60%', background: '#29B2FE', animation: 'load 1.5s ease-in-out infinite' }}></div>
                     </div>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ const Index = () => {
           <div>
             <div className="f-logo">
               <div className="f-logo-icon"><LogoSvg /></div>
-              ikas
+              Markfy
             </div>
             <p className="f-tag">A forma mais inteligente de freelancers encontrarem mais trabalho.</p>
             <div className="f-socials">
@@ -337,7 +337,7 @@ const Index = () => {
           <div className="footer-col">
             <h4>Plataforma</h4>
             <ul>
-              <li><a href="#">Explorar Vagas</a></li>
+              <li><a href="#">Marketplace</a></li>
               <li><a href="#">Como Funciona</a></li>
               <li><a href="#">Para Freelancers</a></li>
               <li><a href="#">Blog</a></li>
@@ -362,7 +362,7 @@ const Index = () => {
             </ul>
           </div>
         </footer>
-        <div className="footer-bottom">&copy; 2025 Ikas. Todos os direitos reservados.</div>
+        <div className="footer-bottom">&copy; 2025 Markfy. Todos os direitos reservados.</div>
       </div>
     </>
   );

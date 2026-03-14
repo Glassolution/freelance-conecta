@@ -26,8 +26,8 @@ serve(async (req) => {
       items: [
         {
           id: planId,
-          title: `Ikas - Plano ${planName}`,
-          description: `Assinatura ${planName} da plataforma Ikas`,
+          title: `Markfy - Plano ${planName}`,
+          description: `Assinatura ${planName} da plataforma Markfy`,
           quantity: 1,
           currency_id: 'BRL',
           unit_price: Number(price),
@@ -37,17 +37,17 @@ serve(async (req) => {
         email: userEmail || undefined,
       },
       back_urls: {
-        success: `${req.headers.get('origin') || 'https://ikas.com'}/dashboard?payment=success`,
-        failure: `${req.headers.get('origin') || 'https://ikas.com'}/pricing?payment=failure`,
-        pending: `${req.headers.get('origin') || 'https://ikas.com'}/pricing?payment=pending`,
+        success: `${req.headers.get('origin') || 'https://markfy.com'}/dashboard?payment=success`,
+        failure: `${req.headers.get('origin') || 'https://markfy.com'}/pricing?payment=failure`,
+        pending: `${req.headers.get('origin') || 'https://markfy.com'}/pricing?payment=pending`,
       },
       auto_return: 'approved',
       payment_methods: {
         excluded_payment_types: [],
         installments: 1,
       },
-      statement_descriptor: 'IKAS',
-      external_reference: `ikas_${planId}_${Date.now()}`,
+      statement_descriptor: 'MARKFY',
+      external_reference: `markfy_${planId}_${Date.now()}`,
     };
 
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {

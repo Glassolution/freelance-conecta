@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import MarkfyLogo from '@/components/MarkfyLogo';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -12,7 +13,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const links = ['Explorar', 'Como Funciona', 'Para Freelancers'];
+  const links = ['Marketplace', 'Como Funciona', 'Para Freelancers'];
 
   return (
     <header
@@ -25,15 +26,9 @@ const Navbar = () => {
     >
       <nav className="container mx-auto flex items-center justify-between h-16 px-4 lg:px-8">
         {/* Logo */}
-        <a href="/" className="font-heading font-extrabold text-xl text-foreground tracking-tight relative">
-          <span className="relative">
-            i
-            <span
-              className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-              style={{ background: 'linear-gradient(135deg, #a78bfa, #38bdf8, #34d399, #f472b6)' }}
-            />
-          </span>
-          kas
+        <a href="/" className="flex items-center gap-2">
+          <MarkfyLogo size={28} />
+          <span className="font-heading font-extrabold text-xl text-foreground tracking-tight">Markfy</span>
         </a>
 
         {/* Desktop links */}

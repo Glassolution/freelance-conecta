@@ -119,6 +119,17 @@ const Pricing = () => {
     navigate(`/checkout?plan=${plan.id}`);
   };
 
+  const handleBack = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+
+    navigate('/', { replace: true });
+  };
+
   const reason = searchParams.get('reason');
 
   return (

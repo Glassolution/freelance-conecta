@@ -387,7 +387,7 @@ const Suporte = () => {
         return;
       } else {
         setRefundStep('idle');
-        await pushAssistantMessage('Entendido! Em que mais posso ajudar? 😊', conversationId);
+        await pushAssistantMessage('Entendido! Em que mais posso ajudar?', conversationId);
         return;
       }
     }

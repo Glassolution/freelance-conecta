@@ -74,6 +74,7 @@ function getDateLabel(ts: string): string {
 const Mensagens = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);

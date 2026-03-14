@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 type SupportSection = 'suporte' | 'faq' | 'contato';
@@ -24,9 +23,8 @@ const SupportSidebarLayout = ({ active, children }: SupportSidebarLayoutProps) =
     .toUpperCase();
 
   const navItems = [
-    { key: 'suporte' as const, icon: MessageCircle, label: 'Suporte', path: '/suporte' },
-    { key: 'faq' as const, icon: CircleHelp, label: 'Perguntas Frequentes', path: '/suporte/faq' },
-    { key: 'contato' as const, icon: Mail, label: 'Fale Conosco', path: '/suporte/contato' },
+    { key: 'faq' as const, label: '❓ Perguntas Frequentes', path: '/suporte/faq' },
+    { key: 'contato' as const, label: '✉️ Fale Conosco', path: '/suporte/contato' },
   ];
 
   return (
@@ -49,10 +47,10 @@ const SupportSidebarLayout = ({ active, children }: SupportSidebarLayoutProps) =
             <button
               onClick={() => navigate('/suporte')}
               type="button"
-              className="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium border transition-colors"
+              className="w-full text-left rounded-xl px-3 py-2 text-sm font-medium border transition-colors"
               style={active === 'suporte' ? { color: '#29B2FE', background: '#ECF8FF', borderColor: '#BFEAFF' } : { color: '#4B5563', borderColor: 'transparent' }}
             >
-              <MessageCircle size={16} /> 💬 Suporte
+              💬 Suporte
             </button>
           </div>
 
@@ -61,24 +59,21 @@ const SupportSidebarLayout = ({ active, children }: SupportSidebarLayoutProps) =
           <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA3AF] px-3 mb-2">Ajuda e contato</p>
 
           <div className="space-y-1">
-            {navItems
-              .filter((item) => item.key !== 'suporte')
-              .map((item) => {
-                const Icon = item.icon;
-                const isActive = active === item.key;
+            {navItems.map((item) => {
+              const isActive = active === item.key;
 
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => navigate(item.path)}
-                    type="button"
-                    className="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium border transition-colors"
-                    style={isActive ? { color: '#29B2FE', background: '#ECF8FF', borderColor: '#BFEAFF' } : { color: '#4B5563', borderColor: 'transparent' }}
-                  >
-                    <Icon size={16} /> {item.label}
-                  </button>
-                );
-              })}
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => navigate(item.path)}
+                  type="button"
+                  className="w-full text-left rounded-xl px-3 py-2 text-sm font-medium border transition-colors"
+                  style={isActive ? { color: '#29B2FE', background: '#ECF8FF', borderColor: '#BFEAFF' } : { color: '#4B5563', borderColor: 'transparent' }}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

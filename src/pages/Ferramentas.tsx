@@ -95,6 +95,7 @@ const Ferramentas = () => {
 
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();

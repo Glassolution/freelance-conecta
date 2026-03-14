@@ -337,7 +337,7 @@ const Dashboard = () => {
       value: lucroDisplay,
       change: '+24%',
       positive: true,
-      subtitle: metricsUnavailable ? 'disponível após 12 meses' : periodoLabel,
+      subtitle: isAnnualUnavailable ? 'disponível após 12 meses' : periodoLabel,
       icon: DollarSign,
       iconBg: 'hsl(200, 95%, 57%)',
     },

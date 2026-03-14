@@ -669,6 +669,7 @@ const Marketplace = () => {
   const [markfyAds, setMarkfyAds] = useState<MarkfyAd[]>([]);
   const [markfyLoading, setMarkfyLoading] = useState(false);
   const [showProposalModal, setShowProposalModal] = useState<MarkfyAd | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [proposalText, setProposalText] = useState('');
   const [proposalValue, setProposalValue] = useState<number | ''>('');
   const [proposalDeadline, setProposalDeadline] = useState<number | ''>('');

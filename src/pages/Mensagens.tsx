@@ -219,6 +219,21 @@ const Mensagens = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    const requestedConversationId = searchParams.get('conversation');
+    if (!requestedConversationId) return;
+    if (activeConvId === requestedConversationId) return;
+
+    const exists = conversations.some((conv) => conv.id === requestedConversationId);
+    if (!exists) return;
+
+    void loadMessages(requestedConversationId);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('conversation');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, conversations, activeConvId, setSearchParams]);
+
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !activeConvId || !user) return;
     const content = messageInput.trim();

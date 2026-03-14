@@ -480,6 +480,8 @@ const MeusAnuncios = () => {
           </div>
         </div>
       )}
+
+      <SettingsModal open={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
     </div>
   );
 };

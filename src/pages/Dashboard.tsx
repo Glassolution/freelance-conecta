@@ -163,14 +163,39 @@ const Dashboard = () => {
 
   const vagasCount = vagas.length;
   const propostasCount = propostas.length;
+  const clientesAtivos = clientsData.length;
 
-  // Generate chart data
-  const chartData = monthLabels.map((label, i) => ({
-    name: label,
-    pendente: Math.floor(Math.random() * 5),
-    enviada: Math.floor(Math.random() * 8),
-    recusada: Math.floor(Math.random() * 2),
-  }));
+  const receitaMesAtual = useMemo(() => {
+    const now = new Date();
+    return clientsData.reduce((acc, client) => {
+      if (!client.created_at) return acc;
+      const date = new Date(client.created_at);
+      if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+        return acc + Number(client.project_value || 0);
+      }
+      return acc;
+    }, 0);
+  }, [clientsData]);
+
+  const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const chartData = useMemo(() => {
+    const data = monthLabels.map((label, idx) => ({
+      name: label,
+      faturamento: 0,
+      clientes: 0,
+      monthIndex: idx,
+    }));
+
+    clientsData.forEach((client) => {
+      const d = new Date(client.created_at);
+      const month = d.getMonth();
+      data[month].faturamento += Number(client.project_value || 0);
+      data[month].clientes += 1;
+    });
+
+    return data;
+  }, [clientsData]);
 
   const views = ['Últimas 24h', 'Semanal', 'Mensal', 'Anual'];
 
@@ -185,29 +210,29 @@ const Dashboard = () => {
       iconBg: 'hsl(200, 95%, 57%)',
     },
     {
-      label: 'Propostas Enviadas',
-      value: propostasCount.toString(),
-      change: '+4.2%',
+      label: 'Mensagens Enviadas',
+      value: messagesSentCount.toString(),
+      change: '+18%',
       positive: true,
       subtitle: 'vs últimos 7 dias',
       icon: Send,
       iconBg: 'hsl(142, 71%, 45%)',
     },
     {
-      label: 'Receita Total',
-      value: 'R$ 0,00',
-      change: '0%',
+      label: 'Lucro Total (Mês)',
+      value: formatCurrency(receitaMesAtual),
+      change: '+24%',
       positive: true,
-      subtitle: 'vs últimos 7 dias',
+      subtitle: 'dados reais do mês',
       icon: DollarSign,
       iconBg: 'hsl(200, 95%, 57%)',
     },
     {
       label: 'Clientes Ativos',
-      value: '0',
-      change: '0%',
+      value: clientesAtivos.toString(),
+      change: '+11%',
       positive: true,
-      subtitle: 'vs últimos 7 dias',
+      subtitle: 'base real de clientes',
       icon: UserCheck,
       iconBg: 'hsl(262, 83%, 68%)',
     },

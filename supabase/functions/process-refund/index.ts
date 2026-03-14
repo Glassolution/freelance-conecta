@@ -157,7 +157,7 @@ serve(async (req) => {
 
       await admin.from("notifications").insert({
         user_id: user.id,
-        title: "✅ Reembolso aprovado!",
+        title: "Reembolso aprovado",
         message: `Seu reembolso foi processado. O valor será estornado em até 5 dias úteis via Mercado Pago.\nID: ${mpRefundId}`,
         type: "refund",
       });

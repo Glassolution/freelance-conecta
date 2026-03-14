@@ -181,7 +181,7 @@ const Checkout = () => {
             <span style={{ fontWeight: '800', fontSize: '18px', color: '#111827' }}>Markfy</span>
           </div>
           <button
-            onClick={() => navigate('/pricing')}
+            onClick={() => navigate('/dashboard', { replace: true })}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#6b7280', fontSize: '14px', cursor: 'pointer' }}
           >
             <ArrowLeft size={16} /> Voltar

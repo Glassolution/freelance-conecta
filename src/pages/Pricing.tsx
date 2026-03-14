@@ -165,7 +165,7 @@ const Pricing = () => {
       {/* Header */}
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 16px' }}>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => void handleBack()}
           style={{
             display: 'flex',
             alignItems: 'center',

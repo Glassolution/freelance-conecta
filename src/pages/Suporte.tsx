@@ -354,7 +354,7 @@ const Suporte = () => {
       if (!conversationId) return;
     }
 
-    const userContent = text || `📎 Screenshot anexado: ${attachment?.name}`;
+    const userContent = text || `Screenshot anexado: ${attachment?.name}`;
     const userMessage: SupportMessage = {
       id: crypto.randomUUID(),
       role: 'user',

@@ -67,7 +67,7 @@ const CompactSettingsModal = ({ open, onClose }: CompactSettingsModalProps) => {
     return new Date(planExpiresAt) > new Date();
   }, [plan, planExpiresAt]);
 
-  const planLabel = plan === 'mensal' ? 'Mensal' : plan === 'trimestral' ? 'Trimestral' : 'Gratuito';
+  const planLabel = plan === 'mensal' ? 'Mensal' : plan === 'trimestral' ? 'Trimestral' : plan === 'anual' ? 'Anual' : 'Gratuito';
 
   const daysRemaining = useMemo(() => {
     if (!hasActivePlan || !planExpiresAt) return 0;

@@ -135,7 +135,7 @@ const Configuracoes = () => {
               >
                 <div className="flex items-center gap-2 mb-3">
                   <Crown size={18} style={{ color: '#22c55e' }} />
-                  <span className="text-sm font-heading font-bold text-[#111]">✅ Plano Ativo</span>
+                  <span className="text-sm font-heading font-bold text-[#111]">Plano Ativo</span>
                 </div>
                 <div className="space-y-2 text-sm font-body text-[#374151]">
                   <p><span className="text-[#6B7280]">Plano:</span> {planLabel}</p>

@@ -85,6 +85,8 @@ const Suporte = () => {
   };
 
   const saveRefundRequest = async (reason: string, email: string) => {
+    if (!user?.id) return;
+
     const { error } = await supabase.functions.invoke('support-refund-request', {
       body: { reason, email },
     });

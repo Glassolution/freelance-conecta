@@ -19,9 +19,73 @@ const hslYellowBorder = 'hsl(38 92% 50%)';
 const hslYellowBg = 'hsl(48 100% 96%)';
 
 const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
-...
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [plan, setPlan] = useState<string>('free');
+  const [planExpiresAt, setPlanExpiresAt] = useState<string | null>(null);
+
+  const [darkMode, setDarkMode] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [updatesByEmail, setUpdatesByEmail] = useState(true);
+
+  useEffect(() => {
+    if (!open) return;
+
+    setDarkMode(localStorage.getItem('markfy_dark_mode') === 'true');
+    setNotificationsEnabled(localStorage.getItem('markfy_notifications') !== 'false');
+    setUpdatesByEmail(localStorage.getItem('markfy_update_emails') !== 'false');
+
+    const loadProfile = async () => {
+      if (!user?.id) return;
+
+      setLoading(true);
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, email, plan, plan_expires_at')
+        .eq('id', user.id)
+        .single();
+
+      setFullName(profile?.full_name || user.user_metadata?.full_name || '');
+      setEmail(profile?.email || user.email || '');
+      setPlan(profile?.plan || 'free');
+      setPlanExpiresAt(profile?.plan_expires_at || null);
+      setLoading(false);
+    };
+
+    loadProfile();
+  }, [open, user?.id, user?.email, user?.user_metadata?.full_name]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('keydown', onEsc);
+    return () => window.removeEventListener('keydown', onEsc);
+  }, [open, onClose]);
+
+  const hasActivePlan = useMemo(() => {
+    if (!planExpiresAt || plan === 'free') return false;
+    return new Date(planExpiresAt) > new Date();
+  }, [plan, planExpiresAt]);
+
   const planLabel = getPlanLabel(plan);
-...
+
+  const daysRemaining = useMemo(() => {
+    if (!hasActivePlan || !planExpiresAt) return 0;
+    const diff = new Date(planExpiresAt).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }, [hasActivePlan, planExpiresAt]);
+
   const progress = useMemo(() => {
     if (!hasActivePlan) return 0;
     const cycleDays = plan === 'anual' ? 365 : plan === 'trimestral' ? 90 : 30;

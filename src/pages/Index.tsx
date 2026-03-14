@@ -16,10 +16,13 @@ const ChevronSvg = () => (
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; plan: string | null } | null>(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [activePain, setActivePain] = useState(0);
   const statRefs = useRef<(HTMLDivElement | null)[]>([]);
   const featRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // Count-up animation for stats

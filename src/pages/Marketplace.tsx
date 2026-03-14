@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { ensureProfile } from '@/lib/ensureProfile';
 import NotificationBell from '@/components/NotificationBell';
+import SettingsModal from '@/components/SettingsModal';
 
 interface MarkfyAd {
   id: string;

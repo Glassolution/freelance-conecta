@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ensureProfile } from '@/lib/ensureProfile';
 import NotificationBell from '@/components/NotificationBell';
+import SettingsModal from '@/components/SettingsModal';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', path: '/dashboard' },

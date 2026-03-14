@@ -132,7 +132,7 @@ const Suporte = () => {
 
       await saveRefundRequest(refundReason, trimmed);
       setRefundStep('submitted');
-      pushMessage('assistant', 'Vou registrar sua solicitação. O reembolso será processado em até 5 dias úteis via Mercado Pago.');
+      pushMessage('assistant', '✅ Solicitação registrada! Seu reembolso será processado em até 5 dias úteis via Mercado Pago.');
       return;
     }
 

@@ -91,6 +91,7 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { isActive, planLabel, loading: planLoading } = usePlanStatus();
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') {

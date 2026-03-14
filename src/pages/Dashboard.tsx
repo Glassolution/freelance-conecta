@@ -420,13 +420,12 @@ const Dashboard = () => {
                 {/* Bar Chart - Desempenho */}
                 <div className="xl:col-span-2 bg-white rounded-2xl border border-[#edf0f7] p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-heading font-bold text-base text-[#111]">Desempenho de Propostas</h3>
+                    <h3 className="font-heading font-bold text-base text-[#111]">Faturamento e Clientes (dados reais)</h3>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-6">
                         {[
-                          { label: 'Pendente', color: '#e5e7eb' },
-                          { label: 'Enviada', color: '#29B2FE' },
-                          { label: 'Recusada', color: '#111' },
+                          { label: 'Faturamento', color: '#29B2FE' },
+                          { label: 'Clientes', color: '#10b981' },
                         ].map((item) => (
                           <div key={item.label} className="flex items-center gap-1.5">
                             <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
@@ -443,8 +442,14 @@ const Dashboard = () => {
                     <BarChart data={chartData} barGap={2} barCategoryGap="20%">
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                       <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(value) => `R$ ${Math.round(value / 1000)}k`} />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                       <Tooltip
+                        formatter={(value: number, name: string) =>
+                          name === 'faturamento'
+                            ? [formatCurrency(Number(value)), 'Faturamento']
+                            : [Number(value), 'Clientes']
+                        }
                         contentStyle={{
                           borderRadius: 12,
                           border: 'none',
@@ -452,9 +457,8 @@ const Dashboard = () => {
                           fontSize: 12,
                         }}
                       />
-                      <Bar dataKey="pendente" fill="#e5e7eb" radius={[4, 4, 0, 0]} name="Pendente" />
-                      <Bar dataKey="enviada" fill="#29B2FE" radius={[4, 4, 0, 0]} name="Enviada" />
-                      <Bar dataKey="recusada" fill="#111827" radius={[4, 4, 0, 0]} name="Recusada" />
+                      <Bar yAxisId="left" dataKey="faturamento" fill="#29B2FE" radius={[4, 4, 0, 0]} name="faturamento" />
+                      <Bar yAxisId="right" dataKey="clientes" fill="#10b981" radius={[4, 4, 0, 0]} name="clientes" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

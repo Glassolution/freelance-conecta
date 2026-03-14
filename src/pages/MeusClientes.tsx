@@ -63,6 +63,7 @@ const MeusClientes = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

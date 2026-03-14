@@ -162,7 +162,7 @@ const MeusAnuncios = () => {
     if (proposal) {
       await supabase.from('notifications').insert({
         user_id: proposal.sender_id,
-        title: 'Proposta aceita! 🎉',
+        title: 'Proposta aceita!',
         message: `Sua proposta para "${showProposalsModal?.title}" foi aceita!`,
         type: 'accepted',
       } as any);

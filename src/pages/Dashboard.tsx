@@ -96,7 +96,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') {
-      toast({ title: '🎉 Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
+      toast({ title: 'Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
     }
   }, [searchParams, toast]);
 

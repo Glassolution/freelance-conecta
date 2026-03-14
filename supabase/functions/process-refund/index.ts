@@ -180,7 +180,7 @@ serve(async (req) => {
 
       await admin.from("notifications").insert({
         user_id: user.id,
-        title: "❌ Erro no reembolso",
+        title: "Erro no reembolso",
         message: "Não foi possível processar seu reembolso automaticamente. Entre em contato: suporte@markfy.com.br",
         type: "error",
       });

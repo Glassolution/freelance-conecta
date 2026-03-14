@@ -292,7 +292,7 @@ const Checkout = () => {
                     </div>
                     <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '12px', marginBottom: '16px' }}>
                       <p style={{ fontSize: '13px', color: '#92400e' }}>
-                        ⏱ Código válido por <strong>{formatCountdown(countdown)}</strong>
+                        Código válido por <strong>{formatCountdown(countdown)}</strong>
                       </p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#29B2FE' }}>

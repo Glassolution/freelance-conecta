@@ -397,13 +397,13 @@ const Pricing = () => {
           }}
         >
           <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#29B2FE' }}>🔒</span> Pagamento seguro via Mercado Pago
+            Pagamento seguro via Mercado Pago
           </span>
           <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#29B2FE' }}>↩️</span> Cancele quando quiser
+            Cancele quando quiser
           </span>
           <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#29B2FE' }}>⚡</span> Acesso imediato
+            Acesso imediato
           </span>
         </div>
       </div>

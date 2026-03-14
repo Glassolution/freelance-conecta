@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ensureProfile } from '@/lib/ensureProfile';
 import NotificationBell from '@/components/NotificationBell';
+import SettingsModal from '@/components/SettingsModal';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', path: '/dashboard' },
@@ -85,6 +86,7 @@ const Mensagens = () => {
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -259,7 +261,7 @@ const Mensagens = () => {
           </nav>
         </div>
         <div className="flex flex-col gap-1">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6]"><Settings size={18} /> Configurações</button>
+          <button onClick={() => setShowSettingsModal(true)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6]"><Settings size={18} /> Configurações</button>
           <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10"><LogOut size={18} /> Sair</button>
         </div>
       </aside>
@@ -414,6 +416,8 @@ const Mensagens = () => {
           )}
         </div>
       </div>
+
+      <SettingsModal open={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
     </div>
   );
 };

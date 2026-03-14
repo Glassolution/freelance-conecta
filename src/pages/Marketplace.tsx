@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { ensureProfile } from '@/lib/ensureProfile';
 import NotificationBell from '@/components/NotificationBell';
+import SettingsModal from '@/components/SettingsModal';
 
 interface MarkfyAd {
   id: string;
@@ -668,6 +669,7 @@ const Marketplace = () => {
   const [markfyAds, setMarkfyAds] = useState<MarkfyAd[]>([]);
   const [markfyLoading, setMarkfyLoading] = useState(false);
   const [showProposalModal, setShowProposalModal] = useState<MarkfyAd | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [proposalText, setProposalText] = useState('');
   const [proposalValue, setProposalValue] = useState<number | ''>('');
   const [proposalDeadline, setProposalDeadline] = useState<number | ''>('');
@@ -977,7 +979,7 @@ const Marketplace = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
+          <button onClick={() => setShowSettingsModal(true)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
             <Settings size={18} /> Configurações
           </button>
           <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-red-400 hover:bg-red-500/10 transition-colors">
@@ -1424,6 +1426,8 @@ const Marketplace = () => {
           </div>
         </div>
       )}
+
+      <SettingsModal open={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
     </div>
   );
 };

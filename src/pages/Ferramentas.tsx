@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Home, SlidersHorizontal, Globe, Briefcase,
   CheckCircle, Send, PackageCheck, Wrench,
@@ -5,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import SettingsModal from '@/components/SettingsModal';
 
 const sidebarLinks = [
   { icon: Home, label: 'Início', active: false, path: '/dashboard' },
@@ -93,6 +95,7 @@ const Ferramentas = () => {
 
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -132,7 +135,7 @@ const Ferramentas = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
+          <button onClick={() => setShowSettingsModal(true)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
             <Settings size={18} /> Configurações
           </button>
           <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-red-400 hover:bg-red-500/10 transition-colors">
@@ -224,6 +227,8 @@ const Ferramentas = () => {
           ))}
         </div>
       </div>
+
+      <SettingsModal open={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
     </div>
   );
 };

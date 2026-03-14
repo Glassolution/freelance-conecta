@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePlanStatus } from '@/hooks/usePlanStatus';
+import SettingsModal from '@/components/SettingsModal';
 
 const plataformas = [
   { name: 'Workana', role: 'Plataforma de Serviços', status: 'Conectado' },
@@ -90,6 +91,7 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { isActive, planLabel, loading: planLoading } = usePlanStatus();
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') {
@@ -236,7 +238,7 @@ const Dashboard = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <button onClick={() => navigate('/configuracoes')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6] transition-colors">
+          <button onClick={() => setShowSettingsModal(true)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6] transition-colors">
             <Settings size={18} /> Configurações
           </button>
           
@@ -550,6 +552,8 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      <SettingsModal open={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
     </div>
   );
 };

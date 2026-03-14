@@ -51,6 +51,21 @@ const Pricing = () => {
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeName, setWelcomeName] = useState('');
+  const location = useLocation();
+
+  // Show welcome banner if coming from onboarding
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('onboarding_completed, full_name').eq('id', user.id).maybeSingle()
+      .then(({ data }) => {
+        if (data?.onboarding_completed && !localStorage.getItem('markfy_welcome_dismissed')) {
+          setShowWelcome(true);
+          setWelcomeName(data.full_name?.split(' ')[0] || '');
+        }
+      });
+  }, [user]);
 
   // Check if user is logged in
   useEffect(() => {

@@ -292,6 +292,53 @@ const Suporte = () => {
     if (isMobile) setMobileSidebarOpen(false);
   };
 
+  const pushAssistantMessage = async (content: string, conversationId: string | null) => {
+    const msg: SupportMessage = { id: crypto.randomUUID(), role: 'assistant', content, createdAt: new Date().toISOString() };
+    setMessages((prev) => [...prev, msg]);
+    if (conversationId) {
+      await db.from('support_messages').insert({ conversation_id: conversationId, role: 'assistant', content });
+    }
+  };
+
+  const processRefund = async (reason: string, conversationId: string | null) => {
+    setRefundStep('processing');
+    await pushAssistantMessage('🔍 Verificando sua assinatura e processando reembolso via Mercado Pago...', conversationId);
+    setIsThinking(true);
+
+    const { data, error } = await supabase.functions.invoke('process-refund', {
+      body: { reason },
+    });
+
+    setIsThinking(false);
+
+    if (error) {
+      await pushAssistantMessage(`❌ Erro ao processar: ${error.message}\nPor favor tente novamente ou entre em contato pelo email: suporte@markfy.com.br`, conversationId);
+      setRefundStep('idle');
+      return;
+    }
+
+    if (data?.success) {
+      setRefundStep('done');
+      const refundIdLine = data.refundId ? `\n- ID do reembolso: ${data.refundId}` : '';
+      const manualNote = data.manualProcessing ? '\n\n⚠️ O reembolso será processado manualmente pela equipe em até 5 dias úteis.' : '';
+      await pushAssistantMessage(
+        `✅ **Reembolso processado com sucesso!**\n\n📋 Detalhes:\n- Plano: ${data.planLabel}\n- Ativado em: ${data.startedFormatted}\n- Dias ativo: ${data.daysDiff}${refundIdLine}\n- Estorno: até 5 dias úteis via Mercado Pago${manualNote}\n\nSua assinatura foi cancelada. Um email de confirmação foi enviado.\n\nObrigado por usar a Markfy! 💙`,
+        conversationId
+      );
+      setTimeout(() => navigate('/'), 5000);
+    } else if (data?.cancelled) {
+      setRefundStep('done');
+      await pushAssistantMessage(
+        `⚠️ **Assinatura cancelada sem reembolso**\n\n📋 Verificação:\n- Plano: ${data.planLabel}\n- Ativado em: ${data.startedFormatted}\n- Dias ativo: ${data.daysDiff}\n- Prazo para reembolso: 7 dias\n- Status: ❌ Fora do prazo\n\nSua assinatura foi cancelada. O acesso será encerrado ao fim do período pago.`,
+        conversationId
+      );
+      setTimeout(() => navigate('/'), 3000);
+    } else {
+      setRefundStep('idle');
+      await pushAssistantMessage(`❌ ${data?.error || 'Erro desconhecido'}\nPor favor entre em contato pelo email: suporte@markfy.com.br`, conversationId);
+    }
+  };
+
   const handleSend = async (rawInput?: string) => {
     const text = (rawInput ?? input).trim();
     if (!text && !attachment) return;
@@ -318,39 +365,40 @@ const Suporte = () => {
     setInput('');
     setAttachment(null);
 
-    const { error: userInsertError } = await db
-      .from('support_messages')
-      .insert({
-        conversation_id: conversationId,
-        role: 'user',
-        content: userContent,
-      });
-
-    if (userInsertError) {
-      toast({ title: 'Erro ao salvar mensagem', description: userInsertError.message, variant: 'destructive' });
-    }
+    await db.from('support_messages').insert({ conversation_id: conversationId, role: 'user', content: userContent });
 
     if (isFirstUserMessage && text) {
       const title = makeConversationTitle(text);
-      const { error: titleError } = await db
-        .from('support_conversations')
-        .update({ title })
-        .eq('id', conversationId)
-        .eq('user_id', user.id);
+      await db.from('support_conversations').update({ title }).eq('id', conversationId).eq('user_id', user.id);
+      setConversations((prev) =>
+        sortConversations(prev.map((c) => (c.id === conversationId ? { ...c, title, updated_at: new Date().toISOString() } : c))),
+      );
+    }
 
-      if (!titleError) {
-        setConversations((prev) =>
-          sortConversations(
-            prev.map((item) =>
-              item.id === conversationId
-                ? { ...item, title, updated_at: new Date().toISOString() }
-                : item,
-            ),
-          ),
-        );
+    // Refund flow interception
+    if (refundStep === 'asked_confirmation') {
+      const lower = text.toLowerCase();
+      if (lower.includes('sim') || lower.includes('quero') || lower.includes('yes')) {
+        await processRefund(refundReason || text, conversationId);
+        return;
+      } else {
+        setRefundStep('idle');
+        await pushAssistantMessage('Entendido! Em que mais posso ajudar? 😊', conversationId);
+        return;
       }
     }
 
+    if (refundStep === 'idle' && isRefundIntent(userContent)) {
+      setRefundReason(userContent);
+      setRefundStep('asked_confirmation');
+      await pushAssistantMessage(
+        'Você gostaria de solicitar um **reembolso** do seu plano atual?\n\nVou verificar sua elegibilidade automaticamente e processar o estorno via Mercado Pago.\n\nResponda **"Sim"** para prosseguir ou **"Não"** se foi apenas uma dúvida.',
+        conversationId
+      );
+      return;
+    }
+
+    // Regular AI chat
     setIsThinking(true);
 
     const { data, error } = await supabase.functions.invoke('support-chat', {
@@ -365,35 +413,11 @@ const Suporte = () => {
     }
 
     const assistantContent = data?.reply || 'Não consegui responder agora.';
-    const assistantMessage: SupportMessage = {
-      id: crypto.randomUUID(),
-      role: 'assistant',
-      content: assistantContent,
-      createdAt: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, assistantMessage]);
-
-    const { error: assistantInsertError } = await db
-      .from('support_messages')
-      .insert({
-        conversation_id: conversationId,
-        role: 'assistant',
-        content: assistantContent,
-      });
-
-    if (assistantInsertError) {
-      toast({ title: 'Erro ao salvar resposta', description: assistantInsertError.message, variant: 'destructive' });
-    }
+    await pushAssistantMessage(assistantContent, conversationId);
 
     setConversations((prev) =>
-      sortConversations(
-        prev.map((item) =>
-          item.id === conversationId
-            ? { ...item, updated_at: new Date().toISOString() }
-            : item,
-        ),
-      ),
+      sortConversations(prev.map((c) => (c.id === conversationId ? { ...c, updated_at: new Date().toISOString() } : c))),
+    );
     );
   };
 

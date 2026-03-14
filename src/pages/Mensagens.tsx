@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   Home, ShoppingBag, Megaphone, Users, MessageSquare, Globe,
   CheckCircle, Send, PackageCheck, Wrench, Settings, LogOut,
@@ -74,6 +74,7 @@ function getDateLabel(ts: string): string {
 const Mensagens = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
@@ -106,14 +107,32 @@ const Mensagens = () => {
     }
 
     // Get other participant profiles
-    const otherIds = convs.map((c: any) => c.participant_1 === user.id ? c.participant_2 : c.participant_1);
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, full_name')
-      .in('id', otherIds) as any;
+    const otherIds = convs
+      .map((c: any) => (c.participant_1 === user.id ? c.participant_2 : c.participant_1))
+      .filter((id: string | null) => !!id);
 
     const profileMap: Record<string, string> = {};
-    (profiles || []).forEach((p: any) => { profileMap[p.id] = p.full_name || 'Usuário'; });
+    if (otherIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', otherIds) as any;
+      (profiles || []).forEach((p: any) => { profileMap[p.id] = p.full_name || 'Usuário'; });
+    }
+
+    // Map conversation ids to client names from Meus Clientes notes
+    const { data: clientsData } = await supabase
+      .from('clients')
+      .select('name, notes')
+      .eq('user_id', user.id) as any;
+
+    const clientNameByConversationId: Record<string, string> = {};
+    (clientsData || []).forEach((client: any) => {
+      const match = typeof client.notes === 'string'
+        ? client.notes.match(/conversation_id=([0-9a-fA-F-]{36})/i)
+        : null;
+      if (match?.[1]) clientNameByConversationId[match[1]] = client.name;
+    });
 
     // Get last messages and unread counts
     const items: ConversationItem[] = await Promise.all(convs.map(async (c: any) => {
@@ -137,7 +156,7 @@ const Mensagens = () => {
         id: c.id,
         participant_1: c.participant_1,
         participant_2: c.participant_2,
-        other_name: profileMap[otherId] || 'Usuário',
+        other_name: clientNameByConversationId[c.id] || profileMap[otherId] || 'Usuário',
         last_message: lastMsg?.[0]?.content,
         last_message_at: lastMsg?.[0]?.created_at,
         unread_count: count || 0,
@@ -199,6 +218,21 @@ const Mensagens = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    const requestedConversationId = searchParams.get('conversation');
+    if (!requestedConversationId) return;
+    if (activeConvId === requestedConversationId) return;
+
+    const exists = conversations.some((conv) => conv.id === requestedConversationId);
+    if (!exists) return;
+
+    void loadMessages(requestedConversationId);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('conversation');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, conversations, activeConvId, setSearchParams]);
 
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !activeConvId || !user) return;

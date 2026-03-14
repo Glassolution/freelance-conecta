@@ -418,7 +418,6 @@ const Suporte = () => {
     setConversations((prev) =>
       sortConversations(prev.map((c) => (c.id === conversationId ? { ...c, updated_at: new Date().toISOString() } : c))),
     );
-    );
   };
 
   const hasMessages = messages.length > 0;

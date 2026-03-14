@@ -76,7 +76,7 @@ const CompactSettingsModal = ({ open, onClose }: CompactSettingsModalProps) => {
 
   const progress = useMemo(() => {
     if (!hasActivePlan) return 0;
-    const cycle = plan === 'trimestral' ? 90 : 30;
+    const cycle = plan === 'anual' ? 365 : plan === 'trimestral' ? 90 : 30;
     return Math.min(100, Math.max(6, Math.round((daysRemaining / cycle) * 100)));
   }, [hasActivePlan, plan, daysRemaining]);
 

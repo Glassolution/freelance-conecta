@@ -1,22 +1,18 @@
-// Ensure __LOVA_FIX_TRIGGER__ is available globally in every runtime path
-try {
-  const existing = (globalThis as any).__LOVA_FIX_TRIGGER__;
-  const trigger = typeof existing === "function" ? existing : () => {};
-
-  (globalThis as any).__LOVA_FIX_TRIGGER__ = trigger;
-
+// Ensure __LOVA_FIX_TRIGGER__ is available globally before anything else runs
+(function () {
+  const noop = function () {};
+  if (typeof globalThis !== "undefined") {
+    if (!globalThis.__LOVA_FIX_TRIGGER__) (globalThis as any).__LOVA_FIX_TRIGGER__ = noop;
+  }
   if (typeof window !== "undefined") {
-    (window as any).__LOVA_FIX_TRIGGER__ = trigger;
+    if (!(window as any).__LOVA_FIX_TRIGGER__) (window as any).__LOVA_FIX_TRIGGER__ = (globalThis as any).__LOVA_FIX_TRIGGER__;
   }
-
   if (typeof self !== "undefined") {
-    (self as any).__LOVA_FIX_TRIGGER__ = trigger;
+    if (!(self as any).__LOVA_FIX_TRIGGER__) (self as any).__LOVA_FIX_TRIGGER__ = (globalThis as any).__LOVA_FIX_TRIGGER__;
   }
-
-  // Force-create global var binding for legacy/bare identifier usage
-  (0, eval)("var __LOVA_FIX_TRIGGER__ = globalThis.__LOVA_FIX_TRIGGER__;");
-} catch {
-  // no-op
-}
+  try {
+    (0, eval)("if(typeof __LOVA_FIX_TRIGGER__==='undefined'){var __LOVA_FIX_TRIGGER__=globalThis.__LOVA_FIX_TRIGGER__}");
+  } catch (_) {}
+})();
 
 export {};

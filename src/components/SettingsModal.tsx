@@ -255,7 +255,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
                 onChange: handleToggleNotifications,
               },
               {
-                icon: <Mail size={16} />, title: '📧 Emails de atualização',
+                icon: <Mail size={16} />, title: 'Emails de atualização',
                 description: 'Receber novidades da Markfy por email',
                 value: updatesByEmail,
                 onChange: handleToggleUpdatesByEmail,

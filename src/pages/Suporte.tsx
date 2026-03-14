@@ -482,7 +482,7 @@ const Suporte = () => {
                     onClick={() => void handleSelectConversation(conversation.id)}
                     className={`w-full rounded-xl px-3 py-2 text-left text-sm transition-colors ${
                       isActive
-                        ? 'bg-[hsl(var(--support-surface))] text-[hsl(var(--support-text))]'
+                        ? 'bg-[hsl(var(--support-active))] text-[hsl(var(--support-text))]'
                         : 'text-[hsl(var(--support-text-muted))] hover:bg-[hsl(var(--support-hover))]'
                     }`}
                   >

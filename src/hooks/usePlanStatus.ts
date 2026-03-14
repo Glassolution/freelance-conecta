@@ -54,8 +54,8 @@ export const usePlanStatus = (): PlanStatus => {
 
   const isActive = !!(plan && plan !== 'free' && planExpiresAt && new Date(planExpiresAt) > new Date());
 
-  const planLabel = plan === 'mensal' ? 'Mensal'
-    : plan === 'trimestral' ? 'Trimestral'
+  const planLabel = isActive
+    ? (plan === 'mensal' ? 'Plano Mensal' : plan === 'trimestral' ? 'Plano Trimestral' : 'Gratuito')
     : 'Gratuito';
 
   return { plan, planExpiresAt, isActive, loading, planLabel };

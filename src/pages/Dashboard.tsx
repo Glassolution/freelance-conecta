@@ -85,7 +85,15 @@ const Dashboard = () => {
   const [selectedView, setSelectedView] = useState('Semanal');
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (searchParams.get('welcome') === 'true') {
+      toast({ title: '🎉 Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
+    }
+  }, [searchParams, toast]);
 
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [propostas, setPropostas] = useState<Proposta[]>([]);

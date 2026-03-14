@@ -3,10 +3,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 
-const fixTrigger = (globalThis as { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ ?? (() => {});
-(globalThis as { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ = fixTrigger;
-void fixTrigger();
-
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {

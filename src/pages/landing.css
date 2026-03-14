@@ -544,6 +544,10 @@ body {
   .landing-nav { padding: 0 12px 0 12px; }
   .nav-links { display: none; }
   .btn-nav-login { display: none; }
+  .nav-profile-dropdown {
+    width: 260px;
+    right: -8px;
+  }
 }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; padding: 100px 20px 40px; min-height: auto; }

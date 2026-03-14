@@ -163,10 +163,44 @@ const Index = () => {
           </ul>
           <div className="nav-right">
             {user ? (
-              <button className="btn-nav-signup" onClick={() => navigate('/dashboard')}>Painel</button>
+              <>
+                <button className="btn-nav-signup" onClick={() => navigate('/dashboard')}>Painel</button>
+
+                <div className="nav-profile-wrap" ref={profileMenuRef}>
+                  <button className="btn-nav-profile" onClick={() => setProfileMenuOpen((prev) => !prev)}>
+                    <span className="btn-nav-profile-initials">{initials}</span>
+                    <span className="btn-nav-profile-chevron"><ChevronSvg /></span>
+                  </button>
+
+                  {profileMenuOpen && (
+                    <div className="nav-profile-dropdown">
+                      <div className="nav-profile-head">
+                        <div className="nav-profile-name">{profile?.full_name || 'Usuário'}</div>
+                        <div className="nav-profile-email">{user.email}</div>
+                        <div className="nav-profile-plan">Plano: {planLabel}</div>
+                      </div>
+
+                      <div className="nav-profile-divider" />
+
+                      <button className="nav-profile-item" onClick={() => { setProfileMenuOpen(false); navigate('/pricing'); }}>
+                        👤 Minha Conta
+                      </button>
+                      <button className="nav-profile-item" onClick={() => { setProfileMenuOpen(false); navigate('/pricing'); }}>
+                        ⭐ Fazer Upgrade
+                      </button>
+
+                      <div className="nav-profile-divider" />
+
+                      <button className="nav-profile-item nav-profile-item-danger" onClick={handleSignOut}>
+                        ↩️ Sair da conta
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <>
-                <button className="btn-nav-login" onClick={() => navigate('/auth')}>Login</button>
+                <button className="btn-nav-login" onClick={() => navigate('/auth')}>Entrar</button>
                 <button className="btn-nav-signup" onClick={() => navigate('/auth')}>Cadastrar</button>
               </>
             )}

@@ -155,6 +155,56 @@ const Dashboard = () => {
   const vagasCount = vagas.length;
   const propostasCount = propostas.length;
 
+  // --- Single source of truth: MONTHLY totals ---
+  const monthStart = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }, []);
+
+  const receitaMensal = useMemo(
+    () =>
+      clientsData
+        .filter((c) => new Date(c.created_at) >= monthStart)
+        .reduce((acc, c) => acc + Number(c.project_value || 0), 0),
+    [clientsData, monthStart]
+  );
+
+  const clientesMensal = useMemo(
+    () => clientsData.filter((c) => new Date(c.created_at) >= monthStart).length,
+    [clientsData, monthStart]
+  );
+
+  const mensagensMensal = useMemo(
+    () => messagesData.filter((m) => new Date(m.created_at) >= monthStart).length,
+    [messagesData, monthStart]
+  );
+
+  // Proportional derivation from monthly base
+  const viewMultiplier = useMemo(() => {
+    if (selectedView === 'Últimas 24h') return 1 / 30;
+    if (selectedView === 'Semanal') return 1 / 4;
+    if (selectedView === 'Mensal') return 1;
+    return 12; // Anual
+  }, [selectedView]);
+
+  const isAnnualUnavailable = selectedView === 'Anual';
+
+  const lucroView = isAnnualUnavailable
+    ? 0
+    : Math.round(receitaMensal * viewMultiplier * 100) / 100;
+
+  const clientesView = isAnnualUnavailable
+    ? 0
+    : Math.max(selectedView === 'Mensal' ? clientesMensal : Math.round(clientesMensal * viewMultiplier), selectedView === 'Últimas 24h' ? 0 : 0);
+
+  const mensagensView = isAnnualUnavailable
+    ? 0
+    : Math.max(Math.round(mensagensMensal * viewMultiplier), 0);
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  // Chart data still uses real data distribution for non-annual views
   const rangeStart = useMemo(() => {
     const now = new Date();
     if (selectedView === 'Últimas 24h') return new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -162,44 +212,6 @@ const Dashboard = () => {
     if (selectedView === 'Mensal') return new Date(now.getFullYear(), now.getMonth(), 1);
     return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
   }, [selectedView]);
-
-  const firstClientDate = useMemo(() => {
-    if (clientsData.length === 0) return null;
-    return clientsData.reduce((min, client) => {
-      const current = new Date(client.created_at);
-      return current < min ? current : min;
-    }, new Date(clientsData[0].created_at));
-  }, [clientsData]);
-
-  const annualCalculable = useMemo(() => {
-    if (selectedView !== 'Anual') return true;
-    if (!firstClientDate) return false;
-
-    const now = new Date();
-    const monthsDiff = (now.getFullYear() - firstClientDate.getFullYear()) * 12 + (now.getMonth() - firstClientDate.getMonth());
-    return monthsDiff >= 11;
-  }, [selectedView, firstClientDate]);
-
-  const isAnnualUnavailable = selectedView === 'Anual' && !annualCalculable;
-
-  const clientsInRange = useMemo(
-    () => clientsData.filter((client) => new Date(client.created_at) >= rangeStart),
-    [clientsData, rangeStart]
-  );
-
-  const receitaSelecionada = useMemo(
-    () => clientsInRange.reduce((acc, client) => acc + Number(client.project_value || 0), 0),
-    [clientsInRange]
-  );
-
-  const clientesAtivos = clientsInRange.length;
-
-  const messagesSentCount = useMemo(
-    () => messagesData.filter((msg) => new Date(msg.created_at) >= rangeStart).length,
-    [messagesData, rangeStart]
-  );
-
-  const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const chartData = useMemo(() => {
     if (isAnnualUnavailable) {
@@ -282,24 +294,8 @@ const Dashboard = () => {
       return data;
     }
 
-    const data = monthLabels.map((label, idx) => ({
-      name: label,
-      monthIndex: idx,
-      faturamento: 0,
-      clientes: 0,
-    }));
-
-    clientsData.forEach((client) => {
-      const d = new Date(client.created_at);
-      if (d >= rangeStart) {
-        const month = d.getMonth();
-        data[month].faturamento += Number(client.project_value || 0);
-        data[month].clientes += 1;
-      }
-    });
-
-    return data;
-  }, [clientsData, selectedView, rangeStart, isAnnualUnavailable]);
+    return [];
+  }, [clientsData, selectedView, isAnnualUnavailable]);
 
   const views = ['Últimas 24h', 'Semanal', 'Mensal', 'Anual'];
 
@@ -312,11 +308,10 @@ const Dashboard = () => {
         : 'últimos 12 meses';
 
   const annualDisplayValue = 'Não calculável';
-  const metricsUnavailable = isAnnualUnavailable;
 
-  const mensagensDisplay = metricsUnavailable ? annualDisplayValue : messagesSentCount.toString();
-  const lucroDisplay = metricsUnavailable ? annualDisplayValue : formatCurrency(receitaSelecionada);
-  const clientesDisplay = metricsUnavailable ? annualDisplayValue : clientesAtivos.toString();
+  const lucroDisplay = isAnnualUnavailable ? annualDisplayValue : formatCurrency(lucroView);
+  const clientesDisplay = isAnnualUnavailable ? annualDisplayValue : clientesView.toString();
+  const mensagensDisplay = isAnnualUnavailable ? annualDisplayValue : mensagensView.toString();
 
   const kpiCards = [
     {

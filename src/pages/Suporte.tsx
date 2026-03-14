@@ -322,7 +322,7 @@ const Suporte = () => {
     if (data?.success) {
       setRefundStep('done');
       await pushAssistantMessage(
-        `✅ Reembolso processado com sucesso!\n\nID do reembolso: ${data.refundId}\nO valor será estornado em até 5 dias úteis.\nUm email de confirmação foi enviado para ${user.email}.\n\nSua assinatura foi cancelada.`,
+        `Reembolso processado com sucesso!\n\nID do reembolso: ${data.refundId}\nO valor será estornado em até 5 dias úteis.\nUm email de confirmação foi enviado para ${user.email}.\n\nSua assinatura foi cancelada.`,
         conversationId
       );
       setTimeout(() => navigate('/'), 5000);

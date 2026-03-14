@@ -151,7 +151,7 @@ const Pricing = () => {
           fontWeight: '500',
           color: '#991b1b',
         }}>
-          ⏰ Seu plano expirou. Renove para continuar acessando o dashboard.
+          Seu plano expirou. Renove para continuar acessando o dashboard.
         </div>
       )}
 

@@ -79,7 +79,11 @@ interface Proposta {
   status: string;
 }
 
-// Monthly chart data
+interface ClientMetric {
+  project_value: number | null;
+  created_at: string;
+}
+
 const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const Dashboard = () => {

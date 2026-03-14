@@ -251,7 +251,11 @@ const MeusClientes = () => {
                         </div>
                       )}
                       <div className="flex gap-2 mt-auto">
-                        <button onClick={() => navigate('/mensagens')}
+                        <button
+                          onClick={() => {
+                            const conversationId = getConversationIdFromNotes(client.notes);
+                            navigate(conversationId ? `/mensagens?conversation=${conversationId}` : '/mensagens');
+                          }}
                           className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white hover:brightness-110" style={{ background: '#29B2FE' }}>
                           <Mail size={14} className="inline mr-1" /> Mensagem
                         </button>

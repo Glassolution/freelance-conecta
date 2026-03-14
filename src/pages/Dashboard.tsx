@@ -11,6 +11,7 @@ import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePlanStatus } from '@/hooks/usePlanStatus';
 
 const plataformas = [
   { name: 'Workana', role: 'Plataforma de Serviços', status: 'Conectado' },
@@ -88,12 +89,20 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { isActive, planLabel, loading: planLoading } = usePlanStatus();
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') {
       toast({ title: '🎉 Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
     }
   }, [searchParams, toast]);
+
+  // Redirect free/expired users to pricing
+  useEffect(() => {
+    if (!planLoading && !isActive) {
+      navigate('/pricing?reason=no_plan', { replace: true });
+    }
+  }, [planLoading, isActive, navigate]);
 
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [propostas, setPropostas] = useState<Proposta[]>([]);
@@ -197,7 +206,12 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-sm font-heading font-bold text-[#111] leading-tight">{displayName}</p>
-              <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: isActive ? '#29B2FE' : '#9ca3af' }}>
+                  {planLabel}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -222,7 +236,7 @@ const Dashboard = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6] transition-colors">
+          <button onClick={() => navigate('/configuracoes')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6] transition-colors">
             <Settings size={18} /> Configurações
           </button>
           

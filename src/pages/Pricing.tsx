@@ -119,8 +119,38 @@ const Pricing = () => {
     navigate(`/checkout?plan=${plan.id}`);
   };
 
+  const reason = searchParams.get('reason');
+
   return (
     <div style={{ minHeight: '100vh', background: '#f4f6fb', fontFamily: 'Inter, sans-serif' }}>
+      {/* Reason Banner */}
+      {reason === 'no_plan' && (
+        <div style={{
+          background: '#fffbeb',
+          borderBottom: '1px solid #f59e0b',
+          padding: '12px 16px',
+          textAlign: 'center',
+          fontSize: '14px',
+          fontWeight: '500',
+          color: '#92400e',
+        }}>
+          🔒 Assine um plano para acessar o dashboard
+        </div>
+      )}
+      {reason === 'expired' && (
+        <div style={{
+          background: '#fef2f2',
+          borderBottom: '1px solid #ef4444',
+          padding: '12px 16px',
+          textAlign: 'center',
+          fontSize: '14px',
+          fontWeight: '500',
+          color: '#991b1b',
+        }}>
+          ⏰ Seu plano expirou. Renove para continuar acessando o dashboard.
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 16px' }}>
         <button

@@ -377,8 +377,8 @@ import ProfileDropdown from '@/components/ProfileDropdown';
               </div>
               <div className="hidden md:block">
                 <p className="text-sm font-body font-medium text-[#111] leading-tight">{firstName}</p>
-                <p className="text-[10px] font-body font-semibold" style={{ color: isActive ? '#29B2FE' : planLabel === 'Expirado' ? '#ef4444' : '#9ca3af' }}>
-                  {isActive ? `• ${planLabel}` : planLabel === 'Expirado' ? '• Expirado' : '• Gratuito'}
+                <p className="text-[10px] font-body font-semibold" style={{ color: planAccentColor }}>
+                  • {planLabel}
                 </p>
               </div>
               <ChevronDown size={14} className="text-[#9CA3B4] hidden md:block" />

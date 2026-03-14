@@ -3,7 +3,138 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getPlanLabel } from '@/lib/plan';
 import './landing.css';
-...
+
+const LogoSvg = () => (
+  <svg width="18" height="18" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <rect width="40" height="40" rx="9" fill="#29B2FE"/>
+    <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily="Inter, sans-serif" fontWeight="800" fontSize="22" fill="white">M</text>
+  </svg>
+);
+
+const ChevronSvg = () => (
+  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 10L4 6h8z" /></svg>
+);
+
+const Index = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; plan: string | null } | null>(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [activePain, setActivePain] = useState(0);
+  const statRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const featRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const targets = [12400];
+    statRefs.current.forEach((el, i) => {
+      if (!el || i >= targets.length) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          const target = targets[i];
+          let current = 0;
+          const step = target / (1600 / 16);
+          const interval = setInterval(() => {
+            current = Math.min(current + step, target);
+            el.textContent = Math.floor(current).toLocaleString('pt-BR') + '+';
+            if (current >= target) clearInterval(interval);
+          }, 16);
+          observer.disconnect();
+        },
+        { threshold: 0.5 }
+      );
+      observer.observe(el);
+    });
+
+    featRefs.current.forEach((el) => {
+      if (!el) return;
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(16px)';
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          setTimeout(() => {
+            el.style.transition = 'opacity .4s ease, transform .4s ease';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+          }, 80);
+          observer.disconnect();
+        },
+        { threshold: 0.2 }
+      );
+      observer.observe(el);
+    });
+  }, []);
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        const { data: p } = await supabase
+          .from('profiles')
+          .select('full_name, plan')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+
+        if (p) {
+          setProfile({ full_name: p.full_name, plan: p.plan });
+        }
+      }
+    };
+
+    bootstrap();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (!currentUser) {
+        setProfile(null);
+        return;
+      }
+
+      const { data: p } = await supabase
+        .from('profiles')
+        .select('full_name, plan')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if (p) {
+        setProfile({ full_name: p.full_name, plan: p.plan });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileMenuOpen]);
+
+  const initials = (() => {
+    const source = profile?.full_name?.trim() || user?.email?.split('@')[0] || 'U';
+    const parts = source.split(' ').filter(Boolean);
+
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+
+    return source.slice(0, 2).toUpperCase();
+  })();
+
   const planLabel = getPlanLabel(profile?.plan);
 
   const handleSignOut = async () => {

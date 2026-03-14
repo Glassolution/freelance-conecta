@@ -84,6 +84,10 @@ interface ClientMetric {
   created_at: string;
 }
 
+interface MessageMetric {
+  created_at: string;
+}
+
 const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const Dashboard = () => {
@@ -98,23 +102,10 @@ const Dashboard = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileTriggerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (searchParams.get('welcome') === 'true') {
-      toast({ title: 'Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
-    }
-  }, [searchParams, toast]);
-
-  // Redirect free/expired users to pricing
-  useEffect(() => {
-    if (!planLoading && !isActive) {
-      navigate('/pricing?reason=no_plan', { replace: true });
-    }
-  }, [planLoading, isActive, navigate]);
-
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [propostas, setPropostas] = useState<Proposta[]>([]);
   const [clientsData, setClientsData] = useState<ClientMetric[]>([]);
-  const [messagesSentCount, setMessagesSentCount] = useState(0);
+  const [messagesData, setMessagesData] = useState<MessageMetric[]>([]);
   const [loading, setLoading] = useState(true);
 
   const initials = getUserInitials(user);

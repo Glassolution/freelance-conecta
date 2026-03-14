@@ -196,8 +196,8 @@ const Ferramentas = () => {
                     className="bg-white rounded-2xl border border-[#E8ECF4] p-5 hover:shadow-lg transition-shadow group"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl" style={{ background: 'rgba(37,99,235,0.08)' }}>
-                        {tool.icon}
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'rgba(41,178,254,0.08)' }}>
+                        <category.icon size={20} color="#29B2FE" />
                       </div>
                       <a
                         href={tool.url}

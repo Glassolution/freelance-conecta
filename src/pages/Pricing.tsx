@@ -138,7 +138,7 @@ const Pricing = () => {
           fontWeight: '500',
           color: '#92400e',
         }}>
-          🔒 Assine um plano para acessar o dashboard
+          Assine um plano para acessar o dashboard
         </div>
       )}
       {reason === 'expired' && (

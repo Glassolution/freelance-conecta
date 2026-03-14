@@ -203,9 +203,25 @@ const Dashboard = () => {
       <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#edf0f7]" style={{ background: '#ffffff' }}>
         <div>
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
-              {initials}
-            </div>
+            <svg
+              viewBox="0 0 40 40"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0 }}
+            >
+              <rect width="40" height="40" rx="9" fill="#29B2FE" />
+              <text
+                x="50%"
+                y="54%"
+                dominantBaseline="central"
+                textAnchor="middle"
+                fontFamily="Inter, sans-serif"
+                fontWeight="800"
+                fontSize="22"
+                fill="white"
+              >
+                M
+              </text>
+            </svg>
             <div>
               <p className="text-sm font-heading font-bold text-[#111] leading-tight">{displayName}</p>
               <div className="flex items-center gap-1.5">

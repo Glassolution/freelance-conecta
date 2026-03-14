@@ -53,6 +53,12 @@ function nameInitials(name: string) {
 const COLORS = ['#29B2FE', '#6366f1', '#f59e0b', '#10b981', '#ec4899', '#8b5cf6'];
 function avatarColor(name: string) { let h = 0; for (const c of name) h = c.charCodeAt(0) + ((h << 5) - h); return COLORS[Math.abs(h) % COLORS.length]; }
 
+function getConversationIdFromNotes(notes?: string | null): string | null {
+  if (!notes) return null;
+  const match = notes.match(/conversation_id=([0-9a-fA-F-]{36})/i);
+  return match?.[1] ?? null;
+}
+
 const MeusClientes = () => {
   const navigate = useNavigate();
   const location = useLocation();

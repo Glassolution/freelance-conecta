@@ -76,6 +76,7 @@ const MeusAnuncios = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingAd, setEditingAd] = useState<Ad | null>(null);
   const [showProposalsModal, setShowProposalsModal] = useState<Ad | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [proposalsLoading, setProposalsLoading] = useState(false);
 

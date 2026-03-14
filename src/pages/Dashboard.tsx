@@ -206,7 +206,12 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-sm font-heading font-bold text-[#111] leading-tight">{displayName}</p>
-              <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: isActive ? '#29B2FE' : '#9ca3af' }}>
+                  {planLabel}
+                </span>
+              </div>
             </div>
           </div>
 

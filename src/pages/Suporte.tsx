@@ -602,7 +602,7 @@ const Suporte = () => {
                           M
                         </div>
                         <div className="min-w-0">
-                          <div className="prose prose-sm prose-invert max-w-none text-[hsl(var(--support-text-subtle))] [&_p]:mb-1 [&_p]:mt-0 [&_ul]:mb-1 [&_li]:mb-0 [&_strong]:text-[hsl(var(--support-text))]">
+                          <div className="prose prose-sm max-w-none text-[hsl(var(--support-text-subtle))] [&_p]:mb-1 [&_p]:mt-0 [&_ul]:mb-1 [&_li]:mb-0 [&_strong]:text-[hsl(var(--support-text))]">
                             <ReactMarkdown>{message.content}</ReactMarkdown>
                           </div>
                           <p className="mt-1 text-xs text-[hsl(var(--support-text-faint))]">{formatTime(message.createdAt)}</p>

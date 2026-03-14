@@ -243,7 +243,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
 
             {[
               {
-                icon: <Moon size={16} />, title: '🌙 Modo Noturno',
+                icon: <Moon size={16} />, title: 'Modo Noturno',
                 description: 'Ativar tema escuro na plataforma',
                 value: darkMode,
                 onChange: handleToggleDarkMode,

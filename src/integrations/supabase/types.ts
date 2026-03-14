@@ -282,6 +282,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          mp_payment_id: string | null
           onboarding_budget: string | null
           onboarding_completed: boolean | null
           onboarding_goal: string | null
@@ -297,6 +298,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          mp_payment_id?: string | null
           onboarding_budget?: string | null
           onboarding_completed?: boolean | null
           onboarding_goal?: string | null
@@ -312,6 +314,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          mp_payment_id?: string | null
           onboarding_budget?: string | null
           onboarding_completed?: boolean | null
           onboarding_goal?: string | null
@@ -365,6 +368,7 @@ export type Database = {
           days_active: number | null
           email: string | null
           id: string
+          mp_refund_id: string | null
           plan: string | null
           reason: string | null
           status: string
@@ -375,6 +379,7 @@ export type Database = {
           days_active?: number | null
           email?: string | null
           id?: string
+          mp_refund_id?: string | null
           plan?: string | null
           reason?: string | null
           status?: string
@@ -385,6 +390,7 @@ export type Database = {
           days_active?: number | null
           email?: string | null
           id?: string
+          mp_refund_id?: string | null
           plan?: string | null
           reason?: string | null
           status?: string

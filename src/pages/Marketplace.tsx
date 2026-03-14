@@ -1176,7 +1176,7 @@ const Marketplace = () => {
                 {workanaUsedFallback && (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
                     <p className="text-xs font-body text-amber-700">
-                      ⚠️ Exibindo últimas vagas salvas da Workana (serviço temporariamente indisponível)
+                      Exibindo últimas vagas salvas da Workana (serviço temporariamente indisponível)
                     </p>
                   </div>
                 )}

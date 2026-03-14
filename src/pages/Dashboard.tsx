@@ -202,6 +202,14 @@ const Dashboard = () => {
   const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   const chartData = useMemo(() => {
+    if (isAnnualUnavailable) {
+      return monthLabels.map((label) => ({
+        name: label,
+        faturamento: 0,
+        clientes: 0,
+      }));
+    }
+
     const now = new Date();
 
     if (selectedView === 'Mensal') {
@@ -291,7 +299,7 @@ const Dashboard = () => {
     });
 
     return data;
-  }, [clientsData, selectedView, rangeStart]);
+  }, [clientsData, selectedView, rangeStart, isAnnualUnavailable]);
 
   const views = ['Últimas 24h', 'Semanal', 'Mensal', 'Anual'];
 

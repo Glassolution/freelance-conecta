@@ -186,7 +186,7 @@ const Ferramentas = () => {
           {toolCategories.map((category) => (
             <div key={category.title}>
               <h2 className="font-heading font-bold text-lg text-[#1A1D26] mb-4 flex items-center gap-2">
-                <span>{category.emoji}</span>
+                <category.icon size={20} color="#29B2FE" />
                 {category.title}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

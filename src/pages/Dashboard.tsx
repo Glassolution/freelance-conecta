@@ -577,7 +577,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <SettingsModal open={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+      
     </div>
   );
 };

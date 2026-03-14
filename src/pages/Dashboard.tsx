@@ -89,12 +89,20 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { isActive, planLabel, loading: planLoading } = usePlanStatus();
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') {
       toast({ title: '🎉 Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
     }
   }, [searchParams, toast]);
+
+  // Redirect free/expired users to pricing
+  useEffect(() => {
+    if (!planLoading && !isActive) {
+      navigate('/pricing?reason=no_plan', { replace: true });
+    }
+  }, [planLoading, isActive, navigate]);
 
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [propostas, setPropostas] = useState<Proposta[]>([]);

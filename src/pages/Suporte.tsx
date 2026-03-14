@@ -205,7 +205,7 @@ const Suporte = () => {
               <h1 className="text-3xl font-bold text-[#111827]">Bem-vindo ao Suporte Markfy</h1>
               <p className="text-[#6B7280] mt-2 text-base">Como podemos te ajudar hoje?</p>
 
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
                 {suggestedTopics.map((topic) => (
                   <button
                     key={topic}

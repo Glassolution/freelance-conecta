@@ -3,17 +3,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 
-const __LOVA_FIX_TRIGGER__ =
-  (globalThis as { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ ?? (() => {});
-
-(globalThis as { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ = __LOVA_FIX_TRIGGER__;
-
-if (typeof window !== "undefined") {
-  (window as Window & { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ = __LOVA_FIX_TRIGGER__;
-}
-
-void __LOVA_FIX_TRIGGER__;
-
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {

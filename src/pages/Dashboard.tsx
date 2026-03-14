@@ -222,15 +222,7 @@ const Dashboard = () => {
                 M
               </text>
             </svg>
-            <div>
-              <p className="text-sm font-heading font-bold text-[#111] leading-tight">{displayName}</p>
-              <div className="flex items-center gap-1.5">
-                <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: isActive ? '#29B2FE' : '#9ca3af' }}>
-                  {planLabel}
-                </span>
-              </div>
-            </div>
+            <span className="font-heading font-extrabold text-lg text-[#111] tracking-tight">Markfy</span>
           </div>
 
           <nav className="flex flex-col gap-1">
@@ -304,7 +296,9 @@ const Dashboard = () => {
               </div>
               <div className="hidden md:block">
                 <p className="text-sm font-body font-medium text-[#111] leading-tight">{firstName}</p>
-                <p className="text-[10px] font-body text-[#29B2FE]">• Freelancer</p>
+                <p className="text-[10px] font-body font-semibold" style={{ color: isActive ? '#29B2FE' : planLabel === 'Expirado' ? '#ef4444' : '#9ca3af' }}>
+                  {isActive ? `• ${planLabel}` : planLabel === 'Expirado' ? '• Expirado' : '• Gratuito'}
+                </p>
               </div>
               <ChevronDown size={14} className="text-[#9CA3B4] hidden md:block" />
             </div>

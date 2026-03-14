@@ -194,7 +194,7 @@ const Checkout = () => {
         <div style={{ flex: '1', minWidth: '300px' }}>
           <div style={{ background: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
             <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              📋 Resumo do Pedido
+              Resumo do Pedido
             </h2>
             <div style={{ borderBottom: '1px solid #f3f4f6', paddingBottom: '16px', marginBottom: '16px' }}>
               <p style={{ fontWeight: '600', color: '#111827', fontSize: '16px' }}>Plano {plan.name} Markfy</p>

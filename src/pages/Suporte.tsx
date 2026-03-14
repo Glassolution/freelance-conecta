@@ -159,7 +159,7 @@ const Suporte = () => {
       {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Claro! Qual o motivo do reembolso?',
+        content: 'Entendido! Para solicitar seu reembolso, preciso de algumas informações:\n1️⃣ Qual o motivo do reembolso?',
         createdAt: new Date().toISOString(),
       },
     ]);

@@ -18,7 +18,7 @@ const suggestedQuestions = [
   'Como funciona o marketplace?',
   'Como cancelar meu plano?',
   'Não consigo acessar o dashboard',
-  'Quero solicitar reembolso',
+  '💰 Solicitar reembolso',
 ];
 
 const Suporte = () => {

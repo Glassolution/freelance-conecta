@@ -91,7 +91,8 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { isActive, planLabel, loading: planLoading } = usePlanStatus();
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileTriggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') {

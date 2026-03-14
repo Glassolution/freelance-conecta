@@ -3,12 +3,19 @@ declare global {
   var __LOVA_FIX_TRIGGER__: (() => void) | undefined;
 }
 
-if (typeof globalThis.__LOVA_FIX_TRIGGER__ !== "function") {
-  globalThis.__LOVA_FIX_TRIGGER__ = () => {};
+const globalScope = globalThis as typeof globalThis & {
+  __LOVA_FIX_TRIGGER__?: () => void;
+};
+
+if (typeof globalScope.__LOVA_FIX_TRIGGER__ !== "function") {
+  globalScope.__LOVA_FIX_TRIGGER__ = () => {};
+}
+
+if (typeof window !== "undefined") {
+  (window as typeof window & { __LOVA_FIX_TRIGGER__?: () => void }).__LOVA_FIX_TRIGGER__ = globalScope.__LOVA_FIX_TRIGGER__;
 }
 
 try {
-  // Force-create a true global `var` fallback for scripts that access it as an identifier.
   (0, eval)("var __LOVA_FIX_TRIGGER__ = globalThis.__LOVA_FIX_TRIGGER__;");
 } catch {
   try {

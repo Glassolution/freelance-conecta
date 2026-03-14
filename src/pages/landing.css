@@ -80,6 +80,95 @@ body {
 }
 .btn-nav-signup:hover { background: var(--blue-hover); }
 
+.nav-profile-wrap { position: relative; }
+.btn-nav-profile {
+  height: 36px;
+  min-width: 64px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  border-radius: 9px;
+  padding: 0 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-nav-profile:hover { background: #f3f4f6; }
+.btn-nav-profile-initials {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #111111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+.btn-nav-profile-chevron {
+  width: 12px;
+  height: 12px;
+  color: #6b7280;
+}
+
+.nav-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 290px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  z-index: 120;
+}
+.nav-profile-head {
+  padding: 8px;
+}
+.nav-profile-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.nav-profile-email {
+  font-size: 12px;
+  color: var(--sub);
+  margin-bottom: 4px;
+}
+.nav-profile-plan {
+  font-size: 12px;
+  color: var(--sub);
+}
+.nav-profile-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+.nav-profile-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.nav-profile-item:hover { background: #f3f4f6; }
+.nav-profile-item-danger {
+  color: #b91c1c;
+}
+.nav-profile-item-danger:hover {
+  background: #fef2f2;
+}
+
 /* HERO */
 .hero {
   display: grid; grid-template-columns: 1fr 1fr;
@@ -455,6 +544,10 @@ body {
   .landing-nav { padding: 0 12px 0 12px; }
   .nav-links { display: none; }
   .btn-nav-login { display: none; }
+  .nav-profile-dropdown {
+    width: 260px;
+    right: -8px;
+  }
 }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; padding: 100px 20px 40px; min-height: auto; }

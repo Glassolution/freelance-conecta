@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import './landing.css';
 
 const LogoSvg = () => (
@@ -16,10 +16,13 @@ const ChevronSvg = () => (
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; plan: string | null } | null>(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [activePain, setActivePain] = useState(0);
   const statRefs = useRef<(HTMLDivElement | null)[]>([]);
   const featRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // Count-up animation for stats
@@ -65,6 +68,57 @@ const Index = () => {
     });
   }, []);
 
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+
+      setUser(session.user);
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, plan')
+        .eq('id', session.user.id)
+        .single();
+
+      setProfile(data ?? null);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileMenuOpen]);
+
+  const initials = (() => {
+    const source = profile?.full_name?.trim() || user?.email?.split('@')[0] || 'U';
+    const parts = source.split(' ').filter(Boolean);
+
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+
+    return source.slice(0, 2).toUpperCase();
+  })();
+
+  const planLabel = profile?.plan && profile.plan !== 'free' ? profile.plan : 'Gratuito';
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
+
   const painItems = [
     {
       icon: '\uD83D\uDD0D',
@@ -109,10 +163,44 @@ const Index = () => {
           </ul>
           <div className="nav-right">
             {user ? (
-              <button className="btn-nav-signup" onClick={() => navigate('/dashboard')}>Painel</button>
+              <>
+                <button className="btn-nav-signup" onClick={() => navigate('/dashboard')}>Painel</button>
+
+                <div className="nav-profile-wrap" ref={profileMenuRef}>
+                  <button className="btn-nav-profile" onClick={() => setProfileMenuOpen((prev) => !prev)}>
+                    <span className="btn-nav-profile-initials">{initials}</span>
+                    <span className="btn-nav-profile-chevron"><ChevronSvg /></span>
+                  </button>
+
+                  {profileMenuOpen && (
+                    <div className="nav-profile-dropdown">
+                      <div className="nav-profile-head">
+                        <div className="nav-profile-name">{profile?.full_name || 'Usuário'}</div>
+                        <div className="nav-profile-email">{user.email}</div>
+                        <div className="nav-profile-plan">Plano: {planLabel}</div>
+                      </div>
+
+                      <div className="nav-profile-divider" />
+
+                      <button className="nav-profile-item" onClick={() => { setProfileMenuOpen(false); navigate('/pricing'); }}>
+                        👤 Minha Conta
+                      </button>
+                      <button className="nav-profile-item" onClick={() => { setProfileMenuOpen(false); navigate('/pricing'); }}>
+                        ⭐ Fazer Upgrade
+                      </button>
+
+                      <div className="nav-profile-divider" />
+
+                      <button className="nav-profile-item nav-profile-item-danger" onClick={handleSignOut}>
+                        ↩️ Sair da conta
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <>
-                <button className="btn-nav-login" onClick={() => navigate('/auth')}>Login</button>
+                <button className="btn-nav-login" onClick={() => navigate('/auth')}>Entrar</button>
                 <button className="btn-nav-signup" onClick={() => navigate('/auth')}>Cadastrar</button>
               </>
             )}

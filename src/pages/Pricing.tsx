@@ -85,7 +85,7 @@ const Pricing = () => {
     
     if (paymentStatus === 'failure') {
       toast({
-        title: '❌ Pagamento não aprovado',
+        title: 'Pagamento não aprovado',
         description: 'Tente novamente ou use outro método de pagamento.',
         variant: 'destructive',
       });

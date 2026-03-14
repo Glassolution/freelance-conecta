@@ -7,9 +7,10 @@ import {
   TrendingUp, TrendingDown, ExternalLink, Eye, FileText, DollarSign, UserCheck
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const plataformas = [
   { name: 'Workana', role: 'Plataforma de Serviços', status: 'Conectado' },
@@ -84,7 +85,15 @@ const Dashboard = () => {
   const [selectedView, setSelectedView] = useState('Semanal');
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (searchParams.get('welcome') === 'true') {
+      toast({ title: '🎉 Bem-vindo ao plano Pro!', description: 'Seu plano foi ativado com sucesso.' });
+    }
+  }, [searchParams, toast]);
 
   const [vagas, setVagas] = useState<Vaga[]>([]);
   const [propostas, setPropostas] = useState<Proposta[]>([]);

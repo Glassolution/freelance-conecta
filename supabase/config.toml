@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.freelancer-jobs]
 verify_jwt = false
+
+[functions.mp-webhook]
+verify_jwt = false
+
+[functions.mp-create-pix]
+verify_jwt = false
+
+[functions.mp-check-payment]
+verify_jwt = false

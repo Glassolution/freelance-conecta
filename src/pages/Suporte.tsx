@@ -138,7 +138,7 @@ const Suporte = () => {
 
     if (isRefundIntent(trimmed)) {
       setRefundStep('awaiting_reason');
-      pushMessage('assistant', 'Claro! Qual o motivo do reembolso?');
+      pushMessage('assistant', 'Entendido! Para solicitar seu reembolso, preciso de algumas informações:\n1️⃣ Qual o motivo do reembolso?');
       return;
     }
 

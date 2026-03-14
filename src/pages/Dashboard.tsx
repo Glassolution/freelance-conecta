@@ -246,20 +246,33 @@ const Dashboard = () => {
           </nav>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <button onClick={() => setShowSettingsModal(true)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6] transition-colors">
-            <Settings size={18} /> Configurações
-          </button>
-          
-          <div className="border-t border-[#E8ECF4] my-2"></div>
+         <div className="border-t border-[#E8ECF4] my-2"></div>
           
           <button onClick={handleGoHome} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
             <Home size={18} /> Página Inicial
           </button>
-          
-          <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#ef4444] hover:bg-red-500/10 transition-colors">
-            <LogOut size={18} /> Encerrar Sessão
-          </button>
+
+          <div className="relative mt-2" ref={profileTriggerRef}>
+            <button
+              type="button"
+              onClick={() => setProfileDropdownOpen((prev) => !prev)}
+              className="flex w-full items-center gap-3 rounded-xl border border-[#E8ECF4] px-3 py-2.5 hover:bg-[#f3f4f6] transition-colors"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#29B2FE] to-[#0077cc] flex items-center justify-center text-white text-xs font-bold shrink-0">
+                {initials}
+              </div>
+              <div className="min-w-0 text-left">
+                <p className="text-sm font-medium text-[#111] truncate leading-tight">{displayName}</p>
+                <p className="text-[11px] text-[#6B7280] truncate">{user?.email}</p>
+              </div>
+            </button>
+
+            <ProfileDropdown
+              open={profileDropdownOpen}
+              onClose={() => setProfileDropdownOpen(false)}
+              anchorRef={profileTriggerRef}
+            />
+          </div>
         </div>
       </aside>
 

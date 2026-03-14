@@ -7,42 +7,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-type EmailPayload = {
-  to: string;
-  subject: string;
-  body: string;
-};
-
-const sendEmail = async ({ to, subject, body }: EmailPayload) => {
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  if (!resendApiKey) {
-    console.warn("RESEND_API_KEY not configured, skipping email delivery");
-    return false;
-  }
-
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Markfy <noreply@markfy.com.br>",
-      to,
-      subject,
-      text: body,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Resend email error:", errorText);
-    return false;
-  }
-
-  return true;
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -120,12 +84,7 @@ serve(async (req) => {
       ? Math.floor((Date.now() - planStarted.getTime()) / (1000 * 60 * 60 * 24))
       : 999;
 
-    const planLabel = profile.plan === "mensal"
-      ? "Mensal (R$99,90)"
-      : profile.plan === "trimestral"
-        ? "Trimestral (R$149,90)"
-        : profile.plan;
-
+    // Outside 7-day window — cancel only, no refund
     if (daysDiff > 7) {
       await admin
         .from("profiles")
@@ -144,39 +103,24 @@ serve(async (req) => {
       await admin.from("notifications").insert({
         user_id: user.id,
         title: "Assinatura cancelada",
-        message: `Sua assinatura ${planLabel} foi cancelada. Reembolso indisponível (ativado há ${daysDiff} dias, prazo: 7 dias).`,
-        type: "refund",
+        message: `Sua assinatura foi cancelada. Como seu plano estava ativo há ${daysDiff} dias, o reembolso não foi possível (prazo máximo: 7 dias).`,
+        type: "cancelled",
       });
 
-      if (profile.email) {
-        await sendEmail({
-          to: profile.email,
-          subject: "Assinatura Markfy cancelada",
-          body: `Olá ${profile.full_name || "cliente"},\n\nSua assinatura foi cancelada. Como seu plano estava ativo há ${daysDiff} dias, o reembolso não pôde ser processado (prazo: 7 dias).\n\nEquipe Markfy`,
-        });
-      }
-
       return new Response(
-        JSON.stringify({
-          success: false,
-          cancelled: true,
-          daysDiff,
-          error: "Fora do prazo de 7 dias",
-        }),
+        JSON.stringify({ success: false, cancelled: true, daysDiff, error: "Fora do prazo de 7 dias" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (!profile.mp_payment_id) {
       return new Response(
-        JSON.stringify({
-          success: false,
-          error: "ID do pagamento não encontrado. Entre em contato pelo suporte.",
-        }),
+        JSON.stringify({ success: false, error: "ID do pagamento não encontrado. Entre em contato pelo suporte." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    // Process refund via Mercado Pago
     try {
       const mpRefundRes = await fetch(`https://api.mercadopago.com/v1/payments/${profile.mp_payment_id}/refunds`, {
         method: "POST",
@@ -213,25 +157,13 @@ serve(async (req) => {
 
       await admin.from("notifications").insert({
         user_id: user.id,
-        title: "✅ Reembolso processado",
-        message: "Seu reembolso foi aprovado e será estornado em até 5 dias úteis via Mercado Pago.",
+        title: "✅ Reembolso aprovado!",
+        message: `Seu reembolso foi processado. O valor será estornado em até 5 dias úteis via Mercado Pago.\nID: ${mpRefundId}`,
         type: "refund",
       });
 
-      if (profile.email) {
-        await sendEmail({
-          to: profile.email,
-          subject: "✅ Reembolso aprovado - Markfy",
-          body: `Olá ${profile.full_name || "cliente"},\n\nSeu reembolso foi processado com sucesso!\n\n📋 Detalhes:\n• Plano: ${planLabel}\n• Valor: será estornado em até 5 dias úteis\n• Método: Mercado Pago\n• ID do reembolso: ${mpRefundId}\n\nSua assinatura foi cancelada.\n\nObrigado por usar a Markfy!\nEquipe Markfy`,
-        });
-      }
-
       return new Response(
-        JSON.stringify({
-          success: true,
-          refundId: mpRefundId,
-          daysDiff,
-        }),
+        JSON.stringify({ success: true, refundId: mpRefundId, daysDiff }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } catch (error) {
@@ -244,6 +176,13 @@ serve(async (req) => {
         days_active: daysDiff,
         status: "failed",
         reason: errorMessage,
+      });
+
+      await admin.from("notifications").insert({
+        user_id: user.id,
+        title: "❌ Erro no reembolso",
+        message: "Não foi possível processar seu reembolso automaticamente. Entre em contato: suporte@markfy.com.br",
+        type: "error",
       });
 
       return new Response(JSON.stringify({ success: false, error: errorMessage }), {
@@ -259,4 +198,3 @@ serve(async (req) => {
     );
   }
 });
-

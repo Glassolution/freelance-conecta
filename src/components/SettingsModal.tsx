@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { X, Moon, Bell, Mail, MessageCircle, Receipt, RotateCcw, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { X, Moon, Bell, Mail, MessageCircle, RotateCcw, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';

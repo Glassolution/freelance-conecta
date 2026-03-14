@@ -505,7 +505,7 @@ const Dashboard = () => {
                 {/* Bar Chart - Desempenho */}
                 <div className="xl:col-span-2 bg-white rounded-2xl border border-[#edf0f7] p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-heading font-bold text-base text-[#111]">Faturamento e Clientes (dados reais)</h3>
+                    <h3 className="font-heading font-bold text-base text-[#111]">Faturamento e Clientes ({selectedView})</h3>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-6">
                         {[
@@ -519,7 +519,7 @@ const Dashboard = () => {
                         ))}
                       </div>
                       <button className="flex items-center gap-1 text-xs font-body text-[#6B7280] border border-[#edf0f7] px-3 py-1.5 rounded-lg hover:bg-[#f8f9fc] transition-colors">
-                        Anual <ChevronDown size={12} />
+                        {selectedView} <ChevronDown size={12} />
                       </button>
                     </div>
                   </div>

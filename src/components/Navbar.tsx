@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MarkfyLogo from '@/components/MarkfyLogo';
@@ -26,21 +27,21 @@ const Navbar = () => {
     >
       <nav className="container mx-auto flex items-center justify-between h-16 px-4 lg:px-8">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <MarkfyLogo size={28} />
           <span className="font-heading font-extrabold text-xl text-foreground tracking-tight">Markfy</span>
-        </a>
+        </Link>
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-8">
           {links.map((link) => (
-            <a
+            <Link
               key={link}
-              href="#"
+              to="/suporte"
               className="text-sm font-body font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {link}
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -70,13 +71,14 @@ const Navbar = () => {
           style={{ background: 'rgba(6,9,18,0.95)', backdropFilter: 'blur(20px)' }}
         >
           {links.map((link) => (
-            <a
+            <Link
               key={link}
-              href="#"
+              to="/suporte"
               className="block py-3 text-sm font-body font-medium text-muted-foreground hover:text-foreground"
+              onClick={() => setMobileOpen(false)}
             >
               {link}
-            </a>
+            </Link>
           ))}
           <div className="flex gap-3 mt-4">
             <Button variant="ghost" className="text-foreground font-body text-sm flex-1">

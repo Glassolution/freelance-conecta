@@ -86,6 +86,7 @@ const Mensagens = () => {
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const fetchConversations = async () => {
     if (!user) return;

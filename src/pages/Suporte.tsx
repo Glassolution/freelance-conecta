@@ -304,7 +304,7 @@ const Suporte = () => {
     if (!user?.id) return;
 
     setRefundStep('processing');
-    await pushAssistantMessage('🔍 Verificando sua assinatura e processando reembolso via Mercado Pago...', conversationId);
+    await pushAssistantMessage('Verificando sua assinatura e processando reembolso via Mercado Pago...', conversationId);
     setIsThinking(true);
 
     const { data, error } = await supabase.functions.invoke('process-refund', {

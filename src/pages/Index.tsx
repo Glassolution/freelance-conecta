@@ -68,6 +68,57 @@ const Index = () => {
     });
   }, []);
 
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+
+      setUser(session.user);
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, plan')
+        .eq('id', session.user.id)
+        .single();
+
+      setProfile(data ?? null);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileMenuOpen]);
+
+  const initials = (() => {
+    const source = profile?.full_name?.trim() || user?.email?.split('@')[0] || 'U';
+    const parts = source.split(' ').filter(Boolean);
+
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+
+    return source.slice(0, 2).toUpperCase();
+  })();
+
+  const planLabel = profile?.plan && profile.plan !== 'free' ? profile.plan : 'Gratuito';
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
+
   const painItems = [
     {
       icon: '\uD83D\uDD0D',

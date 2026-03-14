@@ -119,6 +119,17 @@ const Pricing = () => {
     navigate(`/checkout?plan=${plan.id}`);
   };
 
+  const handleBack = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+
+    navigate('/', { replace: true });
+  };
+
   const reason = searchParams.get('reason');
 
   return (
@@ -154,7 +165,7 @@ const Pricing = () => {
       {/* Header */}
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 16px' }}>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => void handleBack()}
           style={{
             display: 'flex',
             alignItems: 'center',

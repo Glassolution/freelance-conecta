@@ -323,7 +323,7 @@ const SettingsModal = ({ open, onClose }: SettingsModalProps) => {
             <h3 className="text-sm font-bold tracking-wide text-[#111] uppercase">Suporte</h3>
 
             <div className="rounded-xl border border-[#E8ECF4] p-4">
-              <p className="text-sm font-semibold text-[#111]">💬 Suporte IA</p>
+              <p className="text-sm font-semibold text-[#111]">Suporte IA</p>
               <p className="text-xs text-[#6B7280] mt-1">Tire suas dúvidas com nossa IA</p>
               <button
                 onClick={() => { onClose(); navigate('/suporte'); }}

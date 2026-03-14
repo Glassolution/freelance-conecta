@@ -450,7 +450,7 @@ const Dashboard = () => {
                     ].map((m) => (
                       <div key={m.label} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-base">{m.icon}</span>
+                          <m.iconComponent size={16} className="text-[#9CA3B4]" />
                           <span className="text-xs font-body text-[#6B7280]">{m.label}</span>
                         </div>
                         <span className="text-sm font-heading font-bold text-[#111]">{m.value}</span>

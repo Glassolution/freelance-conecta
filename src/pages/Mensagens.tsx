@@ -335,7 +335,7 @@ const Mensagens = () => {
           {!activeConv ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-5xl mb-4">💬</div>
+                <div className="w-12 h-12 rounded-xl bg-[#f3f4f6] flex items-center justify-center mb-4"><MessageSquare size={24} className="text-[#9CA3B4]" /></div>
                 <p className="text-lg font-bold text-[#111827] mb-1">Selecione uma conversa para começar</p>
                 <p className="text-sm text-[#9CA3B4]">Escolha uma conversa na lista ao lado</p>
               </div>

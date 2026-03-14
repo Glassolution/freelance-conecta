@@ -415,7 +415,7 @@ const Suporte = () => {
           <button
             type="button"
             onClick={() => void createConversation()}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[hsl(var(--support-border))] bg-[hsl(var(--support-surface))] px-3 py-2 text-sm font-medium text-[hsl(var(--support-text))] transition-colors hover:bg-[hsl(var(--support-hover))]"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--support-primary))] px-3 py-2 text-sm font-medium text-[hsl(var(--support-primary-foreground))] transition-opacity hover:opacity-90"
           >
             <Plus size={16} /> Nova conversa
           </button>

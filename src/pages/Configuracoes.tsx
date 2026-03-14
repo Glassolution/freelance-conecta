@@ -7,65 +7,15 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlanStatus } from '@/hooks/usePlanStatus';
-
-const sidebarLinks = [
-  { icon: Home, label: 'Início', path: '/dashboard' },
-  { icon: ShoppingBag, label: 'Marketplace', path: '/marketplace' },
-  { icon: Megaphone, label: 'Meus Anúncios', path: '/meus-anuncios' },
-  { icon: Users, label: 'Meus Clientes', path: '/meus-clientes' },
-  { icon: MessageSquare, label: 'Mensagens', path: '/mensagens' },
-  { icon: Globe, label: 'Criador.ia', path: null },
-  { icon: CheckCircle, label: 'Serviços Aprovados', path: null },
-  { icon: Send, label: 'Serviços Enviados', path: null },
-  { icon: PackageCheck, label: 'Serviços Entregues', path: null },
-  { icon: Wrench, label: 'Ferramentas', path: '/ferramentas' },
-];
-
-function getUserInitials(user: any): string {
-  const name = user?.user_metadata?.full_name;
-  if (name) return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
-  return (user?.email?.[0] || 'U').toUpperCase();
-}
-
-function getUserDisplayName(user: any): string {
-  return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
-}
-
-const Configuracoes = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, signOut } = useAuth();
-  const { plan, planExpiresAt, isActive, loading, planLabel } = usePlanStatus();
-
+import { getPlanBadgeStyle } from '@/lib/plan';
+...
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
-
-  const formattedExpiry = planExpiresAt
-    ? new Date(planExpiresAt).toLocaleDateString('pt-BR')
-    : null;
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
-  return (
-    <div className="flex h-screen" style={{ background: '#f8f9fc' }}>
-      {/* SIDEBAR */}
-      <aside className="w-[240px] shrink-0 flex flex-col justify-between py-6 px-4 max-lg:hidden border-r border-[#edf0f7]" style={{ background: '#ffffff' }}>
-        <div>
-          <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold" style={{ background: '#29B2FE' }}>
-              {initials}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div>
-                <p className="text-sm font-heading font-bold text-[#111] leading-tight">{displayName}</p>
-                <p className="text-[11px] font-body text-[#9CA3B4]">Plataforma de Serviços</p>
-              </div>
+  const planBadgeStyle = getPlanBadgeStyle(plan, isActive);
+...
               <span
-                className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white ml-1"
-                style={{ background: isActive ? '#29B2FE' : '#9ca3af' }}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
+                style={planBadgeStyle}
               >
                 {planLabel}
               </span>

@@ -673,7 +673,7 @@ const Suporte = () => {
           <div className="mx-auto max-w-[680px] rounded-2xl border border-[hsl(var(--support-border))] bg-[hsl(var(--support-surface))] p-3 shadow-sm">
             {attachment && (
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--support-border))] bg-[hsl(var(--support-hover))] px-3 py-1 text-xs text-[hsl(var(--support-text-muted))]">
-                📎 {attachment.name}
+                <Paperclip size={12} /> {attachment.name}
                 <button
                   type="button"
                   onClick={() => setAttachment(null)}

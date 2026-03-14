@@ -246,7 +246,8 @@ const Dashboard = () => {
           </nav>
         </div>
 
-         <div className="border-t border-[#E8ECF4] my-2"></div>
+        <div className="flex flex-col gap-1">
+          <div className="border-t border-[#E8ECF4] my-2"></div>
           
           <button onClick={handleGoHome} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-body font-medium text-[#6B7280] hover:text-[#111111] hover:bg-[#f3f4f6] transition-colors">
             <Home size={18} /> Página Inicial

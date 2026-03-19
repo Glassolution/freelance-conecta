@@ -92,7 +92,6 @@ interface MessageMetric {
 const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const Dashboard = () => {
-  const { isPro, loading: planLoading } = useUserPlan();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedView, setSelectedView] = useState('Semanal');
   const navigate = useNavigate();

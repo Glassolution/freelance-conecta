@@ -66,6 +66,7 @@ function getUserDisplayName(user: any): string {
 }
 
 const MeusAnuncios = () => {
+  const { isPro, loading: planLoading } = useUserPlan();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();

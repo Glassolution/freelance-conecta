@@ -61,6 +61,7 @@ function getConversationIdFromNotes(notes?: string | null): string | null {
 }
 
 const MeusClientes = () => {
+  const { isPro, loading: planLoading } = useUserPlan();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();

@@ -354,31 +354,6 @@ const Dashboard = () => {
     },
   ];
 
-  if (planLoading) return null;
-
-  if (!isPro) return (
-    <div style={{ minHeight: '100vh', background: '#060912', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', maxWidth: 400, padding: 32 }}>
-        <Lock size={48} style={{ color: '#29B2FE', margin: '0 auto 16px' }} />
-        <h2 style={{ color: 'white', fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Acesso Premium</h2>
-        <p style={{ color: '#9CA3B4', fontSize: 15, lineHeight: 1.6 }}>
-          Assine um plano para acessar seu dashboard completo, métricas e recursos exclusivos.
-        </p>
-        <button
-          onClick={() => navigate('/pricing')}
-          style={{
-            marginTop: 24, background: '#29B2FE', color: 'white', border: 'none',
-            borderRadius: 8, padding: '12px 32px', fontSize: 15, fontWeight: 600,
-            cursor: 'pointer', width: '100%'
-          }}
-        >
-          Ver Planos
-        </button>
-        <p style={{ color: '#6B7280', fontSize: 13, marginTop: 12 }}>A partir de R$ 99,90/mês</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="flex h-screen" style={{ background: '#f8f9fc' }}>
       {/* LEFT SIDEBAR */}

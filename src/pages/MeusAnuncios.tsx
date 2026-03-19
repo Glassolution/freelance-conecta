@@ -105,10 +105,6 @@ const MeusAnuncios = () => {
     if (user) { ensureProfile(); fetchAds(); }
   }, [user]);
 
-  useEffect(() => {
-    if (!planLoading && !isPro) { navigate('/pricing'); }
-  }, [isPro, planLoading]);
-
   const resetForm = () => {
     setTitle(''); setCategory(CATEGORIES[0]); setDescription('');
     setSkills([]); setSkillInput(''); setValue(''); setDeadline('');

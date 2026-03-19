@@ -72,7 +72,6 @@ function getDateLabel(ts: string): string {
 }
 
 const Mensagens = () => {
-  const { isPro, loading: planLoading } = useUserPlan();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();

@@ -3,9 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, ShoppingBag, Megaphone, Users, MessageSquare, Globe,
   CheckCircle, Send, PackageCheck, Wrench, Settings, LogOut,
-  Plus, Briefcase, DollarSign, X, Search, Mail, Lock
+  Plus, Briefcase, DollarSign, X, Search, Mail
 } from 'lucide-react';
-import { useUserPlan } from '@/hooks/useUserPlan';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -61,7 +60,6 @@ function getConversationIdFromNotes(notes?: string | null): string | null {
 }
 
 const MeusClientes = () => {
-  const { isPro, loading: planLoading } = useUserPlan();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -98,10 +96,6 @@ const MeusClientes = () => {
     if (user) { ensureProfile(); fetchClients(); }
   }, [user]);
 
-  useEffect(() => {
-    if (!planLoading && !isPro) { navigate('/pricing'); }
-  }, [isPro, planLoading]);
-
   const resetForm = () => { setName(''); setEmail(''); setCompany(''); setProjectName(''); setProjectValue(''); setProjectStatus('in_progress'); setNotes(''); };
 
   const handleSave = async () => {
@@ -123,9 +117,6 @@ const MeusClientes = () => {
 
   const handleSignOut = async () => { await signOut(); navigate('/'); };
 
-  if (planLoading) return null;
-  if (!isPro) return null;
-
   return (
     <div className="flex h-screen" style={{ background: '#F8F9FC' }}>
       {/* SIDEBAR */}
@@ -146,7 +137,6 @@ const MeusClientes = () => {
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isActive ? 'text-[#29B2FE]' : 'text-[#6B7280] hover:text-[#111] hover:bg-[#f3f4f6]'}`}
                   style={isActive ? { background: 'rgba(41,178,254,0.08)', border: '1px solid rgba(41,178,254,0.2)' } : undefined}>
                   <link.icon size={18} />{link.label}
-                  {!isPro && ['Meus Anúncios','Meus Clientes','Mensagens','Serviços Aprovados','Serviços Enviados','Serviços Entregues','Ferramentas'].includes(link.label) && <Lock size={12} className="ml-auto text-[#9CA3B4]" />}
                 </button>
               );
             })}

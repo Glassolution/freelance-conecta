@@ -5,9 +5,8 @@ import {
   Settings, LogOut, Search, Mail,
   Clock, ExternalLink, RefreshCw, Filter,
   ArrowUpDown, Users, ShoppingBag, Megaphone, MessageSquare,
-  Star, X, FileText, Eye, Lock
+  Star, X, FileText, Eye
 } from 'lucide-react';
-import { useUserPlan } from '@/hooks/useUserPlan';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -634,10 +633,27 @@ interface TranslatedTexts {
 // ========================
 
 const Marketplace = () => {
-  const { isPro } = useUserPlan();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
+
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase.from('profiles')
+      .select('plan, plan_expires_at')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        setIsPro(
+          !!data?.plan &&
+          data.plan !== 'free' &&
+          !!data.plan_expires_at &&
+          new Date(data.plan_expires_at) > new Date()
+        );
+      });
+  }, [user]);
 
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);
@@ -974,7 +990,6 @@ const Marketplace = () => {
                 >
                   <link.icon size={18} />
                   {link.label}
-                  {!isPro && ['Meus Anúncios','Meus Clientes','Mensagens','Serviços Aprovados','Serviços Enviados','Serviços Entregues','Ferramentas'].includes(link.label) && <Lock size={12} className="ml-auto text-[#9CA3B4]" />}
                 </button>
               );
             })}
@@ -1285,27 +1300,31 @@ const Marketplace = () => {
                                 href={job.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style={{
-                                  display: 'block', background: '#29B2FE', color: 'white',
-                                  textAlign: 'center', padding: '12px', borderRadius: 8,
-                                  textDecoration: 'none', fontWeight: 600, fontSize: 14
-                                }}
+                                className="block"
                               >
-                                <ExternalLink size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
-                                Ver Vaga na {job.platform}
+                                <button
+                                  className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                                  style={{ background: job.platformColor }}
+                                >
+                                  <ExternalLink size={14} />
+                                  Ver Vaga na {job.platform}
+                                </button>
                               </a>
                             ) : (
                               <button
                                 onClick={() => navigate('/pricing')}
                                 style={{
-                                  width: '100%', background: '#f4f6fb', color: '#6b7280',
-                                  border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px',
-                                  cursor: 'pointer', display: 'flex', alignItems: 'center',
-                                  justifyContent: 'center', gap: 6, fontWeight: 500, fontSize: 14
+                                  width: '100%',
+                                  background: '#f4f6fb',
+                                  color: '#6b7280',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: 8,
+                                  padding: '12px',
+                                  cursor: 'pointer',
+                                  fontSize: 14
                                 }}
                               >
-                                <Lock size={14} />
-                                Assine para ver esta vaga
+                                🔒 Assine para ver esta vaga
                               </button>
                             )}
                           </div>

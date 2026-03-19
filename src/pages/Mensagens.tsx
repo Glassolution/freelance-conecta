@@ -158,6 +158,10 @@ const Mensagens = () => {
     if (user) { ensureProfile(); fetchConversations(); }
   }, [user]);
 
+  useEffect(() => {
+    if (!planLoading && !isPro) { navigate('/pricing'); }
+  }, [isPro, planLoading]);
+
   const loadMessages = async (convId: string) => {
     setMessagesLoading(true);
     setActiveConvId(convId);

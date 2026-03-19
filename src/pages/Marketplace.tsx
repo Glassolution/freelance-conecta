@@ -634,6 +634,7 @@ interface TranslatedTexts {
 // ========================
 
 const Marketplace = () => {
+  const { isPro } = useUserPlan();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();

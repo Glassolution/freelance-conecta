@@ -990,7 +990,6 @@ const Marketplace = () => {
                 >
                   <link.icon size={18} />
                   {link.label}
-                  {!isPro && ['Meus Anúncios','Meus Clientes','Mensagens','Serviços Aprovados','Serviços Enviados','Serviços Entregues','Ferramentas'].includes(link.label) && <Lock size={12} className="ml-auto text-[#9CA3B4]" />}
                 </button>
               );
             })}

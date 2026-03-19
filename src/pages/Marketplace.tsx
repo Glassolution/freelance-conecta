@@ -5,8 +5,9 @@ import {
   Settings, LogOut, Search, Mail,
   Clock, ExternalLink, RefreshCw, Filter,
   ArrowUpDown, Users, ShoppingBag, Megaphone, MessageSquare,
-  Star, X, FileText, Eye
+  Star, X, FileText, Eye, Lock
 } from 'lucide-react';
+import { useUserPlan } from '@/hooks/useUserPlan';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';

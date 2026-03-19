@@ -633,10 +633,27 @@ interface TranslatedTexts {
 // ========================
 
 const Marketplace = () => {
-  const { isPro } = useUserPlan();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
+
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase.from('profiles')
+      .select('plan, plan_expires_at')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        setIsPro(
+          !!data?.plan &&
+          data.plan !== 'free' &&
+          !!data.plan_expires_at &&
+          new Date(data.plan_expires_at) > new Date()
+        );
+      });
+  }, [user]);
 
   const initials = getUserInitials(user);
   const displayName = getUserDisplayName(user);

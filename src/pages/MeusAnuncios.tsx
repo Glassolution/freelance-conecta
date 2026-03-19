@@ -197,6 +197,9 @@ const MeusAnuncios = () => {
 
   const handleSignOut = async () => { await signOut(); navigate('/'); };
 
+  if (planLoading) return null;
+  if (!isPro) return null;
+
   return (
     <div className="flex h-screen" style={{ background: '#F8F9FC' }}>
       {/* SIDEBAR */}

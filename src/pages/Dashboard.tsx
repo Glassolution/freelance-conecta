@@ -4,7 +4,8 @@ import {
   CheckCircle, Send, PackageCheck, Wrench,
   Settings, LogOut, Search, Bell, ChevronRight, ChevronDown,
   Loader2, ShoppingBag, Megaphone, Users, MessageSquare,
-  TrendingUp, TrendingDown, ExternalLink, Eye, FileText, DollarSign, UserCheck
+  TrendingUp, TrendingDown, ExternalLink, Eye, FileText, DollarSign, UserCheck,
+  Lock
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
@@ -14,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePlanStatus } from '@/hooks/usePlanStatus';
 import { getPlanAccentColor } from '@/lib/plan';
 import ProfileDropdown from '@/components/ProfileDropdown';
+import { useUserPlan } from '@/hooks/useUserPlan';
 
 const plataformas = [
   { name: 'Workana', role: 'Plataforma de Serviços', status: 'Conectado' },

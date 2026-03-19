@@ -98,6 +98,10 @@ const MeusClientes = () => {
     if (user) { ensureProfile(); fetchClients(); }
   }, [user]);
 
+  useEffect(() => {
+    if (!planLoading && !isPro) { navigate('/pricing'); }
+  }, [isPro, planLoading]);
+
   const resetForm = () => { setName(''); setEmail(''); setCompany(''); setProjectName(''); setProjectValue(''); setProjectStatus('in_progress'); setNotes(''); };
 
   const handleSave = async () => {

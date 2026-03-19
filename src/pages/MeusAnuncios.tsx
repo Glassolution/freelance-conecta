@@ -4,8 +4,9 @@ import {
   Home, ShoppingBag, Megaphone, Users, MessageSquare, Globe,
   CheckCircle, Send, PackageCheck, Wrench, Settings, LogOut,
   Plus, Eye, FileText, TrendingUp, Pause, Play, Pencil, X,
-  Search
+  Search, Lock
 } from 'lucide-react';
+import { useUserPlan } from '@/hooks/useUserPlan';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';

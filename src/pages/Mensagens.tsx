@@ -3,8 +3,9 @@ import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   Home, ShoppingBag, Megaphone, Users, MessageSquare, Globe,
   CheckCircle, Send, PackageCheck, Wrench, Settings, LogOut,
-  Search, SendHorizontal
+  Search, SendHorizontal, Lock
 } from 'lucide-react';
+import { useUserPlan } from '@/hooks/useUserPlan';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';

@@ -1300,27 +1300,31 @@ const Marketplace = () => {
                                 href={job.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style={{
-                                  display: 'block', background: '#29B2FE', color: 'white',
-                                  textAlign: 'center', padding: '12px', borderRadius: 8,
-                                  textDecoration: 'none', fontWeight: 600, fontSize: 14
-                                }}
+                                className="block"
                               >
-                                <ExternalLink size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
-                                Ver Vaga na {job.platform}
+                                <button
+                                  className="w-full py-3 rounded-xl text-sm font-body font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                                  style={{ background: job.platformColor }}
+                                >
+                                  <ExternalLink size={14} />
+                                  Ver Vaga na {job.platform}
+                                </button>
                               </a>
                             ) : (
                               <button
                                 onClick={() => navigate('/pricing')}
                                 style={{
-                                  width: '100%', background: '#f4f6fb', color: '#6b7280',
-                                  border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px',
-                                  cursor: 'pointer', display: 'flex', alignItems: 'center',
-                                  justifyContent: 'center', gap: 6, fontWeight: 500, fontSize: 14
+                                  width: '100%',
+                                  background: '#f4f6fb',
+                                  color: '#6b7280',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: 8,
+                                  padding: '12px',
+                                  cursor: 'pointer',
+                                  fontSize: 14
                                 }}
                               >
-                                <Lock size={14} />
-                                Assine para ver esta vaga
+                                🔒 Assine para ver esta vaga
                               </button>
                             )}
                           </div>
